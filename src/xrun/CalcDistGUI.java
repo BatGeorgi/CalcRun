@@ -15,6 +15,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
+import org.json.JSONObject;
+
 public class CalcDistGUI {
 
   private JFrame frame;
@@ -136,7 +138,7 @@ public class CalcDistGUI {
       public void actionPerformed(ActionEvent e) {
         try {
           String result = CalcDist.run(textFieldInput.getText(), textFieldSpeed.getText(),
-              textFieldInterval.getText(), textFieldSplit.getText());
+              textFieldInterval.getText(), textFieldSplit.getText(), new JSONObject());
           JOptionPane.showMessageDialog(frame,
               result,
               "Results",
