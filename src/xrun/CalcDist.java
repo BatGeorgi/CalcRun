@@ -105,6 +105,18 @@ public class CalcDist {
     return sb.toString().trim();
   }
   
+  private String speedToPace(double speed/*km/h*/) {
+    double pace = 60.0 / speed;
+    int mins = (int) pace;
+    double seconds = (pace - mins) * 60.0;
+    if (seconds < 0) {
+      seconds = 0;
+    }
+    int s = (int) seconds;
+    String ss = (s < 10 ? "0" + s : String.valueOf(s));
+    return String.format("%d:%s", mins, ss);
+  }
+  
   private void hist(double speed, double dist, double time, double ele) {
     for (int i = BOUNDS.length - 1; i >= 0; --i) {
       if (speed >= BOUNDS[i]) {
@@ -246,6 +258,7 @@ public class CalcDist {
       data.put("timeRest", (long) timeRest);
       sb.append("Average speed: " + String.format("%.3f km/h", (distTotal / timeTotal) / COEF) + "\r\n");
       data.put("avgSpeed", String.format("%.3f", (distTotal / timeTotal) / COEF));
+      data.put("avgPace", speedToPace((distTotal / timeTotal) / COEF));
       sb.append("Elevation running: " + String.format("+%dm, -%dm", (long) eleRunningPos, (long) eleRunningNeg) + "\r\n");
       data.put("eleRunningPos",(long) eleRunningPos);
       data.put("eleRunningNeg", (long) eleRunningNeg);
