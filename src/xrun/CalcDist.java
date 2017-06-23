@@ -118,6 +118,12 @@ public class CalcDist {
     return sb.toString();
   }
   
+  private static int[] formatPaceRaw(double pace) {
+    int minutes = (int) pace;
+    int seconds = (int) ((pace - minutes) * 60.0);
+    return new int[] {minutes, seconds};
+  }
+  
   private String convertName(String name) {
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < name.length(); ++i) {
@@ -131,7 +137,7 @@ public class CalcDist {
     return sb.toString().trim();
   }
   
-  private String speedToPace(double speed/*km/h*/) {
+  private static String speedToPace(double speed/*km/h*/) {
     double pace = 60.0 / speed;
     int mins = (int) pace;
     double seconds = (pace - mins) * 60.0;
@@ -141,6 +147,13 @@ public class CalcDist {
     int s = (int) seconds;
     String ss = (s < 10 ? "0" + s : String.valueOf(s));
     return String.format("%d:%s", mins, ss);
+  }
+  
+  private static int[] speedToPaceRaw(double speed/*km/h*/) {
+    double pace = 60.0 / speed;
+    int mins = (int) pace;
+    double seconds = (pace - mins) * 60.0;
+    return new int[] {mins, (int) seconds};
   }
   
   private void hist(double speed, double dist, double time, double ele) {
@@ -280,11 +293,13 @@ public class CalcDist {
       data.put("timeRunning", (long) timeRunning);
       sb.append("Total time " + formatTime((long) timeTotal) + "\r\n");
       data.put("timeTotal", formatTime((long) timeTotal));
+      data.put("timeTotalRaw", timeTotal);
       sb.append("Rest time " + formatTime((long) timeRest) + "\r\n");
       data.put("timeRest", (long) timeRest);
       sb.append("Average speed: " + String.format("%.3f km/h", (distTotal / timeTotal) / COEF) + "\r\n");
       data.put("avgSpeed", String.format("%.3f", (distTotal / timeTotal) / COEF));
       data.put("avgPace", speedToPace((distTotal / timeTotal) / COEF));
+      data.put("avgPaceRaw", speedToPaceRaw((distTotal / timeTotal) / COEF));
       sb.append("Elevation running: " + String.format("+%dm, -%dm", (long) eleRunningPos, (long) eleRunningNeg) + "\r\n");
       data.put("eleRunningPos", (long) eleRunningPos);
       data.put("eleRunningNeg", (long) eleRunningNeg);
@@ -349,6 +364,7 @@ public class CalcDist {
           writer.write(String.format("%.3fkm", cd.histDist[i] / 1000.0) + " for " + formatTime((long) cd.histTime[i]));
           sp.put("dist", String.format("%.3f", cd.histDist[i] / 1000.0));
           sp.put("time", formatTime((long) cd.histTime[i]));
+          sp.put("timeRaw", (long) cd.histTime[i]);
           writer.write(", elevation: " + String.format("+%dm, -%dm", (long) cd.histElePos[i], (long) cd.histEleNeg[i]));
           writer.newLine();
           sp.put("elePos", (long) cd.histElePos[i]);
@@ -378,8 +394,10 @@ public class CalcDist {
           String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
           writer.write(splitTime);
           sp.put("time", splitTime);
+          sp.put("timeRaw", (long) cd.splitTimes.get(i).doubleValue());
           double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
           sp.put("pace", formatPace(splitPace));
+          sp.put("paceRaw", formatPaceRaw(splitPace));
           double ele = cd.splitEle.get(i);
           writer.write(", elevation: " + (ele > 0 ? "+" : "") + (long) ele + "m");
           sp.put("ele", (long) ele);
