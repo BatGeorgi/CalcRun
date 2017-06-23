@@ -77,18 +77,44 @@ public class CalcDist {
     return R * c * 1000.0; // convert to meters
   }
   
-  private String format(long seconds) {
+  private static String formatTime(long seconds) {
+    return formatTime(seconds, true);
+  }
+    
+  private static String formatTime(long seconds, boolean includeHours) {
     int hours = (int) (seconds / 3600);
     int minutes = (int) ((seconds % 3600) / 60);
     seconds = (int) seconds % 60;
     StringBuffer sb = new StringBuffer();
-    if (hours > 0) {
-      sb.append(hours + "h, ");
+    if (includeHours || hours > 0) {
+      if (hours < 10) {
+        sb.append('0');
+      }
+      sb.append(hours);
+      sb.append(':');
     }
-    if (minutes > 0) {
-      sb.append(minutes + "m, ");
+    if (minutes < 10) {
+      sb.append('0');
     }
-    sb.append(seconds + "s");
+    sb.append(minutes);
+    sb.append(':');
+    if (seconds < 10) {
+      sb.append('0');
+    }
+    sb.append(seconds);
+    return sb.toString();
+  }
+  
+  private static String formatPace(double pace) {
+    int minutes = (int) pace;
+    int seconds = (int) ((pace - minutes) * 60.0);
+    StringBuffer sb = new StringBuffer();
+    sb.append(minutes);
+    sb.append(':');
+    if (seconds < 10) {
+      sb.append('0');
+    }
+    sb.append(seconds);
     return sb.toString();
   }
   
@@ -250,17 +276,17 @@ public class CalcDist {
       sb.append("Total running distance is " + String.format("%.3f", (distRunning / 1000.0)) + " km\r\n");
       data.put("distRunning", String.format("%.3f", (distRunning / 1000.0)));
       sb.append("Running(>=" + minRunningSpeedKmh + " km/h) in " + String.format("%.3f", (distRunning / distTotal) * 100.0) + "% of the path\r\n");
-      sb.append("Running time " + format((long) timeRunning) + "\r\n");
+      sb.append("Running time " + formatTime((long) timeRunning) + "\r\n");
       data.put("timeRunning", (long) timeRunning);
-      sb.append("Total time " + format((long) timeTotal) + "\r\n");
-      data.put("timeTotal", (long) timeTotal);
-      sb.append("Rest time " + format((long) timeRest) + "\r\n");
+      sb.append("Total time " + formatTime((long) timeTotal) + "\r\n");
+      data.put("timeTotal", formatTime((long) timeTotal));
+      sb.append("Rest time " + formatTime((long) timeRest) + "\r\n");
       data.put("timeRest", (long) timeRest);
       sb.append("Average speed: " + String.format("%.3f km/h", (distTotal / timeTotal) / COEF) + "\r\n");
       data.put("avgSpeed", String.format("%.3f", (distTotal / timeTotal) / COEF));
       data.put("avgPace", speedToPace((distTotal / timeTotal) / COEF));
       sb.append("Elevation running: " + String.format("+%dm, -%dm", (long) eleRunningPos, (long) eleRunningNeg) + "\r\n");
-      data.put("eleRunningPos",(long) eleRunningPos);
+      data.put("eleRunningPos", (long) eleRunningPos);
       data.put("eleRunningNeg", (long) eleRunningNeg);
       sb.append("Elevation total: " + String.format("+%dm, -%dm", (long) eleTotalPos, (long) eleTotalNeg) + "\r\n");
       data.put("eleTotalPos", (long) eleTotalPos);
@@ -320,9 +346,9 @@ public class CalcDist {
               : "+: ");
           sp.put("range", range);
           writer.write(range);
-          writer.write(String.format("%.3fkm", cd.histDist[i] / 1000.0) + " for " + cd.format((long) cd.histTime[i]));
+          writer.write(String.format("%.3fkm", cd.histDist[i] / 1000.0) + " for " + formatTime((long) cd.histTime[i]));
           sp.put("dist", String.format("%.3f", cd.histDist[i] / 1000.0));
-          sp.put("time", cd.format((long) cd.histTime[i]));
+          sp.put("time", formatTime((long) cd.histTime[i]));
           writer.write(", elevation: " + String.format("+%dm, -%dm", (long) cd.histElePos[i], (long) cd.histEleNeg[i]));
           writer.newLine();
           sp.put("elePos", (long) cd.histElePos[i]);
@@ -337,19 +363,23 @@ public class CalcDist {
         double tot = 0.0;
         for (int i = 0; i < cd.splitTimes.size(); ++i) {
           JSONObject sp = new JSONObject();
-          String splitLen = null;
+          double currentLen = 0.0;
           if (i < cd.splitTimes.size() - 1 || cd.splitRem < 1e-6) {
-            tot += cd.splitM / 1000.0;
-            splitLen = String.format("%.3f", tot);
+            currentLen = cd.splitM / 1000.0;
+            tot += currentLen;
             writer.write(String.format("%.3fkm: ", tot));
           } else {
-            splitLen = String.format("%.3f", tot + cd.splitRem / 1000.0);
-            writer.write(String.format("%.3fkm: ", tot + cd.splitRem / 1000.0));
+            currentLen = cd.splitRem / 1000.0;
+            tot += currentLen;
+            writer.write(String.format("%.3fkm: ", tot));
           }
-          sp.put("len", splitLen);
-          String splitTime = cd.format((long) cd.splitTimes.get(i).doubleValue());
+          sp.put("total", String.format("%.3f", tot));
+          sp.put("len", String.format("%.3f", currentLen));
+          String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
           writer.write(splitTime);
           sp.put("time", splitTime);
+          double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
+          sp.put("pace", formatPace(splitPace));
           double ele = cd.splitEle.get(i);
           writer.write(", elevation: " + (ele > 0 ? "+" : "") + (long) ele + "m");
           sp.put("ele", (long) ele);
