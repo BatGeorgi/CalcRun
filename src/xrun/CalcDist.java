@@ -40,6 +40,7 @@ public class CalcDist {
   private double splitM; // meters
   
   private String userFriendlyName;
+  private String suff = "";
   private double[] histDist = new double[BOUNDS.length];
   private double[] histElePos = new double[BOUNDS.length];
   private double[] histEleNeg = new double[BOUNDS.length];
@@ -173,6 +174,18 @@ public class CalcDist {
   
   private void process(StringBuffer sb, JSONObject data) throws Exception {
     System.out.println("Processing " + file);
+    String fileName = file.getName();
+    int dott = fileName.lastIndexOf('.');
+    if (dott != -1) {
+      fileName = fileName.substring(0, dott);
+      String tmp = fileName.length() > 2 ? fileName.substring(fileName.length() - 3) : fileName;
+      try {
+        Integer.parseInt(tmp);
+        suff = '_' + tmp;
+      } catch (Exception ignore) {
+        // silent catch
+      }
+    }
     DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputStream is = null;
     try {
@@ -346,7 +359,7 @@ public class CalcDist {
     cd.process(sb, data);
     if (cd.userFriendlyName != null) {
       BufferedWriter writer = null;
-      File target = new File(file.getParent(), cd.userFriendlyName.replace(',', '.') + "_report.txt");
+      File target = new File(file.getParent(), cd.userFriendlyName.replace(',', '.') + "_report" + cd.suff + ".txt");
       try {
         writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target), "UTF-8"));
         writer.write(sb.toString());
