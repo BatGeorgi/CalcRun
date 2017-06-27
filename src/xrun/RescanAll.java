@@ -29,7 +29,7 @@ public class RescanAll {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    System.out.println(new RescanAll(base).rescan());
+    new RescanAll(base).rescan();
   }
   
   JSONObject rescan() {

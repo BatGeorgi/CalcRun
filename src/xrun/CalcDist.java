@@ -174,7 +174,6 @@ public class CalcDist {
   }
   
   private void process(StringBuffer sb, JSONObject data) throws Exception {
-    System.out.println("Processing " + file);
     String fileName = file.getName();
     int dott = fileName.lastIndexOf('.');
     if (dott != -1) {
@@ -342,7 +341,6 @@ public class CalcDist {
       throw new IllegalArgumentException("Input file not valid");
     }
     File inputBase = file.getParentFile();
-    System.out.println(inputBase);
     File outputBaseTxt = new File(inputBase, "reports_txt");
     outputBaseTxt.mkdir();
     File outputBaseJson = new File(inputBase, "reports_json");
