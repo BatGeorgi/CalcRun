@@ -1,7 +1,12 @@
 package xrun;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class RescanAll {
@@ -20,10 +25,11 @@ public class RescanAll {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RescanAll(base).rescan();
+    System.out.println(new RescanAll(base).rescan());
   }
   
-  void rescan() {
+  JSONObject rescan() {
+    List<JSONObject> runs = new ArrayList<JSONObject>();
     String[] all = base.list();
     for (String fileName : all) {
       if (!fileName.endsWith(".gpx")) {
@@ -34,13 +40,35 @@ public class RescanAll {
         continue;
       }
       try {
-        CalcDist.run(targ.getAbsolutePath(), "9", "100", "1", new JSONObject());
+        JSONObject current = new JSONObject();
+        CalcDist.run(targ.getAbsolutePath(), "9", "100", "1", current);
+        runs.add(current);
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
         e.printStackTrace();
       }
     }
-    
+    Collections.sort(runs, new RunDateComparator());
+    JSONObject result = new JSONObject();
+    JSONArray arr = new JSONArray();
+    for (JSONObject json : runs) {
+      arr.put(json);
+    }
+    result.put("activities", arr);
+    return result;
   }
 
+}
+
+class RunDateComparator implements Comparator<JSONObject> {
+
+  public int compare(JSONObject o1, JSONObject o2) {
+    long time1 = o1.getLong("timeRawMs");
+    long time2 = o2.getLong("timeRawMs");
+    if (time1 == time2) {
+      return 0;
+    }
+    return time1 < time2 ? 1 : -1;
+  }
+  
 }

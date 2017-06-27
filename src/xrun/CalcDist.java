@@ -236,6 +236,7 @@ public class CalcDist {
         if (st.hasMoreTokens()) {
           cal.set(Calendar.MILLISECOND, Integer.parseInt(st.nextToken()));
         }
+        data.put("timeRawMs", cal.getTimeInMillis());
         if (i > 0) {
           double tempDist = distance(prev[0], lat, prev[1], lon);
           currentDist += tempDist;
