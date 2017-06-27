@@ -13,12 +13,17 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class RescanAll {
+public class RunCalcUtils {
   
   private File base;
+  private File gpxBase;
+  private Storage storage;
   
-  RescanAll(File base) {
+  RunCalcUtils(File base) {
     this.base = base;
+    gpxBase = new File(base, "gpx");
+    gpxBase.mkdirs();
+    storage = new Storage(base);
   }
 
   public static void main(String[] args) {
@@ -29,12 +34,12 @@ public class RescanAll {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RescanAll(base).rescan();
+    new RunCalcUtils(base).rescan();
   }
   
   JSONObject rescan() {
     List<JSONObject> runs = new ArrayList<JSONObject>();
-    String[] all = base.list();
+    String[] all = gpxBase.list();
     for (String fileName : all) {
       if (!fileName.endsWith(".gpx")) {
         continue;
@@ -45,7 +50,7 @@ public class RescanAll {
       }
       try {
         JSONObject current = new JSONObject();
-        CalcDist.run(targ.getAbsolutePath(), "9", "100", "1", current);
+        CalcDist.run(targ, "9", "100", "1", current); // default values
         runs.add(current);
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
@@ -108,6 +113,18 @@ public class RescanAll {
     }
     result.put("activities", arr);
     return result;
+  }
+  
+  JSONObject addActivity(File file) { // fileName must be saved in gpx base folder
+    JSONObject status = new JSONObject();
+    try {
+      CalcDist.run(file, "9", "100", "1", new JSONObject());
+      status.put("status", "ok");
+    } catch (Exception e) {
+      status.put("status", "failed");
+      status.put("error", e.getClass().getName() + ' ' + e.getMessage());
+    }
+    return status;
   }
 
 }

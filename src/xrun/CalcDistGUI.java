@@ -137,7 +137,11 @@ public class CalcDistGUI {
       @Override
       public void actionPerformed(ActionEvent e) {
         try {
-          String result = CalcDist.run(textFieldInput.getText(), textFieldSpeed.getText(),
+          String filePath = textFieldInput.getText();
+          if (filePath == null || filePath.length() == 0) {
+            throw new IllegalArgumentException("Input file not specified");
+          }
+          String result = CalcDist.run(new File(filePath), textFieldSpeed.getText(),
               textFieldInterval.getText(), textFieldSplit.getText(), new JSONObject());
           JOptionPane.showMessageDialog(frame,
               result,

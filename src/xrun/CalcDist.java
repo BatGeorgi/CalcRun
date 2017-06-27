@@ -332,15 +332,11 @@ public class CalcDist {
     }
   }
   
-  static String run(String fileName, String minSpeed, String intR, String splitS, JSONObject data) throws Exception {
-    if (fileName == null || fileName.length() == 0) {
-      throw new IllegalArgumentException("Input file not specified");
-    }
-    File file = new File(fileName);
+  static String run(File file, String minSpeed, String intR, String splitS, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
-    File inputBase = file.getParentFile();
+    File inputBase = file.getParentFile().getParentFile();
     File outputBaseTxt = new File(inputBase, "reports_txt");
     outputBaseTxt.mkdir();
     File outputBaseJson = new File(inputBase, "reports_json");
