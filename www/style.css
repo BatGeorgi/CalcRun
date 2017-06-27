@@ -1,0 +1,54 @@
+#control
+{
+	float: right;
+}
+#activities
+{
+	font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+}
+.button
+{
+	width: 16em;
+    background: #00B6FF;
+    color: #fff;
+    font-size: 1em;
+    font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+    cursor: pointer;
+    padding: 0.5em 1em;
+    font-weight: bold;
+}
+.button2
+{
+	width: 16em;
+    background: green;
+    color: #fff;
+    font-size: 1em;
+    font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
+    cursor: pointer;
+    padding: 0.5em 1em;
+    font-weight: bold;
+}
+#heading
+{
+	text-align: center;
+	background: #EBEBEB; 
+	border: solid;
+	margin-bottom: 3em;
+}
+#operate
+{
+	float: left;
+	background: #EBEBEB;
+	margin-left: 2em;
+	width: 32em;
+}
+.menus
+{
+	padding: 0.5em 1em;
+	font-weight: bold;
+	width: 15em;
+}
+#info
+{
+	float: right;
+}
