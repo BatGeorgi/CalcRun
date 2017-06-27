@@ -1,6 +1,10 @@
 package xrun;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,6 +55,54 @@ public class RescanAll {
     Collections.sort(runs, new RunDateComparator());
     JSONObject result = new JSONObject();
     JSONArray arr = new JSONArray();
+    for (JSONObject json : runs) {
+      arr.put(json);
+    }
+    result.put("activities", arr);
+    return result;
+  }
+  
+  JSONObject retrieveAllActivities() {
+    JSONObject result = new JSONObject();
+    File jsonBase = new File(base, "reports_json");
+    if (!jsonBase.isDirectory()) {
+      return result.put("activities", new JSONArray());
+    }
+    JSONArray arr = new JSONArray();
+    String[] all = jsonBase.list();
+    List<JSONObject> runs = new ArrayList<JSONObject>();
+    for (String name : all) {
+      if (!name.endsWith(".json")) {
+        continue;
+      }
+      File f = new File(jsonBase, name);
+      if (!f.isFile()) {
+        continue;
+      }
+      int rd = 0;
+      byte[] buff = new byte[8192];
+      InputStream is = null;
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try {
+        is = new FileInputStream(f);
+        while ((rd = is.read(buff)) != -1) {
+          baos.write(buff, 0, rd);
+        }
+        runs.add(new JSONObject(new String(baos.toByteArray())));
+      } catch (Exception e) {
+        System.out.println("Error processing " + name);
+        e.printStackTrace();
+      } finally {
+        try {
+          if (is != null) {
+            is.close();
+          }
+        } catch (IOException ignore) {
+          // silent catch
+        }
+      }
+    }
+    Collections.sort(runs, new RunDateComparator());
     for (JSONObject json : runs) {
       arr.put(json);
     }

@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -18,6 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -340,6 +342,12 @@ public class CalcDist {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
+    File inputBase = file.getParentFile();
+    System.out.println(inputBase);
+    File outputBaseTxt = new File(inputBase, "reports_txt");
+    outputBaseTxt.mkdir();
+    File outputBaseJson = new File(inputBase, "reports_json");
+    outputBaseJson.mkdir();
     double minR = DEFAULT_RUNNING;
     double intrv = DEFAULT_INTERVAL;
     try {
@@ -360,9 +368,9 @@ public class CalcDist {
     cd.process(sb, data);
     if (cd.userFriendlyName != null) {
       BufferedWriter writer = null;
-      File target = new File(file.getParent(), cd.userFriendlyName.replace(',', '.') + "_report" + cd.suff + ".txt");
+      File targetTxt = new File(outputBaseTxt, cd.userFriendlyName.replace(',', '.') + "_report" + cd.suff + ".txt");
       try {
-        writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target), "UTF-8"));
+        writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetTxt), "UTF-8"));
         writer.write(sb.toString());
         writer.newLine();
         JSONArray arrSpeed = new JSONArray();
@@ -429,7 +437,20 @@ public class CalcDist {
         }
       }
     }
-    System.out.println(data);
+    File jsonOut = new File(outputBaseJson, cd.userFriendlyName.replace(',', '.') + "_report" + cd.suff + ".json");
+    FileWriter fwr = null;
+    try {
+      fwr = new FileWriter(jsonOut);
+      fwr.write(data.toString());
+      fwr.flush();
+    } finally {
+      try {
+        if (fwr != null) {
+          fwr.close();
+        }
+      } catch (IOException ignore) {
+      }
+    }
     return sb.toString();
   }
 
