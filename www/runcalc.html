@@ -4,11 +4,19 @@
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <title>Run Calculator</title>
 <link href="style.css" type="text/css" rel="stylesheet" />
-<script src="jquery-3.2.1.min.js"></script>
+<script src="jquery-3.2.1.js"></script>
+<script>
+function loadActivities() {
+$.post('runcalc.html', function( data ) {
+  console.log('ok');
+  console.log(data);
+});
+}
+</script>
 </head>
-<body onload = "loadActivities()">
+<body onload = "loadActivities();">
 <div id = "heading">
-	<font face="arial" size="20"><strong>Run Calculator</strong></font> 
+	<H1><strong>Run Calculator</strong></H1> 
 </div>
 <div id = "control">
 	<form>
