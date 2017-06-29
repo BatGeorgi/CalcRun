@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<title>Run Calculator</title>
+<title>Running stats</title>
 <link href="style.css" type="text/css" rel="stylesheet" />
 <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
 <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -36,7 +36,7 @@ $.post('loadActivities', function( data ) {
 	$('#' + id).append('<div>' + item['starttime'] + '</div>');
 	$('#item' + i).click(function(){
 		$("#details").text($('#data' + i).text());
-		$("#details").dialog('option', 'title', 'Run stats');
+		$("#details").dialog('option', 'title', 'Details');
 		$("#details").dialog('open');
 	});
 	console.log(i);
@@ -49,7 +49,7 @@ $.post('loadActivities', function( data ) {
 </head>
 <body onload = "loadActivities();">
 <div id = "heading">
-	<H1><strong>Run Calculator</strong></H1> 
+	<H1><strong>Running stats</strong></H1> 
 </div>
 <div id = "activities">
 	<h2>Activities</h2>

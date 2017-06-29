@@ -31,7 +31,9 @@ public class CalcDistServer {
       throw new IllegalArgumentException("Not a folder " + tracksBase);
     }
     ResourceHandler resourceHandler = new ResourceHandler();
-    resourceHandler.setWelcomeFiles(new String[] {new File("runcalc.html").getAbsolutePath()});
+    resourceHandler.setDirAllowed(false);
+    resourceHandler.setDirectoriesListed(false);
+    resourceHandler.setWelcomeFiles(new String[] {"runcalc.html"});
     resourceHandler.setResourceBase("www");
     
     Server server = new Server(port);
@@ -52,15 +54,15 @@ class CalcDistHandler extends AbstractHandler {
 		rcUtils = new RunCalcUtils(tracksBase);
 	}
 
-	public void handle(String target, Request baseRequest,
-			HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		System.out.println("target = " + target);
-		System.out.println("method = " + baseRequest.getMethod());
-		response.setContentType("application/json");
-		response.getWriter().println(rcUtils.retrieveAllActivities().toString());
-		response.getWriter().flush();
-		response.setStatus(HttpServletResponse.SC_OK);
-		baseRequest.setHandled(true);
-	}
+  public void handle(String target, Request baseRequest,
+      HttpServletRequest request, HttpServletResponse response)
+      throws IOException, ServletException {
+    if ("POST".equals(baseRequest.getMethod()) && "/loadActivities".equalsIgnoreCase(target)) {
+      response.setContentType("application/json");
+      response.getWriter().println(rcUtils.retrieveAllActivities().toString());
+      response.getWriter().flush();
+      response.setStatus(HttpServletResponse.SC_OK);
+      baseRequest.setHandled(true);
+    }
+  }
 }
