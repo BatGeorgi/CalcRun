@@ -304,12 +304,12 @@ public class CalcDist {
       data.put("distRunning", String.format("%.3f", (distRunning / 1000.0)));
       sb.append("Running(>=" + minRunningSpeedKmh + " km/h) in " + String.format("%.3f", (distRunning / distTotal) * 100.0) + "% of the path\r\n");
       sb.append("Running time " + formatTime((long) timeRunning) + "\r\n");
-      data.put("timeRunning", (long) timeRunning);
+      data.put("timeRunning", formatTime((long) timeRunning));
       sb.append("Total time " + formatTime((long) timeTotal) + "\r\n");
       data.put("timeTotal", formatTime((long) timeTotal));
       data.put("timeTotalRaw", timeTotal);
       sb.append("Rest time " + formatTime((long) timeRest) + "\r\n");
-      data.put("timeRest", (long) timeRest);
+      data.put("timeRest", formatTime((long) timeRest));
       sb.append("Average speed: " + String.format("%.3f km/h", (distTotal / timeTotal) / COEF) + "\r\n");
       data.put("avgSpeed", String.format("%.3f", (distTotal / timeTotal) / COEF));
       data.put("avgPace", speedToPace((distTotal / timeTotal) / COEF));

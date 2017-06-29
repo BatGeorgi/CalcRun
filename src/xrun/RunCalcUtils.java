@@ -34,6 +34,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
+    System.out.println("here");
     new RunCalcUtils(base).rescan();
   }
   
@@ -44,11 +45,12 @@ public class RunCalcUtils {
       if (!fileName.endsWith(".gpx")) {
         continue;
       }
-      File targ = new File(base, fileName);
+      File targ = new File(gpxBase, fileName);
       if (!targ.isFile()) {
         continue;
       }
       try {
+        System.out.println("scan " + fileName);
         JSONObject current = new JSONObject();
         CalcDist.run(targ, "9", "100", "1", current); // default values
         runs.add(current);

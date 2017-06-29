@@ -44,4 +44,14 @@ th {
 	text-decoration: underline;
 	cursor:pointer;
 }
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+ 
+li {
+  font: 200 20px/1.1 Helvetica, Verdana, sans-serif;
+  color: #c6273f;
+}
 
