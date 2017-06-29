@@ -2,6 +2,8 @@ package xrun;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Scanner;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -35,12 +37,30 @@ public class CalcDistServer {
     resourceHandler.setDirectoriesListed(false);
     resourceHandler.setWelcomeFiles(new String[] {"runcalc.html"});
     resourceHandler.setResourceBase("www");
-    
-    Server server = new Server(port);
+    final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
     handlers.setHandlers(new Handler[] {resourceHandler, new CalcDistHandler(tracksBase)});
     server.setHandler(handlers);
     server.start();
+    final Scanner scanner = new Scanner(System.in);
+    new Thread(new Runnable() {
+
+      public void run() {
+        while (true) {
+          String line = scanner.nextLine();
+          if ("q".equalsIgnoreCase(line) || "e".equalsIgnoreCase(line) || "exit".equalsIgnoreCase(line)
+              || "quit".equalsIgnoreCase(line)) {
+            try {
+              server.stop();
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+            scanner.close();
+            break;
+          }
+        }
+      }
+    }, "XRun server watchdog").start();
     server.join();
   }
 
