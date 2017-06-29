@@ -372,10 +372,10 @@ public class CalcDist {
         for (int i = 0; i < BOUNDS.length; ++i) {
           JSONObject sp = new JSONObject();
           String range = String.valueOf(Math.round(BOUNDS[i] / COEF)) +
-              (i < BOUNDS.length - 1 ? "-" + String.valueOf(Math.round(BOUNDS[i + 1] / COEF)) + ": "
-              : "+: ");
+              (i < BOUNDS.length - 1 ? "-" + String.valueOf(Math.round(BOUNDS[i + 1] / COEF)) + ""
+              : "+");
           sp.put("range", range);
-          writer.write(range);
+          writer.write(range + ": ");
           writer.write(String.format("%.3fkm", cd.histDist[i] / 1000.0) + " for " + formatTime((long) cd.histTime[i]));
           sp.put("dist", String.format("%.3f", cd.histDist[i] / 1000.0));
           sp.put("time", formatTime((long) cd.histTime[i]));
@@ -413,6 +413,7 @@ public class CalcDist {
           double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
           sp.put("pace", formatPace(splitPace));
           sp.put("paceRaw", formatPaceRaw(splitPace));
+          sp.put("speed", String.format("%.3f", 60.0 / splitPace));
           double ele = cd.splitEle.get(i);
           writer.write(", elevation: " + (ele > 0 ? "+" : "") + (long) ele + "m");
           sp.put("ele", (long) ele);
