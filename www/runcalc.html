@@ -41,7 +41,7 @@ $.post('loadActivities', function( data ) {
 	splits = item['splits'];
 	splitHtml = '<table><th>Total</th><th>Pace</th><th>Speed</th><th>Diff</th>';
 	$.each(splits, function(i, sp) {
-		splitHtml += '<tr><td>' + sp['total'] + 'km</td><td>' + sp['pace'] + ' min/km</td><td>' + sp['speed'] + ' km/h</td><td>' + sp['ele'] + 'm</td></tr>';
+		splitHtml += '<tr><td>' + sp['total'] + ' km</td><td>' + sp['pace'] + ' min/km</td><td>' + sp['speed'] + ' km/h</td><td>' + sp['ele'] + ' m</td></tr>';
 	});
 	splitHtml += '</table>';
 	$('#' + id).append('<ul><li>On ' + item['starttime'] + '</li><li>Distance ' + item['dist'] + ' km</li><li>Total time ' + item['timeTotal'] + '</li><li>Elevation gain ' + item['eleTotalPos'] + ' m</li><li>Elevation loss ' + item['eleTotalNeg'] + ' m</li>' +
