@@ -89,5 +89,10 @@ class CalcDistHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);
     }
+    if ("/editActivity".equalsIgnoreCase(target)) {
+      System.out.println(baseRequest.getHeader("Name"));
+      response.setStatus(HttpServletResponse.SC_OK);
+      baseRequest.setHandled(true);
+    }
   }
 }
