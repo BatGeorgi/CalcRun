@@ -37,7 +37,33 @@ public class RunCalcUtils {
     new RunCalcUtils(base).rescan();
   }
   
+  private void cleanup() {
+    File txtBase = new File(base, "reports_txt");
+    File jsonBase = new File(base, "reports_json");
+    String[] all = txtBase.list();
+    for (String name : all) {
+      if (!name.endsWith(".txt")) {
+        continue;
+      }
+      File f = new File(txtBase, name);
+      if (f.isFile()) {
+        f.delete();
+      }
+    }
+    all = jsonBase.list();
+    for (String name : all) {
+      if (!name.endsWith(".json")) {
+        continue;
+      }
+      File f = new File(txtBase, name);
+      if (f.isFile()) {
+        f.delete();
+      }
+    }
+  }
+  
   JSONObject rescan() {
+    cleanup();
     List<JSONObject> runs = new ArrayList<JSONObject>();
     String[] all = gpxBase.list();
     for (String fileName : all) {
@@ -51,6 +77,10 @@ public class RunCalcUtils {
       try {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, "9", "100", "1", current); // default values
+        String realName = storage.get(fileName);
+        if (realName != null) {
+          current.put("name", realName);
+        }
         runs.add(current);
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
@@ -93,7 +123,12 @@ public class RunCalcUtils {
         while ((rd = is.read(buff)) != -1) {
           baos.write(buff, 0, rd);
         }
-        runs.add(new JSONObject(new String(baos.toByteArray())));
+        JSONObject json = new JSONObject(new String(baos.toByteArray()));
+        String realName = storage.get(name);
+        if (realName != null) {
+          json.put("name", realName);
+        }
+        runs.add(json);
       } catch (Exception e) {
         System.out.println("Error processing " + name);
         e.printStackTrace();
@@ -125,6 +160,40 @@ public class RunCalcUtils {
       status.put("error", e.getClass().getName() + ' ' + e.getMessage());
     }
     return status;
+  }
+  
+  JSONObject compare(JSONObject run1, JSONObject run2) {
+    JSONObject result = new JSONObject();
+    JSONObject general = new JSONObject();
+    general.put("name1", run1.get("name"));
+    general.put("name2", run2.get("name"));
+    general.put("date1", run1.get("starttime"));
+    general.put("date2", run2.get("starttime"));
+    general.put("speed1", run1.get("avgSpeed"));
+    general.put("speed2", run2.get("avgSpeed"));
+    general.put("dist1", run1.get("dist"));
+    general.put("dist2", run2.get("dist"));
+    // TODO add more stats
+    JSONArray splits1 = run1.getJSONArray("splits");
+    JSONArray splits2 = run2.getJSONArray("splits");
+    JSONArray diffsByTime = new JSONArray();
+    for (int i = 0; i < Math.min(splits1.length(), splits2.length()); ++i) {
+      JSONObject sp1 = splits1.getJSONObject(i);
+      JSONObject sp2 = splits2.getJSONObject(i);
+      double total1 = sp1.getDouble("totalRaw");
+      double total2 = sp2.getDouble("totalRaw");
+      if (Math.abs(total1 - total2) < 1e-3) {
+        break;
+      }
+      JSONObject diff = new JSONObject();
+      diff.put("point", total1);
+      diffsByTime.put(diff);
+    }
+    JSONArray diffsByDistance = new JSONArray();
+    result.put("general", general);
+    result.put("times", diffsByTime);
+    result.put("dists", diffsByDistance);
+    return result;
   }
 
 }

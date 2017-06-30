@@ -62,10 +62,6 @@ public class Storage {
     return mappings.get(fileName);
   }
   
-  synchronized boolean isRemoved(String fileName) {
-    return mappings.containsKey(fileName) && mappings.get(fileName) == null;
-  }
-  
   private void saveMappings() {
     ObjectOutputStream oos = null;
     try {

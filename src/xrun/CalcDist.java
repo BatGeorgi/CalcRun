@@ -25,6 +25,14 @@ import org.w3c.dom.NodeList;
 
 public class CalcDist {
   
+  private static final String[] MONTHS = new String[] {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  };
+  private static final String[] DAYS = new String[] {
+    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+  };
+  
   private static final double COEF = 5.0 / 18.0; // km/h to m/s
   
   private static final double[] BOUNDS = new double[] {
@@ -173,6 +181,26 @@ public class CalcDist {
     }
   }
   
+  private static String getUserFriendlyDate(String timeStart) {
+    StringTokenizer st = new StringTokenizer(timeStart, "-", false);
+    String year = st.nextToken();
+    String month = st.nextToken();
+    String date = st.nextToken();
+    StringBuffer sb = new StringBuffer();
+    sb.append(date);
+    sb.append(' ');
+    sb.append(MONTHS[Integer.parseInt(month) - 1]);
+    sb.append(' ');
+    sb.append(year);
+    Calendar cal = new GregorianCalendar();
+    cal.set(Calendar.YEAR, Integer.parseInt(year));
+    cal.set(Calendar.DATE, Integer.parseInt(date));
+    cal.set(Calendar.MONTH, Integer.parseInt(month) - 1);
+    sb.append(' ');
+    sb.append(DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
+    return sb.toString();
+  }
+  
   private void process(StringBuffer sb, JSONObject data) throws Exception {
     String fileName = file.getName();
     int dott = fileName.lastIndexOf('.');
@@ -236,7 +264,10 @@ public class CalcDist {
         if (st.hasMoreTokens()) {
           cal.set(Calendar.MILLISECOND, Integer.parseInt(st.nextToken()));
         }
-        data.put("timeRawMs", cal.getTimeInMillis());
+        if (i == 0) {
+          data.put("date", getUserFriendlyDate(timeStart));
+          data.put("timeRawMs", cal.getTimeInMillis());
+        }
         if (i > 0) {
           double tempDist = distance(prev[0], lat, prev[1], lon);
           currentDist += tempDist;
@@ -405,6 +436,7 @@ public class CalcDist {
             writer.write(String.format("%.3fkm: ", tot));
           }
           sp.put("total", String.format("%.3f", tot));
+          sp.put("totalRaw", tot);
           sp.put("len", String.format("%.3f", currentLen));
           String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
           writer.write(splitTime);
