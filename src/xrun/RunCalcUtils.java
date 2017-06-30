@@ -167,13 +167,16 @@ public class RunCalcUtils {
     JSONObject general = new JSONObject();
     general.put("name1", run1.get("name"));
     general.put("name2", run2.get("name"));
-    general.put("date1", run1.get("starttime"));
-    general.put("date2", run2.get("starttime"));
+    general.put("date1", run1.get("date"));
+    general.put("date2", run2.get("date"));
     general.put("speed1", run1.get("avgSpeed"));
     general.put("speed2", run2.get("avgSpeed"));
     general.put("dist1", run1.get("dist"));
     general.put("dist2", run2.get("dist"));
-    // TODO add more stats
+    general.put("elePos1", run1.get("eleTotalPos"));
+    general.put("elePos2", run2.get("eleTotalPos"));
+    general.put("eleNeg1", run1.get("eleTotalNeg"));
+    general.put("eleNeg2", run2.get("eleTotalNeg"));
     JSONArray splits1 = run1.getJSONArray("splits");
     JSONArray splits2 = run2.getJSONArray("splits");
     JSONArray diffsByTime = new JSONArray();
@@ -182,18 +185,25 @@ public class RunCalcUtils {
       JSONObject sp2 = splits2.getJSONObject(i);
       double total1 = sp1.getDouble("totalRaw");
       double total2 = sp2.getDouble("totalRaw");
+      long totalDiff = 0;
       if (Math.abs(total1 - total2) < 1e-3) {
         break;
       }
       JSONObject diff = new JSONObject();
       diff.put("point", total1);
+      long currentDiff = sp1.getLong("timeRaw") - sp2.getLong("timeRaw");
+      diff.put("currentDiff", (currentDiff > 0 ? "+" : "-") + CalcDist.formatTime(Math.abs(currentDiff), false));
+      totalDiff += currentDiff;
+      diff.put("totalDiff", (totalDiff > 0 ? "+" : "-") + CalcDist.formatTime(Math.abs(totalDiff), false));
       diffsByTime.put(diff);
     }
-    JSONArray diffsByDistance = new JSONArray();
     result.put("general", general);
     result.put("times", diffsByTime);
-    result.put("dists", diffsByDistance);
     return result;
+  }
+  
+  void renameActivity(String fileName, String name) {
+    storage.map(fileName, name);
   }
 
 }

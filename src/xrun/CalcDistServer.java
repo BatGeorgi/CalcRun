@@ -76,7 +76,13 @@ class CalcDistHandler extends AbstractHandler {
   public void handle(String target, Request baseRequest,
       HttpServletRequest request, HttpServletResponse response)
       throws IOException, ServletException {
-    if ("POST".equals(baseRequest.getMethod()) && "/loadActivities".equalsIgnoreCase(target)) {
+    if (!"POST".equals(baseRequest.getMethod())) {
+      return;
+    }
+    if ("/rescanActivities".equalsIgnoreCase(target)) {
+      rcUtils.rescan();
+    }
+    if ("/loadActivities".equalsIgnoreCase(target) || "/rescanActivities".equalsIgnoreCase(target)) {
       response.setContentType("application/json");
       response.getWriter().println(rcUtils.retrieveAllActivities().toString());
       response.getWriter().flush();

@@ -54,10 +54,6 @@ public class Storage {
     saveMappings();
   }
   
-  synchronized void unmap(String fileName)  {
-    map(fileName, null);
-  }
-  
   synchronized String get(String fileName) {
     return mappings.get(fileName);
   }

@@ -42,9 +42,13 @@ $.post('loadActivities', function( data ) {
 		splitHtml += '<tr><td>' + sp['total'] + ' km</td><td>' + sp['pace'] + ' min/km</td><td>' + sp['speed'] + ' km/h</td><td>' + sp['ele'] + ' m</td></tr>';
 	});
 	splitHtml += '</table>';
+	linkHtml = '';
+	if (item.hasOwnProperty('garminLink')) {
+		linkHtml = '</ul><a href="' + item['garminLink'] + '" target="_blank">Garmin Connect</a><ul>';
+	}
 	$('#' + id).append('<ul><li>On ' + item['date'] + '</li><li>Distance ' + item['dist'] + ' km</li><li>Total time ' + item['timeTotal'] + '</li><li>Elevation gain ' + item['eleTotalPos'] + ' m</li><li>Elevation loss ' + item['eleTotalNeg'] + ' m</li>' +
 		'<li>Running(>=9.0km/h) time ' + item['timeRunning'] + '</li><li>Running distance ' + item['distRunning'] + ' km</li><li>Running elevation gain ' + item['eleRunningPos'] + ' m</li><li>Running elevation loss ' + item['eleRunningNeg'] +
-		' m</li><li>Rest time ' + item['timeRest'] + '</li><li>Average speed ' + item['avgSpeed'] + ' km/h</li><li>Speed distribution' +
+		' m</li><li>Rest time ' + item['timeRest'] + '</li><li>Average speed ' + item['avgSpeed'] + ' km/h</li>' + linkHtml + '<li>Speed distribution' +
 		'</li>' + tableHtml + '</li><li>Splits</li>' + splitHtml + '</ul>');
 	$('#item' + i).click(function(){
 		$("#details").html($('#data' + i).html());
