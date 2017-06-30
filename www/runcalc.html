@@ -48,7 +48,7 @@ $.post('loadActivities', function( data ) {
 	}
 	$('#' + id).append('<ul><li>On ' + item['date'] + '</li><li>Distance ' + item['dist'] + ' km</li><li>Total time ' + item['timeTotal'] + '</li><li>Elevation gain ' + item['eleTotalPos'] + ' m</li><li>Elevation loss ' + item['eleTotalNeg'] + ' m</li>' +
 		'<li>Running(>=9.0km/h) time ' + item['timeRunning'] + '</li><li>Running distance ' + item['distRunning'] + ' km</li><li>Running elevation gain ' + item['eleRunningPos'] + ' m</li><li>Running elevation loss ' + item['eleRunningNeg'] +
-		' m</li><li>Rest time ' + item['timeRest'] + '</li><li>Average speed ' + item['avgSpeed'] + ' km/h</li>' + linkHtml + '<li>Speed distribution' +
+		' m</li><li>Rest time ' + item['timeRest'] + '</li><li>Average speed ' + item['avgSpeed'] + ' km/h</li><li>Average pace ' + item['avgPace'] + ' min/km</li>' + linkHtml + '<li>Speed distribution' +
 		'</li>' + tableHtml + '</li><li>Splits</li>' + splitHtml + '</ul>');
 	$('#item' + i).click(function(){
 		$("#details").html($('#data' + i).html());
