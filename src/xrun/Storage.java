@@ -15,7 +15,8 @@ public class Storage {
   private File storageBase;
   
   private File mappingsFile;
-  private Map<String, String> mappings = new HashMap<String, String>();
+  private Map<String, String> nameMappings = new HashMap<String, String>();
+  private Map<String, String> typeMappings = new HashMap<String, String>();
   
   Storage(File base) {
     storageBase = new File(base, "storage");
@@ -24,8 +25,9 @@ public class Storage {
     loadMappings();
   }
   
-  private void loadMappings() {
-    mappings = new HashMap<String, String>();
+  @SuppressWarnings("unchecked")
+	private void loadMappings() {
+    nameMappings = new HashMap<String, String>();
     if (!mappingsFile.isFile()) {
       return;
     }
@@ -34,7 +36,8 @@ public class Storage {
     try {
       is = new FileInputStream(mappingsFile);
       ois = new ObjectInputStream(is);
-      mappings = (Map<String, String>) ois.readObject();
+      nameMappings = (Map<String, String>) ois.readObject();
+      typeMappings = (Map<String, String>) ois.readObject();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -49,20 +52,30 @@ public class Storage {
     }
   }
   
-  synchronized void map(String fileName, String activityName) {
-    mappings.put(fileName, activityName);
+  synchronized void mapName(String fileName, String activityName) {
+    nameMappings.put(fileName, activityName);
     saveMappings();
   }
   
-  synchronized String get(String fileName) {
-    return mappings.get(fileName);
+  synchronized String getName(String fileName) {
+    return nameMappings.get(fileName);
+  }
+  
+  synchronized void mapType(String fileName, String activityType) {
+    typeMappings.put(fileName, activityType);
+    saveMappings();
+  }
+  
+  synchronized String getType(String fileName) {
+    return typeMappings.get(fileName);
   }
   
   private void saveMappings() {
     ObjectOutputStream oos = null;
     try {
       oos = new ObjectOutputStream(new FileOutputStream(mappingsFile));
-      oos.writeObject(mappings);
+      oos.writeObject(nameMappings);
+      oos.writeObject(typeMappings);
     } catch (Exception e) {
       e.printStackTrace();
     } finally {

@@ -2,6 +2,8 @@ package xrun;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 
 import javax.servlet.ServletException;
@@ -17,6 +19,32 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 
 
 public class CalcDistServer {
+	
+	private static final byte[] CODE = new byte[] {-34,
+		120, 57, -104, 105, 87, 123, 12, -88, -80, -97, 16, 36, 125, 101, 32, 112, -97, 101, -106
+	};
+	
+	static boolean isAuthorized(String password) {
+		if (password == null) {
+			return false;
+		}
+		MessageDigest md = null;
+    try {
+        md = MessageDigest.getInstance("SHA-1");
+    } catch(NoSuchAlgorithmException e) {
+        return false;
+    } 
+    byte[] arr = md.digest(password.getBytes());
+    if (arr == null || arr.length != CODE.length) {
+    	return false;
+    }
+    for (int i = 0; i < arr.length; ++i) {
+    	if (arr[i] != CODE[i]) {
+    		return false;
+    	}
+    }
+    return true;
+	}
 	
   // 0 - port, 1 - tracks base
   public static void main(String[] args) throws Exception {
@@ -91,6 +119,9 @@ class CalcDistHandler extends AbstractHandler {
     }
     if ("/editActivity".equalsIgnoreCase(target)) {
       System.out.println(baseRequest.getHeader("Name"));
+      System.out.println(baseRequest.getHeader("Type"));
+      System.out.println(baseRequest.getHeader("Password"));
+      System.out.println("isAuthorized " + CalcDistServer.isAuthorized(baseRequest.getHeader("Password")));
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);
     }

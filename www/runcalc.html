@@ -10,17 +10,26 @@
 <script src="jquery-3.2.1.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script>
-function loadActivities() {
-$.post('loadActivities', function( data ) {
-  $("#details").dialog({
-    autoOpen : false, modal : true, show : "blind", hide : "blind", buttons: {
+function detailsDialog(id, html, name) {
+	$('#details').append('<div id="' + id + '"></div>');
+	$('#' + id).dialog({
+    autoOpen : false, modal : false, show : "blind", hide : "blind", buttons: {
             "Close": function() {
                 $(this).dialog("close");
             }
         },
         width: 600,
         height: 800,
+		create: function (event) {
+            $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
+          }
   });
+  $('#' + id).html(html);
+  $('#' + id).dialog('option', 'title', 'Details ' + name);
+  $('#' + id).dialog('open');
+}
+function loadActivities() {
+$.post('loadActivities', function( data ) {
   $("#editable").dialog({
     autoOpen : false, modal : true, show : "blind", hide : "blind", buttons: {
             "Save": function() {
@@ -29,7 +38,9 @@ $.post('loadActivities', function( data ) {
 					headers: {
 						'Authorization':'Basic xxxxxxxxxxxxx',
 						'Content-Type':'application/json',
-						'Name': 'x'
+						'Name': $('#chooseName').val(),
+						'Type': $('#chooseType').val(),
+						'Password': $('#pass').val()
 					},
 					method: 'POST',
 					dataType: 'json',
@@ -40,15 +51,15 @@ $.post('loadActivities', function( data ) {
                 $(this).dialog("close");
             }
         },
-        width: 300,
-        height: 200,
+        width: 400,
+        height: 300,
   });
   all = data['activities'];
   $("#activities").append('<table id="runs" cellspacing="0" summary="Running and hiking activities">');
-  $("#activities").append('<tr><th>Date</th><th>Name</th><th>Distance</th><th>Time</th><th>Pace</th><th>Speed</th><th>Actions</th></tr>');
+  $("#activities").append('<tr><th>#</th><th>Date</th><th>Name</th><th>Type</th><th>Distance</th><th>Time</th><th>Pace</th><th>Speed</th><th>Actions</th></tr>');
   $.each(all, function(i, item) {
 	$("#activities").append('<tr>');
-	$("#activities").append('<td>' + item['date'] + '</td><td><div class="runitem" id="item' + i + '">' + item['name'] + '</div></td><td>' + item['dist'] + ' km</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + ' min/km</td><td>' + item['avgSpeed'] + ' km/h</td>'
+	$("#activities").append('<td>' + (i + 1) + '</td><td>' + item['date'] + '</td><td><div class="runitem" id="item' + i + '">' + item['name'] + '</div></td><td>' + item['type'] + '</td><td>' + item['dist'] + ' km</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + ' min/km</td><td>' + item['avgSpeed'] + ' km/h</td>'
 		+ '<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>'
 		+ '<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem"></div></td>');
 	$("#activities").append('</tr>');
@@ -75,12 +86,11 @@ $.post('loadActivities', function( data ) {
 		' m</li><li>Rest time ' + item['timeRest'] + '</li><li>Average speed ' + item['avgSpeed'] + ' km/h</li><li>Average pace ' + item['avgPace'] + ' min/km</li>' + linkHtml + '<li>Speed distribution' +
 		'</li>' + tableHtml + '</li><li>Splits</li>' + splitHtml + '</ul>');
 	$('#item' + i).click(function(){
-		$("#details").html($('#data' + i).html());
-		$("#details").dialog('option', 'title', 'Details ' + item['name']);
-		$("#details").dialog('open');
+		detailsDialog("details" + i, $('#data' + i).html(), item['name']);
 	});
 	$('#edit' + i).click(function() {
-		$("#editable").html('<input type="text" name="newName" value="Choose name">');
+		$("#editable").html('<table><tr><td>Name </td><td><input type="text" id="chooseName"/></td></tr><tr><td>Type </td><td><select id="chooseType"><option value="Running">Running</option><option value="Trail">Trail</option>' +
+			'<option value="Hiking">Hiking</option><option value="Walking">Walking</option><option value="Other">Other</option></select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></table>');
 		$("#editable").dialog('option', 'title', 'Edit ' + item['name']);
 		$("#editable").dialog('open');
 	});
@@ -102,9 +112,9 @@ $.post('loadActivities', function( data ) {
 <div id = "activities">
 	<h2>Activities</h2>
 </div>
-<div id = "details">
-</div>
 <div id = "editable">
+</div>
+<div id = "details">
 </div>
 </body>
 </html>

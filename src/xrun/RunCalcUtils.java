@@ -40,6 +40,12 @@ public class RunCalcUtils {
   private void cleanup() {
     File txtBase = new File(base, "reports_txt");
     File jsonBase = new File(base, "reports_json");
+    if (!txtBase.exists()) {
+    	txtBase.mkdir();
+    }
+    if (!jsonBase.exists()) {
+    	jsonBase.mkdir();
+    }
     String[] all = txtBase.list();
     for (String name : all) {
       if (!name.endsWith(".txt")) {
@@ -77,10 +83,12 @@ public class RunCalcUtils {
       try {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, "9", "100", "1", current); // default values
-        String realName = storage.get(fileName);
+        String realName = storage.getName(fileName);
         if (realName != null) {
           current.put("name", realName);
         }
+        String realType = storage.getType(fileName);
+        current.put("type", realType != null ? realType : "Running");
         runs.add(current);
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
@@ -124,10 +132,12 @@ public class RunCalcUtils {
           baos.write(buff, 0, rd);
         }
         JSONObject json = new JSONObject(new String(baos.toByteArray()));
-        String realName = storage.get(name);
+        String realName = storage.getName(name);
         if (realName != null) {
           json.put("name", realName);
         }
+        String realType = storage.getType(name);
+        json.put("type", realType != null ? realType : "Running");
         runs.add(json);
       } catch (Exception e) {
         System.out.println("Error processing " + name);
@@ -203,7 +213,7 @@ public class RunCalcUtils {
   }
   
   void renameActivity(String fileName, String name) {
-    storage.map(fileName, name);
+    storage.mapName(fileName, name);
   }
 
 }
