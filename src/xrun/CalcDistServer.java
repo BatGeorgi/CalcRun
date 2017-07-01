@@ -118,11 +118,21 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
     }
     if ("/editActivity".equalsIgnoreCase(target)) {
-      System.out.println(baseRequest.getHeader("Name"));
-      System.out.println(baseRequest.getHeader("Type"));
-      System.out.println(baseRequest.getHeader("Password"));
-      System.out.println("isAuthorized " + CalcDistServer.isAuthorized(baseRequest.getHeader("Password")));
-      response.setStatus(HttpServletResponse.SC_OK);
+    	String fileName = baseRequest.getHeader("File");
+      String name = baseRequest.getHeader("Name");
+      String type = baseRequest.getHeader("Type");
+      String pass = baseRequest.getHeader("Password");
+      /*if (!CalcDistServer.isAuthorized(pass)) {
+      	response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      	baseRequest.setHandled(true);
+      	return;
+      }*/
+      if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null && type.length() > 0) {
+      	rcUtils.editActivity(fileName, name, type);
+      	response.setStatus(HttpServletResponse.SC_OK);
+      } else {
+      	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      }
       baseRequest.setHandled(true);
     }
   }
