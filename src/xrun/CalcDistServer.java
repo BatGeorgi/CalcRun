@@ -133,11 +133,11 @@ class CalcDistHandler extends AbstractHandler {
       String name = baseRequest.getHeader("Name");
       String type = baseRequest.getHeader("Type");
       String pass = baseRequest.getHeader("Password");
-      /*if (!CalcDistServer.isAuthorized(pass)) {
+      if (!CalcDistServer.isAuthorized(pass)) {
       	response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       	baseRequest.setHandled(true);
       	return;
-      }*/
+      }
       if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null && type.length() > 0) {
       	rcUtils.editActivity(fileName, name, type);
       	response.setStatus(HttpServletResponse.SC_OK);
