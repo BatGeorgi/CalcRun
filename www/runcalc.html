@@ -83,15 +83,16 @@ $.post('loadActivities', function( data ) {
 					},
 					statusCode: {
 						200: function (data) {
-							console.log(data);
 							general = data['general'];
 							times = data['times'];
 							tt = '';
 							$.each(times, function(i, sp) {
 								tt += '<tr><td>' + sp['point'] + ' km</td><td>' + sp['time1'] + '</td><td>' + sp['time2'] + '</td><td>' + sp['currentDiff'] + '</td><td>' + sp['totalDiff'] + '</td></tr>';
 							});
+							$('#comparable').html($('#comparable').attr('opts'));
 							$('#comparable').append('<h2>General</h2><table><th></th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th>' +
 							'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + general['dist1'] + '</td><td>' + general['dist2']  + '</td></tr>' +
+							'<tr><td>Time</td><td>' + general['time1'] + '</td><td>' + general['time2'] + '</td></tr>' +
 							'<tr><td>Speed</td><td>' + general['speed1'] + '</td><td>' + general['speed2'] + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
 							'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr></table>');
 							$('#comparable').append('<h2>Splits</h2><table><th>Point</th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th><th>Segment diff</th><th>Total diff</th>' + tt + '</table>');
@@ -106,7 +107,7 @@ $.post('loadActivities', function( data ) {
 				$(this).dialog("close");
 			}
         },
-        width: 600,
+        width: 700,
         height: 800,
 		create: function (event) {
             $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
@@ -163,6 +164,7 @@ $.post('loadActivities', function( data ) {
 			opts += '<option genby="' + item2['genby']  + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">#' + (i + 1) + ' ' + $('#item' + i).text() + '</option>';
 		});
 		$('#comparable').html('Compare with <select id="selectComp">' + opts + '</select>');
+		$('#comparable').attr('opts', 'Compare with <select id="selectComp">' + opts + '</select>');
 		$('#comparable').attr('file1', item['genby']);
 		$('#comparable').dialog('open');
 	});

@@ -189,6 +189,8 @@ public class RunCalcUtils {
     general.put("elePos2", run2.get("eleTotalPos"));
     general.put("eleNeg1", run1.get("eleTotalNeg"));
     general.put("eleNeg2", run2.get("eleTotalNeg"));
+    general.put("time1", run1.get("timeTotal"));
+    general.put("time2", run2.get("timeTotal"));
     JSONArray splits1 = run1.getJSONArray("splits");
     JSONArray splits2 = run2.getJSONArray("splits");
     JSONArray diffsByTime = new JSONArray();
@@ -204,7 +206,7 @@ public class RunCalcUtils {
       JSONObject diff = new JSONObject();
       diff.put("time1", sp1.getString("time"));
       diff.put("time2", sp2.getString("time"));
-      diff.put("point", total1);
+      diff.put("point", String.format("%.3f", total1));
       long currentDiff = sp1.getLong("timeRaw") - sp2.getLong("timeRaw");
       diff.put("currentDiff", (currentDiff > 0 ? "+" : "-") + CalcDist.formatTime(Math.abs(currentDiff), false));
       totalDiff += currentDiff;
