@@ -28,6 +28,9 @@ function detailsDialog(id, html, name) {
   $('#' + id).dialog('option', 'title', 'Details ' + name);
   $('#' + id).dialog('open');
 }
+function getOption(val, current) {
+	return '<option value="' + val + '"' + (current == val ? ' selected>' : '>') + val + '</option>';
+}
 function loadActivities() {
 $.post('loadActivities', function( data ) {
   $("#editable").dialog({
@@ -36,7 +39,6 @@ $.post('loadActivities', function( data ) {
 				$.ajax({
 					url: 'editActivity',
 					headers: {
-						'Authorization':'Basic xxxxxxxxxxxxx',
 						'Content-Type':'application/json',
 						'File': $("#editable").attr('genby'),
 						'Name': $('#chooseName').val(),
@@ -46,14 +48,14 @@ $.post('loadActivities', function( data ) {
 					method: 'POST',
 					dataType: 'json',
 					statusCode: {
-						200: function(xhr) {
+						200: function (xhr) {
 							$('#' + $("#editable").attr('refname')).text($('#chooseName').val());
 							$('#' + $("#editable").attr('reftype')).text($('#chooseType').val());
 						},
-						401: function(xhr) {
+						401: function (xhr) {
 							alert('DGD BOKLIK!');
 						},
-						400: function(xhr) {
+						400: function (xhr) {
 							alert('Empty name!');
 						} 
 					}
@@ -63,6 +65,52 @@ $.post('loadActivities', function( data ) {
         },
         width: 400,
         height: 300,
+		create: function (event) {
+            $(event.target).parent().css({ 'position': 'fixed', "left": 70, "top": 140 });
+        }
+  });
+  $('#comparable').dialog({
+    autoOpen : false, modal : true, show : "blind", hide : "blind", buttons: {
+            "Compare": function() {
+                $.ajax({
+					url: 'compare',
+					method: 'POST',
+					dataType: 'json',
+					headers: {
+						'Content-Type':'application/json',
+						'file1': $('#comparable').attr('file1'),
+						'file2': $('#selectComp').find(':selected').attr('genby')
+					},
+					statusCode: {
+						200: function (data) {
+							console.log(data);
+							general = data['general'];
+							times = data['times'];
+							tt = '';
+							$.each(times, function(i, sp) {
+								tt += '<tr><td>' + sp['point'] + ' km</td><td>' + sp['time1'] + '</td><td>' + sp['time2'] + '</td><td>' + sp['currentDiff'] + '</td><td>' + sp['totalDiff'] + '</td></tr>';
+							});
+							$('#comparable').append('<h2>General</h2><table><th></th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th>' +
+							'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + general['dist1'] + '</td><td>' + general['dist2']  + '</td></tr>' +
+							'<tr><td>Speed</td><td>' + general['speed1'] + '</td><td>' + general['speed2'] + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
+							'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr></table>');
+							$('#comparable').append('<h2>Splits</h2><table><th>Point</th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th><th>Segment diff</th><th>Total diff</th>' + tt + '</table>');
+						},
+						400: function (xhr) {
+							alert('Activities may be removed :(');
+						}
+					}
+				});
+            },
+			"Close": function() {
+				$(this).dialog("close");
+			}
+        },
+        width: 600,
+        height: 800,
+		create: function (event) {
+            $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
+        }
   });
   all = data['activities'];
   $("#activities").append('<table id="runs" cellspacing="0" summary="Running and hiking activities">');
@@ -82,7 +130,7 @@ $.post('loadActivities', function( data ) {
 	});
 	tableHtml += '</table>';
 	splits = item['splits'];
-	splitHtml = '<table><th>Total</th><th>Pace</th><th>Speed</th><th>Diff</th>';
+	splitHtml = '<table><th>Point</th><th>Pace</th><th>Speed</th><th>Diff</th>';
 	$.each(splits, function(i, sp) {
 		splitHtml += '<tr><td>' + sp['total'] + ' km</td><td>' + sp['pace'] + ' min/km</td><td>' + sp['speed'] + ' km/h</td><td>' + sp['ele'] + ' m</td></tr>';
 	});
@@ -96,22 +144,28 @@ $.post('loadActivities', function( data ) {
 		' m</li><li>Rest time ' + item['timeRest'] + '</li><li>Average speed ' + item['avgSpeed'] + ' km/h</li><li>Average pace ' + item['avgPace'] + ' min/km</li>' + linkHtml + '<li>Speed distribution' +
 		'</li>' + tableHtml + '</li><li>Splits</li>' + splitHtml + '</ul>');
 	$('#item' + i).click(function(){
-		detailsDialog("details" + i, $('#data' + i).html(), item['name']);
+		detailsDialog("details" + i, $('#data' + i).html(), $('#item' + i).text());
 	});
 	$('#edit' + i).click(function() {
-		$("#editable").html('<table><tr><td>Name </td><td><input type="text" id="chooseName"/></td></tr><tr><td>Type </td><td><select id="chooseType"><option value="Running">Running</option><option value="Trail">Trail</option>' +
-			'<option value="Hiking">Hiking</option><option value="Walking">Walking</option><option value="Other">Other</option></select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></table>');
-		$("#editable").dialog('option', 'title', 'Edit ' + item['name']);
+		type = $('#type' + i).text();
+		$("#editable").html('<table><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) + getOption("Trail", type) +
+			getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></table>');
+		$("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text());
 		$("#editable").attr('genby', item['genby']);
 		$("#editable").attr('refname', 'item' + i);
 		$("#editable").attr('reftype', 'type' + i);
 		$("#editable").dialog('open');
 	});
 	$('#compare' + i).click(function() {
-		alert("Not implemented yet!");
+		$('#comparable').dialog('option', 'title', 'Compare ' + $('#item' + i).text());
+		opts = '';
+		$.each(all, function(i, item2) {
+			opts += '<option genby="' + item2['genby']  + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">#' + (i + 1) + ' ' + $('#item' + i).text() + '</option>';
+		});
+		$('#comparable').html('Compare with <select id="selectComp">' + opts + '</select>');
+		$('#comparable').attr('file1', item['genby']);
+		$('#comparable').dialog('open');
 	});
-	console.log(i);
-	console.log(item);
   });
   $("#activities").append('</table>');
 });
@@ -126,6 +180,8 @@ $.post('loadActivities', function( data ) {
 	<h2>Activities</h2>
 </div>
 <div id = "editable">
+</div>
+<div id = "comparable">
 </div>
 <div id = "details">
 </div>

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.servlet.ServletException;
@@ -16,6 +18,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 
 public class CalcDistServer {
@@ -96,6 +100,7 @@ public class CalcDistServer {
 class CalcDistHandler extends AbstractHandler {
 
   private RunCalcUtils rcUtils;
+  private Map<String, JSONObject> cache = new HashMap<String, JSONObject>();
 
 	public CalcDistHandler(File tracksBase) throws IOException {
 		rcUtils = new RunCalcUtils(tracksBase);
@@ -112,7 +117,13 @@ class CalcDistHandler extends AbstractHandler {
     }
     if ("/loadActivities".equalsIgnoreCase(target) || "/rescanActivities".equalsIgnoreCase(target)) {
       response.setContentType("application/json");
-      response.getWriter().println(rcUtils.retrieveAllActivities().toString());
+      JSONObject activities = rcUtils.retrieveAllActivities();
+      JSONArray data = activities.getJSONArray("activities");
+      for (int i = 0; i < data.length(); ++i) {
+      	JSONObject item = data.getJSONObject(i);
+      	cache.put(item.getString("genby"), item);
+      }
+      response.getWriter().println(activities.toString());
       response.getWriter().flush();
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);
@@ -135,5 +146,18 @@ class CalcDistHandler extends AbstractHandler {
       }
       baseRequest.setHandled(true);
     }
+		if ("/compare".equalsIgnoreCase(target)) {
+			JSONObject item1 = cache.get(baseRequest.getHeader("file1"));
+			JSONObject item2 = cache.get(baseRequest.getHeader("file2"));
+			if (item1 == null || item2 == null) {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			} else {
+				response.setContentType("application/json");
+				response.getWriter().println(rcUtils.compare(item1, item2));
+				response.getWriter().flush();
+				response.setStatus(HttpServletResponse.SC_OK);
+				baseRequest.setHandled(true);
+			}
+		}
   }
 }
