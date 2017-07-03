@@ -24,8 +24,7 @@ import org.json.JSONObject;
 
 public class CalcDistServer {
 	
-	private static final byte[] CODE = new byte[] {-34,
-		120, 57, -104, 105, 87, 123, 12, -88, -80, -97, 16, 36, 125, 101, 32, 112, -97, 101, -106
+	private static final byte[] CODE = new byte[] {-55, -85, 122, -120, -106, -44, 81, -78, 90, 79, -73, -54, 34, -42, -110, -67, 6, 56, -102, -7
 	};
 	
 	static boolean isAuthorized(String password) {
