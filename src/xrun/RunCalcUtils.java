@@ -208,9 +208,9 @@ public class RunCalcUtils {
       diff.put("time2", sp2.getString("time"));
       diff.put("point", String.format("%.3f", total1));
       long currentDiff = sp1.getLong("timeRaw") - sp2.getLong("timeRaw");
-      diff.put("currentDiff", (currentDiff > 0 ? "+" : "-") + CalcDist.formatTime(Math.abs(currentDiff), false));
+      diff.put("currentDiff", (currentDiff > 0 ? "+" : (currentDiff < 0 ? "-" : "")) + CalcDist.formatTime(Math.abs(currentDiff), false));
       totalDiff += currentDiff;
-      diff.put("totalDiff", (totalDiff > 0 ? "+" : "-") + CalcDist.formatTime(Math.abs(totalDiff), false));
+      diff.put("totalDiff", (totalDiff > 0 ? "+" : (totalDiff < 0 ? "-" : "")) + CalcDist.formatTime(Math.abs(totalDiff), false));
       diffsByTime.put(diff);
     }
     result.put("general", general);

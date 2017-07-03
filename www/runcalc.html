@@ -32,7 +32,14 @@ function getOption(val, current) {
 	return '<option value="' + val + '"' + (current == val ? ' selected>' : '>') + val + '</option>';
 }
 function colorDiff(diff) {
-	return (diff.charAt(0) == '+' ? '<span class="red">' : '<span class="green">') + diff + '</span>';
+	c = diff.charAt(0);
+	if (c == '+') {
+		return '<span class="red">' + diff + '</span>';
+	}
+	if (c == '-') {
+		return '<span class="green">' + diff + '</span>';
+	}
+	return diff;
 }
 function valTime(time) {
 	res = time.split(":");
@@ -46,7 +53,7 @@ function comp(t1, t2, tt) {
 		return '<span class="green">' + tt + '</span>';
 	}
 	if (t1 == t2) {
-		return tt1;
+		return tt;
 	}
 	return '<span class="red">' + tt + '</span>';
 }
