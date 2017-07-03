@@ -112,9 +112,17 @@ class CalcDistHandler extends AbstractHandler {
       return;
     }
     if ("/rescanActivities".equalsIgnoreCase(target)) {
+      String pass = baseRequest.getHeader("Password");
+      if (!CalcDistServer.isAuthorized(pass)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        baseRequest.setHandled(true);
+        return;
+      }
       rcUtils.rescan();
+      response.setStatus(HttpServletResponse.SC_OK);
+      baseRequest.setHandled(true);
     }
-    if ("/loadActivities".equalsIgnoreCase(target) || "/rescanActivities".equalsIgnoreCase(target)) {
+    if ("/loadActivities".equalsIgnoreCase(target)) {
       response.setContentType("application/json");
       JSONObject activities = rcUtils.retrieveAllActivities();
       JSONArray data = activities.getJSONArray("activities");

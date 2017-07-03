@@ -61,7 +61,7 @@ public class RunCalcUtils {
       if (!name.endsWith(".json")) {
         continue;
       }
-      File f = new File(txtBase, name);
+      File f = new File(jsonBase, name);
       if (f.isFile()) {
         f.delete();
       }
