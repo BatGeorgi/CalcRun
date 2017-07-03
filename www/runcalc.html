@@ -58,7 +58,7 @@ function comp(t1, t2, tt) {
 	return '<span class="red">' + tt + '</span>';
 }
 function comp2(t1, t2) {
-	return comp(parseFloat(t2), parseFloat(t1), t1);
+	return comp(parseFloat(t2.replace(',', '.')), parseFloat(t1.replace(',', '.')), t1);
 }
 function colorDiff1(tt1, tt2) {
 	t1 = valTime(tt1);
@@ -124,12 +124,12 @@ $.post('loadActivities', function( data ) {
 								tt += '<tr><td>' + sp['point'] + ' km</td><td>' + colorDiff1(sp['time1'], sp['time2']) + '</td><td>' + colorDiff1(sp['time2'], sp['time1']) + '</td><td>' + colorDiff(sp['currentDiff']) + '</td><td>' + colorDiff(sp['totalDiff']) + '</td></tr>';
 							});
 							$('#comparable').html($('#comparable').attr('opts'));
-							$('#comparable').append('<h2>General</h2><table><th></th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th>' +
+							$('#comparable').append('<h2>General</h2><table><th></th><th>' + general['name1'] + ' ' + general['date1'] + '</th><th>' + general['name2'] + ' ' + general['date2'] + '</th>' +
 							'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1'])  + '</td></tr>' +
 							'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
 							'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
 							'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr></table>');
-							$('#comparable').append('<h2>Splits</h2><table><th>Point</th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th><th>Segment diff</th><th>Total diff</th>' + tt + '</table>');
+							$('#comparable').append('<h2>Splits</h2><table><th>Point</th><th>' + general['name1'] + ' ' + general['date1'] + '</th><th>' + general['name2'] + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th>' + tt + '</table>');
 						},
 						400: function (xhr) {
 							alert('Activities may be removed :(');
@@ -141,7 +141,7 @@ $.post('loadActivities', function( data ) {
 				$(this).dialog("close");
 			}
         },
-        width: 700,
+        width: 800,
         height: 800,
 		create: function (event) {
             $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
@@ -189,7 +189,7 @@ $.post('loadActivities', function( data ) {
             }
         },
         width: 500,
-        height: 400,
+        height: 300,
 		create: function (event) {
             $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
         }
