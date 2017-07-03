@@ -31,6 +31,33 @@ function detailsDialog(id, html, name) {
 function getOption(val, current) {
 	return '<option value="' + val + '"' + (current == val ? ' selected>' : '>') + val + '</option>';
 }
+function colorDiff(diff) {
+	return (diff.charAt(0) == '+' ? '<span class="red">' : '<span class="green">') + diff + '</span>';
+}
+function valTime(time) {
+	res = time.split(":");
+	if (res.length == 2) {
+		return 60 * parseInt(res[0]) + parseInt(res[1]);
+	}
+	return 3600 * parseInt(res[0]) + 60 * parseInt(res[1]) + parseInt(res[2]);
+}
+function comp(t1, t2, tt) {
+	if (t1 < t2) {
+		return '<span class="green">' + tt + '</span>';
+	}
+	if (t1 == t2) {
+		return tt1;
+	}
+	return '<span class="red">' + tt + '</span>';
+}
+function comp2(t1, t2) {
+	return comp(parseFloat(t2), parseFloat(t1), t1);
+}
+function colorDiff1(tt1, tt2) {
+	t1 = valTime(tt1);
+	t2 = valTime(tt2);
+	return comp(t1, t2, tt1);
+}
 function loadActivities() {
 $.post('loadActivities', function( data ) {
   $("#editable").dialog({
@@ -87,13 +114,13 @@ $.post('loadActivities', function( data ) {
 							times = data['times'];
 							tt = '';
 							$.each(times, function(i, sp) {
-								tt += '<tr><td>' + sp['point'] + ' km</td><td>' + sp['time1'] + '</td><td>' + sp['time2'] + '</td><td>' + sp['currentDiff'] + '</td><td>' + sp['totalDiff'] + '</td></tr>';
+								tt += '<tr><td>' + sp['point'] + ' km</td><td>' + colorDiff1(sp['time1'], sp['time2']) + '</td><td>' + colorDiff1(sp['time2'], sp['time1']) + '</td><td>' + colorDiff(sp['currentDiff']) + '</td><td>' + colorDiff(sp['totalDiff']) + '</td></tr>';
 							});
 							$('#comparable').html($('#comparable').attr('opts'));
 							$('#comparable').append('<h2>General</h2><table><th></th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th>' +
-							'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + general['dist1'] + '</td><td>' + general['dist2']  + '</td></tr>' +
-							'<tr><td>Time</td><td>' + general['time1'] + '</td><td>' + general['time2'] + '</td></tr>' +
-							'<tr><td>Speed</td><td>' + general['speed1'] + '</td><td>' + general['speed2'] + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
+							'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1'])  + '</td></tr>' +
+							'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
+							'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
 							'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr></table>');
 							$('#comparable').append('<h2>Splits</h2><table><th>Point</th><th>' + general['name1'] + '</th><th>' + general['name2'] + '</th><th>Segment diff</th><th>Total diff</th>' + tt + '</table>');
 						},
