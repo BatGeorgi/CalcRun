@@ -113,6 +113,36 @@ $.post('loadActivities', function( data ) {
             $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
         }
   });
+  $('#rescanForm').dialog({
+	autoOpen : false, modal : true, show : "blind", hide : "blind", buttons: {
+			"Rescan": function() {
+                $(this).dialog("close");
+            },
+            "Close": function() {
+                $(this).dialog("close");
+            }
+        },
+        width: 400,
+        height: 200,
+		create: function (event) {
+            $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
+        }
+  });
+  $('#addForm').dialog({
+	autoOpen : false, modal : true, show : "blind", hide : "blind", buttons: {
+			"Add": function() {
+                $(this).dialog("close");
+            },
+            "Close": function() {
+                $(this).dialog("close");
+            }
+        },
+        width: 500,
+        height: 400,
+		create: function (event) {
+            $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
+        }
+  });
   all = data['activities'];
   $("#activities").append('<table id="runs" cellspacing="0" summary="Running and hiking activities">');
   $("#activities").append('<tr><th>#</th><th>Date</th><th>Name</th><th>Type</th><th>Distance</th><th>Time</th><th>Pace</th><th>Speed</th><th>Actions</th></tr>');
@@ -170,6 +200,16 @@ $.post('loadActivities', function( data ) {
 	});
   });
   $("#activities").append('</table>');
+  $('#addButton').click(function() {
+	$('#addForm').dialog('option', 'title', 'Add activity');
+	$('#addForm').html('<table><tr><td>File </td><td><input type="file" name="gpxIn"/></td></tr><tr><td>Password </td><td><input type="password" id="passRescan"/></td></tr></table>');
+	$('#addForm').dialog('open');
+  });
+  $('#rescanButton').click(function() {
+	$('#rescanForm').dialog('option', 'title', 'Rescan activities');
+	$('#rescanForm').html('Password <input type="password" id="passRescan"/>');
+	$('#rescanForm').dialog('open');
+  });
 });
 }
 </script>
@@ -178,6 +218,8 @@ $.post('loadActivities', function( data ) {
 <div id = "heading">
 	<H1><strong>Running stats</strong></H1> 
 </div>
+<input id="addButton" type="image" src="button-dark-plus-icon.png" width="40" height="40"/>
+<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40"/>
 <div id = "activities">
 	<h2>Activities</h2>
 </div>
@@ -186,6 +228,10 @@ $.post('loadActivities', function( data ) {
 <div id = "comparable">
 </div>
 <div id = "details">
+</div>
+<div id = "addForm">
+</div>
+<div id = "rescanForm">
 </div>
 </body>
 </html>
