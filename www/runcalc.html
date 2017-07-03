@@ -232,14 +232,14 @@ $.post('loadActivities', function( data ) {
 		type = $('#type' + i).text();
 		$("#editable").html('<table><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) + getOption("Trail", type) +
 			getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></table>');
-		$("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text());
+		$("#editable").dialog('option', 'title', 'Edit #' + + (i + 1) + ' ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
 		$("#editable").attr('genby', item['genby']);
 		$("#editable").attr('refname', 'item' + i);
 		$("#editable").attr('reftype', 'type' + i);
 		$("#editable").dialog('open');
 	});
 	$('#compare' + i).click(function() {
-		$('#comparable').dialog('option', 'title', 'Compare ' + $('#item' + i).text());
+		$('#comparable').dialog('option', 'title', 'Compare #' + (i + 1) + ' ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
 		opts = '';
 		$.each(all, function(i, item2) {
 			opts += '<option genby="' + item2['genby']  + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">#' + (i + 1) + ' ' + $('#item' + i).text() + ' ' + $('#date' + i).text() + '</option>';
