@@ -65,6 +65,17 @@ function colorDiff1(tt1, tt2) {
 	t2 = valTime(tt2);
 	return comp(t1, t2, tt1);
 }
+function formatEle(gain, loss) {
+	res = '-';
+	if (gain > 0 && loss > 0) {
+		res = '+' + gain + '/-' + loss;
+	} else if (gain > 0) {
+		res = '+' + gain;
+	} else if (loss > 0) {
+		res = '-' + loss;
+	}
+	return res;
+}
 function loadActivities() {
 $.post('loadActivities', function( data ) {
   $("#editable").dialog({
@@ -196,9 +207,11 @@ $.post('loadActivities', function( data ) {
   });
   all = data['activities'];
   $("#activities").html('<h2>Activities</h2><table id="runs" cellspacing="0" summary="Running and hiking activities">');
-  $("#activities").append('<tr><th>#</th><th>Date</th><th>Name</th><th>Type</th><th>Distance</th><th>Time</th><th>Pace</th><th>Speed</th><th>Actions</th></tr>');
+  $("#activities").append('<tr><th>#</th><th>Date</th><th>Name</th><th>Type</th><th>Distance</th><th>Time</th><th>Pace</th><th>Speed</th><th>Elevation</th><th>Actions</th></tr>');
   $.each(all, function(i, item) {
-	$("#activities").append('<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + item['name'] + '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' + item['dist'] + ' km</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + ' min/km</td><td>' + item['avgSpeed'] + ' km/h</td>'
+	$("#activities").append('<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + item['name'] + '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>'
+	    + item['dist'] + ' km</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + ' min/km</td><td>' + item['avgSpeed'] + ' km/h</td>'
+		+ '<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>'
 		+ '<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>'
 		+ '<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem"></div></td></tr>');
 	id = "data" + i;
