@@ -18,12 +18,14 @@ h2
     -webkit-margin-end: 0px;
     font-weight: bold;
 }
+.highlight tr:hover {
+    background-color: #ffff99;
+}
 td {
 	border-left: 1px solid #C1DAD7;
 	border-top: 1px solid #C1DAD7;
 	border-right: 1px solid #C1DAD7;
 	border-bottom: 1px solid #C1DAD7;
-	background: #fff;
 	padding: 6px 6px 6px 12px;
 	color: #6D929B;
 }
