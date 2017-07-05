@@ -82,7 +82,7 @@ public class RunCalcUtils {
       }
       try {
         JSONObject current = new JSONObject();
-        CalcDist.run(targ, "9", "100", "1", current); // default values
+        CalcDist.run(targ, "9", "50", "1", current); // default values
         String genby = current.getString("genby");
         String realName = storage.getName(genby);
         if (realName != null) {

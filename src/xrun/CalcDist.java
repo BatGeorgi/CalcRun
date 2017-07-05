@@ -32,6 +32,7 @@ public class CalcDist {
   private static final String[] DAYS = new String[] {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
   };
+  private static final double ELE_TRESHOLD = 5.2;
   
   private static final double COEF = 5.0 / 18.0; // km/h to m/s
   
@@ -202,6 +203,47 @@ public class CalcDist {
     return sb.toString();
   }
   
+  private double getCummulativeElevation(List<Double> currentEle) {
+    if (currentEle.isEmpty()) {
+      return 0.0;
+    }
+    double minEl = Double.MAX_VALUE;
+    double maxEl = Double.MIN_VALUE;
+    boolean hasInc = false;
+    boolean hasDec = false;
+    boolean isUphill = false;
+    for (int i = 0; i < currentEle.size(); ++i) {
+      double c = currentEle.get(i);
+      if (i == 0) {
+        minEl = c;
+        maxEl = c;
+      } else {
+        if (c > maxEl) {
+          maxEl = c;
+          isUphill = true;
+        } else if (c < minEl) {
+          minEl = c;
+          isUphill = false;
+        }
+      }
+      if (i > 0) {
+        double d = currentEle.get(i - 1);
+        if (Math.abs(c - d) > 1e-3) {
+          if (c > d) {
+            hasInc = true;
+          } else {
+            hasDec = true;
+          }
+        }
+      }
+    }
+    double res = (isUphill ? maxEl - minEl : minEl - maxEl);
+    if ((hasInc ^ hasDec) || Math.abs(res) >= ELE_TRESHOLD) {
+      return res;
+    }
+    return 0.0;
+  }
+  
   private void process(StringBuffer sb, JSONObject data) throws Exception {
     String fileName = file.getName();
     int dott = fileName.lastIndexOf('.');
@@ -246,7 +288,8 @@ public class CalcDist {
       double currentTimeSplits = 0.0;
       double currentEleSplits = 0.0;
       
-      double currentEle = 0.0;
+      List<Double> currentEle = new ArrayList<Double>();
+      double cel = 0.0;
       double eleRunningPos = 0.0;
       double eleRunningNeg = 0.0;
       double eleTotalPos = 0.0;
@@ -279,6 +322,7 @@ public class CalcDist {
           data.put("date", getUserFriendlyDate(timeStart));
           data.put("timeRawMs", cal.getTimeInMillis());
         }
+        currentEle.add(ele);
         if (i > 0) {
           double tempDist = distance(prev[0], lat, prev[1], lon);
           currentDist += tempDist;
@@ -286,7 +330,6 @@ public class CalcDist {
           double timeDiff = (cal.getTimeInMillis() - lastTime) / 1000.0;
           currentTime += timeDiff;
           currentTimeSplits += timeDiff;
-          currentEle += ele - prev[2];
           currentEleSplits += ele - prev[2];
           if (currentDist / currentTime < 0.5) {
             timeRest += timeDiff;
@@ -294,26 +337,29 @@ public class CalcDist {
           boolean lastOne = i == list.getLength() - 1;
           if (currentDist >= interval || lastOne) {
             double speed = currentDist / currentTime;
-            hist(speed, currentDist, currentTime, currentEle);
+            cel = getCummulativeElevation(currentEle);
+            hist(speed, currentDist, currentTime, cel);
             if (speed >= minRunningSpeed) {
               distRunning += currentDist;
               timeRunning += currentTime;
-              if (currentEle > 0) {
-                eleRunningPos += currentEle;
+              if (cel > 0) {
+                eleRunningPos += cel;
               } else {
-                eleRunningNeg -= currentEle;
+                eleRunningNeg -= cel;
               }
             }
             distTotal += currentDist;
             timeTotal += currentTime;
-            if (currentEle > 0) {
-              eleTotalPos += currentEle;
+            if (cel > 0) {
+              eleTotalPos += cel;
             } else {
-              eleTotalNeg -= currentEle;
+              eleTotalNeg -= cel;
             }
             currentDist = 0.0;
             currentTime = 0.0;
-            currentEle = 0.0;
+            currentEle.clear();
+            currentEle.add(ele);
+            cel = 0.0;
           }
           if (currentDistSplits >= splitM) {
             double coef = splitM / currentDistSplits;
@@ -323,7 +369,7 @@ public class CalcDist {
             splitEle.add(currentEleSplits * coef);
             currentDistSplits -= splitM;
             currentTimeSplits -= ctime;
-            currentEleSplits = currentEle * coef;
+            currentEleSplits -= currentEleSplits * coef;
           } else if (lastOne) {
             splitRem = currentDistSplits;
             splitTimes.add(currentTimeSplits);
