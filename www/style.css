@@ -1,15 +1,12 @@
-#activities
-{
+#activities {
 	font-family: "Helvetica Neue", Arial, Helvetica, Geneva, sans-serif;
 }
-#heading
-{
+#heading {
 	text-align: center;
 	margin-bottom: 3em;
 	color: #42dcf4;
 }
-h2
-{
+h2 {
     display: block;
     font-size: 1.5em;
     -webkit-margin-before: 0.83em;
@@ -17,9 +14,6 @@ h2
     -webkit-margin-start: 0px;
     -webkit-margin-end: 0px;
     font-weight: bold;
-}
-.highlight tr:hover {
-    background-color: #ffff99;
 }
 td {
 	border-left: 1px solid #C1DAD7;
@@ -56,11 +50,18 @@ li {
   font: 200 20px/1.1 Helvetica, Verdana, sans-serif;
   color: #c6273f;
 }
-.green 
-{
+.green {
 	color: #50f442;
 }
-.red
-{
+.red {
 	color: #db0832;
+}
+.highlight tr:nth-child(2n) {
+  background-color: #e9e5e5;
+}
+.highlight tr {
+  background-color: white;
+}
+.highlight tr:nth-child(2n):hover, .highlight tr:hover {
+  background-color: #ffff99;
 }
