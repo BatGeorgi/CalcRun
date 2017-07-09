@@ -194,7 +194,7 @@ function initDialogs() {
   $('#addForm').dialog({
 	autoOpen : false, modal : true, show : "blind", hide : "blind", buttons: {
 			"Add": function() {
-				alert('Not implemented yet!');
+				$('#addActivity').submit();
             },
             "Close": function() {
                 $(this).dialog("close");

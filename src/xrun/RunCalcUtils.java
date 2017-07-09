@@ -1,10 +1,13 @@
 package xrun;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -82,7 +85,7 @@ public class RunCalcUtils {
       }
       try {
         JSONObject current = new JSONObject();
-        CalcDist.run(targ, "9", "50", "1", current); // default values
+        CalcDist.run(targ, "9", "100", "1", current); // default values
         String genby = current.getString("genby");
         String realName = storage.getName(genby);
         if (realName != null) {
@@ -162,16 +165,40 @@ public class RunCalcUtils {
     return result;
   }
   
-  JSONObject addActivity(File file) { // fileName must be saved in gpx base folder
+  JSONObject addActivity(InputStream is, String filename) { // fileName must be saved in gpx base folder
     JSONObject status = new JSONObject();
+    File file = new File(gpxBase, filename);
+    if (file.exists() && !file.isFile()) {
+    	status.put("error", "Cannot write to " + filename);
+    	return status;
+    }
+    byte[] buff = new byte[8192];
+    int rd = 0;
+    OutputStream os = null;
     try {
-      CalcDist.run(file, "9", "100", "1", new JSONObject());
-      status.put("status", "ok");
+    	os = new FileOutputStream(file);
+    	while ((rd = is.read(buff)) != -1) {
+    		os.write(buff, 0, rd);
+    	}
+    	os.flush();
+    	JSONObject newItem = new JSONObject();
+      CalcDist.run(file, "9", "100", "1", newItem);
+      status.put("item", newItem);
     } catch (Exception e) {
-      status.put("status", "failed");
       status.put("error", e.getClass().getName() + ' ' + e.getMessage());
+    } finally {
+    	silentClose(os);
     }
     return status;
+  }
+  
+  static void silentClose(Closeable cl) {
+  	try {
+  		if (cl != null) {
+  			cl.close();
+  		}
+  	} catch (Exception ignore) {
+  	}
   }
   
   JSONObject compare(JSONObject run1, JSONObject run2) {
