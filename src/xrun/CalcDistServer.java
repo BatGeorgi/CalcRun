@@ -115,10 +115,7 @@ class CalcDistHandler extends AbstractHandler {
 			FileItemIterator iter = upload.getItemIterator(request);
 			while (iter.hasNext()) {
 				FileItemStream item = iter.next();
-				String name = item.getFieldName();
 				if (!item.isFormField()) {
-					System.out.println("File field " + name + " with file name "
-							+ item.getName() + " detected.");
 					JSONObject status = rcUtils.addActivity(item.openStream(), item.getName());
 					response.setContentType("application/json");
 					PrintWriter writer = response.getWriter();
@@ -129,14 +126,6 @@ class CalcDistHandler extends AbstractHandler {
 					} else {
 						JSONObject xrun = status.getJSONObject("item");
 						cache.put(xrun.getString("genby"), xrun);
-						JSONObject result = new JSONObject();
-						JSONArray activities = new JSONArray();
-						for (JSONObject data : cache.values()) {
-							activities.put(data);
-						}
-						result.put("activities", activities);
-						writer.println(result);
-						writer.flush();
 						response.setStatus(HttpServletResponse.SC_OK);
 					}
 					baseRequest.setHandled(true);
@@ -155,6 +144,12 @@ class CalcDistHandler extends AbstractHandler {
       return;
     }
 		if ("/addActivity".equalsIgnoreCase(target) && ServletFileUpload.isMultipartContent(request)) {
+		  String pass = baseRequest.getHeader("Password");
+		  if (!CalcDistServer.isAuthorized(pass)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        baseRequest.setHandled(true);
+        return;
+      }
 			handleFileUpload(baseRequest, request, response);
 			return;
 		}

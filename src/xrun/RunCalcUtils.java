@@ -188,6 +188,9 @@ public class RunCalcUtils {
       status.put("error", e.getClass().getName() + ' ' + e.getMessage());
     } finally {
     	silentClose(os);
+    	if (status.opt("error") != null && !file.delete()) {
+    	  file.deleteOnExit();
+    	}
     }
     return status;
   }
