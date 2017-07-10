@@ -52,7 +52,7 @@ li {
   color: #c6273f;
 }
 .green {
-	color: #50f442;
+	color: #1c9e45;
 }
 .red {
 	color: #db0832;
@@ -70,5 +70,5 @@ li {
   background-color: #ffff99;
 }
 .highlightOnly td:first-child {
-	font-weight: bold
+  font-weight: bold
 }
