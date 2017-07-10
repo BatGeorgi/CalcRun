@@ -10,24 +10,6 @@
 <script src="jquery-3.2.1.js"></script>
 <script src="jquery-ui.min.js"></script>
 <script>
-function detailsDialog(id, html, name) {
-	$('#details').append('<div id="' + id + '"></div>');
-	$('#' + id).dialog({
-    autoOpen : false, modal : false, show : "blind", hide : "blind", buttons: {
-            "Close": function() {
-                $(this).dialog("close");
-            }
-        },
-        width: 600,
-        height: 800,
-		create: function (event) {
-            $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
-          }
-  });
-  $('#' + id).html(html);
-  $('#' + id).dialog('option', 'title', 'Details ' + name);
-  $('#' + id).dialog('open');
-}
 function getOption(val, current) {
 	return '<option value="' + val + '"' + (current == val ? ' selected>' : '>') + val + '</option>';
 }
@@ -222,7 +204,6 @@ $.post('loadActivities', function( data ) {
 		+ '<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>'
 		+ '<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>'
 		+ '<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem"></div></td></tr>';
-	id = "data" + i;
 	$('#dataHolder').append('<div style="display: none;" id="data' + i + '"></div>');
 	distr = item['speedDist'];
 	tableHtml = '<span class="highlight"><table><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
@@ -241,9 +222,23 @@ $.post('loadActivities', function( data ) {
 		linkHtml = '</ul><a href="' + item['garminLink'] + '" target="_blank"><h3>Garmin Connect</h3></a><ul>';
 	}
 	itemsDS.push(function() {
-	detailsDialog("details" + i, $('#data' + i).html(), $('#item' + i).text());
+		$('#data' + i).dialog({
+			autoOpen : false, modal : false, show : "blind", hide : "blind", buttons: {
+            "Close": function() {
+                $(this).dialog("close");
+            }
+        },
+        width: 600,
+        height: 800,
+		create: function (event) {
+            $(event.target).parent().css({ 'position': 'fixed', "left": 50, "top": 150 });
+        }
+		});
+		$('#data' + i).html($('#data' + i).html());
+		$('#data' + i).dialog('option', 'title', 'Details #' + (i + 1) + ' ' + $('#item' + i).text());
+		$('#data' + i).dialog('open');
 	});
-	$('#' + id).append('<ul><li><h3>General</h3></li><table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance(km)</td><td>' + item['dist'] + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + '</td></tr><tr><td>Elevation gain(m)</td><td>'
+	$('#data' + i).append('<ul><li><h3>General</h3></li><table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance(km)</td><td>' + item['dist'] + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + '</td></tr><tr><td>Elevation gain(m)</td><td>'
 		+ item['eleTotalPos'] + '</td></tr><tr><td>Elevation loss(m)</td><td>' + item['eleTotalNeg'] + '</td></tr><tr><td>'
 		+ 'Running time(>9km/h)</td><td>' + item['timeRunning'] + '</td></tr><tr><td>Running distance(km)</td><td>' + item['distRunning'] + '</td></tr><tr><td>Running elevation gain(m)</td><td>' + item['eleRunningPos'] + '</td></tr><tr><td>Running elevation loss(m)</td><td>'
 		+ item['eleRunningNeg'] + '</td></tr><tr><td>Rest time</td><td>' + item['timeRest'] + '</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + '</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + '</td></tr></tbody></table>' + linkHtml + '<li><h3>Speed distribution</h3>' +
@@ -252,7 +247,7 @@ $.post('loadActivities', function( data ) {
 		type = $('#type' + i).text();
 		$("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) + getOption("Trail", type) +
 			getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
-		$("#editable").dialog('option', 'title', 'Edit #' + + (i + 1) + ' ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
+		$("#editable").dialog('option', 'title', 'Edit #' + (i + 1) + ' ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
 		$("#editable").attr('genby', item['genby']);
 		$("#editable").attr('refname', 'item' + i);
 		$("#editable").attr('reftype', 'type' + i);
