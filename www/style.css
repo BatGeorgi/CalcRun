@@ -38,6 +38,7 @@ th {
 }
 .runitem {
 	text-decoration: underline;
+	font-weight: bold;
 	cursor:pointer;
 }
 ul {
@@ -64,4 +65,10 @@ li {
 }
 .highlight tr:nth-child(2n):hover, .highlight tr:hover {
   background-color: #ffff99;
+}
+.highlightOnly tr:hover {
+  background-color: #ffff99;
+}
+.highlightOnly td:first-child {
+	font-weight: bold
 }
