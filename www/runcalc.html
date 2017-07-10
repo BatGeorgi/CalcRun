@@ -136,7 +136,7 @@ function initDialogs() {
 							});
 							$('#comparable').html($('#comparable').attr('opts'));
 							$('#selectComp :nth-child(' + index + ')').prop('selected', true);
-							$('#comparable').append('<h2>General</h2><table><thead><th></th><th>' + general['name1'] + ' ' + general['date1'] + '</th><th>' + general['name2'] + ' ' + general['date2'] + '</th></thead><tbody>' +
+							$('#comparable').append('<h2>General</h2><table class="highlightOnly"><thead><th></th><th>' + general['name1'] + ' ' + general['date1'] + '</th><th>' + general['name2'] + ' ' + general['date2'] + '</th></thead><tbody>' +
 							'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1'])  + '</td></tr>' +
 							'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
 							'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
