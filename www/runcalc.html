@@ -118,8 +118,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: 400,
-                height: 300,
+                width: Math.min($(window).width() * 0.4, 400),
+                height: Math.min($(window).height() * 0.4, 300),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -172,8 +172,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: 800,
-                height: 800,
+                width: Math.min(800, $(window).width() * 0.8),
+                height: Math.min(800, $(window).height() * 0.8),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -212,8 +212,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: 400,
-                height: 200,
+                width: Math.min(400, $(window).width() * 0.4),
+                height: Math.min(200, $(window).height() * 0.3),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -235,8 +235,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: 500,
-                height: 300,
+                width: Math.min(500, $(window).width() * 0.6),
+                height: Math.min(300, $(window).height() * 0.35),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -288,8 +288,8 @@
                                     $(this).dialog("close");
                                 }
                             },
-                            width: 600,
-                            height: 800,
+                            width: Math.min($(window).width() * 0.7, 600),
+                            height: Math.min($(window).height() * 0.85, 800),
                             create: function(event) {
                                 $(event.target).parent().css({
                                     'position': 'fixed',
@@ -338,7 +338,6 @@
                 }
                 $('#addButton').click(function() {
                     $('#addForm').dialog('option', 'title', 'Add activity');
-                    $('#addForm').html('<table><tr><td>File </td><td><form id="addActivity" method="post" enctype="multipart/form-data" action="/addActivity" target="#"><input type="file" name="gpxIn"/></form></td></tr><tr><td>Password </td><td><input type="password" id="passRescan"/></td></tr></table>');
                     $('#addForm').dialog('open');
                 });
                 $('#rescanButton').click(function() {
@@ -365,7 +364,9 @@
     <div id="editable" />
     <div id="comparable" />
     <div id="details" />
-    <div id="addForm" />
+    <div id="addForm">
+		<table><tr><td>File </td><td><form id="addActivity" method="post" enctype="multipart/form-data" action="/addActivity" target="#"><input type="file" name="gpxIn"/></form></td></tr><tr><td>Password </td><td><input type="password" id="passRescan"/></td></tr></table>
+	</div>
     <div id="rescanForm">Password <input type="password" id="passRescan"/></div>
     <div id="dataHolder" />
 </body>
