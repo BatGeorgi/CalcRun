@@ -36,6 +36,11 @@ th {
 	padding: 6px 6px 6px 12px;
 	background: #CAE8EA url(images/bg_header.jpg) no-repeat;
 }
+#activities th:nth-child(2), #activities th:nth-child(3), #activities th:nth-child(5), #activities th:nth-child(6), #activities th:nth-child(7), #activities th:nth-child(8) {
+	background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+	background-position: center right;
+	background-repeat: no-repeat;
+}
 .runitem {
 	text-decoration: underline;
 	font-weight: bold;

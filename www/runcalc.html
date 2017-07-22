@@ -5,7 +5,6 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Running stats</title>
     <link href="style.css" type="text/css" rel="stylesheet" />
-	<link href="css/theme.default.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
@@ -303,7 +302,7 @@
                             }
                         });
                         $('#data' + i).html($('#data' + i).html());
-                        $('#data' + i).dialog('option', 'title', 'Details #' + (i + 1) + ' ' + $('#item' + i).text());
+                        $('#data' + i).dialog('option', 'title', 'Details ' + $('#item' + i).text());
                         $('#data' + i).dialog('open');
                     });
                     $('#data' + i).append('<ul><li><h3>General</h3></li><table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance(km)</td><td>' + item['dist'] + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + '</td></tr><tr><td>Elevation gain(m)</td><td>' +
@@ -331,7 +330,7 @@
 						type = $('#type' + i).text();
                         $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) + getOption("Trail", type) +
                             getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
-                        $("#editable").dialog('option', 'title', 'Edit #' + (i + 1) + ' ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
+                        $("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                         $("#editable").attr('genby', item['genby']);
                         $("#editable").attr('refname', 'item' + i);
                         $("#editable").attr('reftype', 'type' + i);
@@ -355,7 +354,45 @@
         function loadAll() {
             initDialogs();
             loadActivities();
-			$('#runs').tablesorter();
+			$.tablesorter.addWidget({
+				id: "numbering",
+				format: function(table) {
+				var c = table.config;
+				$("tr:visible", table.tBodies[0]).each(function(i) {
+					$(this).find('td').eq(0).text(i + 1);
+				});
+				}
+			});
+			var months = {'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5, 'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11};
+			$.tablesorter.addParser({
+				id: 'dates',
+				is: function(s) {
+                    return false;
+				},
+				format: function(s) {
+                    return parseInt(s.substring(7, 11)) * 400 + months[s.substring(3, 6)] * 32 + parseInt(s.substring(0, 2));
+				},
+				type: 'numeric'
+			});     
+			$('#runs').tablesorter({headers: {
+				0: {
+					sorter: false
+				},
+				1 : {
+					sorter: 'dates'
+				},
+				3: {
+					sorter: false
+				},
+				8: {
+					sorter: false
+				},
+				9: {
+					sorter: false
+				}
+			},
+				widgets: ['numbering']
+			});
         }
     </script>
 </head>
@@ -370,7 +407,7 @@
 		<h2>Activities</h2>
 		<table class="tablesorter" id="runs" cellspacing="0" summary="Running and hiking activities">
 			<thead>
-				<tr><th>#</th><th>Date</th><th>Name</th><th>Type</th><th>Distance(km)</th><th>Time</th><th>Pace(min/km)</th><th>Speed(km/h)</th><th>Elevation est.(m)</th><th>Actions</th></tr>
+				<tr><th>#</th><th>Date</th><th>Name</th><th>Type</th><th>Distance(km)&nbsp;&nbsp;</th><th>Time</th><th>Pace(min/km)&nbsp;&nbsp;</th><th>Speed(km/h)&nbsp;&nbsp;</th><th>Elevation est.(m)</th><th>Actions</th></tr>
 			</thead>
 			<tbody />
 		</table>
