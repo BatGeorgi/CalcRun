@@ -158,14 +158,12 @@
                                         tt += '<tr><td><strong>' + round(sp['point']) + '</strong></td><td>' + colorDiff1(sp['time1'], sp['time2']) + '</td><td>' + colorDiff1(sp['time2'], sp['time1']) + '</td><td>' + colorDiff(sp['currentDiff']) + '</td><td>' + colorDiff(sp['totalDiff']) + '</td></tr>';
                                     });
                                     $('#selectComp :nth-child(' + index + ')').prop('selected', true);
-									console.log('1 ' + $('#compareResults').html());
                                     $('#compareResults').html('<h2>General</h2><table class="highlightOnly"><thead><th></th><th>' + general['name1'] + ' ' + general['date1'] + '</th><th>' + general['name2'] + ' ' + general['date2'] + '</th></thead><tbody>' +
                                         '<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance(km)</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
                                         '<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
                                         '<tr><td>Speed(km/h)</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain(m)</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
                                         '<tr><td>Elev loss(m)</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr></tbody></table>');
                                     $('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>Point(km)</th><th>' + general['name1'] + ' ' + general['date1'] + '</th><th>' + general['name2'] + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
-									console.log($('#compareResults').html());
 								},
                                 400: function(xhr) {
                                     alert('Activities may be removed :(');
@@ -320,11 +318,9 @@
 				$.each(all, function(i, item) {
 					optsAll += '<option genby="' + item['genby'] + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">' + $('#item' + i).text() + ' ' + $('#date' + i).text() + '</option>';
 				});
-				console.log($('#compareResults').html());
-				$('#comparable').html('Compare with <select id="selectComp">' + optsAll + '</select><div id="compareResults" />');
-				console.log($('#compareResults').html());
 				$.each(all, function(i, item) {
 					$('#compare' + i).click(function() {
+						$('#comparable').html('Compare with <select id="selectComp">' + optsAll + '</select><div id="compareResults" />');
                         $('#comparable').dialog('option', 'title', 'Compare ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                         $('#comparable').attr('file1', item['genby']);
                         $('#comparable').dialog('open');
