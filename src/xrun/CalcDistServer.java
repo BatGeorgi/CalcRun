@@ -36,21 +36,21 @@ public class CalcDistServer {
 			return false;
 		}
 		MessageDigest md = null;
-    try {
-        md = MessageDigest.getInstance("SHA-1");
-    } catch(NoSuchAlgorithmException e) {
-        return false;
-    } 
-    byte[] arr = md.digest(password.getBytes());
-    if (arr == null || arr.length != CODE.length) {
-    	return false;
-    }
-    for (int i = 0; i < arr.length; ++i) {
-    	if (arr[i] != CODE[i]) {
-    		return false;
-    	}
-    }
-    return true;
+		try {
+			md = MessageDigest.getInstance("SHA-1");
+		} catch (NoSuchAlgorithmException e) {
+			return false;
+		}
+		byte[] arr = md.digest(password.getBytes());
+		if (arr == null || arr.length != CODE.length) {
+			return false;
+		}
+		for (int i = 0; i < arr.length; ++i) {
+			if (arr[i] != CODE[i]) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
   // 0 - port, 1 - tracks base
