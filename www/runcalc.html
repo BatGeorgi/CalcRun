@@ -225,29 +225,6 @@
                     });
                 }
             });
-            $('#addForm').dialog({
-                autoOpen: false,
-                modal: true,
-                show: "blind",
-                hide: "blind",
-                buttons: {
-                    "Add": function() {
-                        $('#addActivity').submit();
-                    },
-                    "Close": function() {
-                        $(this).dialog("close");
-                    }
-                },
-                width: Math.min(500, $(window).width() * 0.6),
-                height: Math.min(300, $(window).height() * 0.35),
-                create: function(event) {
-                    $(event.target).parent().css({
-                        'position': 'fixed',
-                        "left": 50,
-                        "top": 150
-                    });
-                }
-            });
         }
 
         function loadActivities() {
@@ -340,8 +317,7 @@
                     $('#item' + i).click(itemsDS[i]);
                 }
                 $('#addButton').click(function() {
-                    $('#addForm').dialog('option', 'title', 'Add activity');
-                    $('#addForm').dialog('open');
+                    window.location = 'upload.html';
                 });
                 $('#rescanButton').click(function() {
                     $('#rescanForm').dialog('option', 'title', 'Rescan activities');
@@ -451,20 +427,7 @@
     </div>
     <div id="editable" />
     <div id="details" />
-    <div id="addForm">
-        <table>
-            <tr>
-                <td>File </td>
-                <td>
-                    <form id="addActivity" method="post" enctype="multipart/form-data" action="/addActivity" target="#"><input type="file" name="gpxIn" /></form>
-                </td>
-            </tr>
-            <tr>
-                <td>Password </td>
-                <td><input type="password" id="passRescan" /></td>
-            </tr>
-        </table>
-    </div>
+    <div id="addForm" />
     <div id="rescanForm">Password <input type="password" id="passRescan" /></div>
     <div id="dataHolder" />
     <div id="comparable">
