@@ -2,7 +2,6 @@ package xrun;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -13,9 +12,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -108,48 +104,9 @@ class CalcDistHandler extends AbstractHandler {
 		rcUtils = new RunCalcUtils(tracksBase);
 	}
 
-	private void handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
-		ServletFileUpload upload = new ServletFileUpload();
-		try {
-			FileItemIterator iter = upload.getItemIterator(request);
-			while (iter.hasNext()) {
-				FileItemStream item = iter.next();
-				if (!item.isFormField()) {
-					JSONObject status = rcUtils.addActivity(item.openStream(), item.getName());
-					response.setContentType("application/json");
-					PrintWriter writer = response.getWriter();
-					if (status.opt("error") != null) {
-						writer.println(status.get("error"));
-						writer.flush();
-						response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-					} else {
-						JSONObject xrun = status.getJSONObject("item");
-						cache.put(xrun.getString("genby"), xrun);
-						response.setStatus(HttpServletResponse.SC_OK);
-					}
-					baseRequest.setHandled(true);
-				}
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
 		if (!"POST".equals(baseRequest.getMethod())) {
-			return;
-		}
-		if ("/addActivity".equalsIgnoreCase(target) && ServletFileUpload.isMultipartContent(request)) {
-			String pass = baseRequest.getHeader("Password");
-			if (!CalcDistServer.isAuthorized(pass)) {
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				baseRequest.setHandled(true);
-				return;
-			}
-			handleFileUpload(baseRequest, request, response);
 			return;
 		}
 		if ("/rescanActivities".equalsIgnoreCase(target)) {

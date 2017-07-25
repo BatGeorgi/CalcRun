@@ -209,6 +209,7 @@
                                 }
                             }
                         });
+						$('#passRescan').val('');
                         $(this).dialog("close");
                     },
                     "Close": function() {
@@ -316,9 +317,6 @@
                 for (i = 0; i < itemsDS.length; ++i) {
                     $('#item' + i).click(itemsDS[i]);
                 }
-                $('#addButton').click(function() {
-                    window.location = 'upload.html';
-                });
                 $('#rescanButton').click(function() {
                     $('#rescanForm').dialog('option', 'title', 'Rescan activities');
                     $('#rescanForm').dialog('open');
@@ -403,7 +401,6 @@
     <div id="heading">
         <H1><strong>Running stats</strong></H1>
     </div>
-    <input id="addButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" />
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
     <div id="activities" class="highlight">
         <h2>Activities</h2>
@@ -427,7 +424,6 @@
     </div>
     <div id="editable" />
     <div id="details" />
-    <div id="addForm" />
     <div id="rescanForm">Password <input type="password" id="passRescan" /></div>
     <div id="dataHolder" />
     <div id="comparable">
