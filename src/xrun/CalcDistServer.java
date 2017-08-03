@@ -99,9 +99,24 @@ class CalcDistHandler extends AbstractHandler {
 
 	private RunCalcUtils rcUtils;
 	private Map<String, JSONObject> cache = new HashMap<String, JSONObject>();
+	private String allActivitiesStr;
 
 	public CalcDistHandler(File tracksBase) throws IOException {
 		rcUtils = new RunCalcUtils(tracksBase);
+    scan();
+    System.out.println("Initial scan finished!");
+	}
+	
+	private void scan() {
+	  allActivitiesStr = "{}";
+	  cache.clear();
+	  JSONObject activities = rcUtils.retrieveAllActivities();
+    JSONArray data = activities.getJSONArray("activities");
+    for (int i = 0; i < data.length(); ++i) {
+      JSONObject item = data.getJSONObject(i);
+      cache.put(item.getString("genby"), item);
+    }
+    allActivitiesStr = activities.toString();
 	}
 
 	public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
@@ -117,18 +132,13 @@ class CalcDistHandler extends AbstractHandler {
 				return;
 			}
 			rcUtils.rescan();
+			scan();
 			response.setStatus(HttpServletResponse.SC_OK);
 			baseRequest.setHandled(true);
 		}
 		if ("/loadActivities".equalsIgnoreCase(target)) {
 			response.setContentType("application/json");
-			JSONObject activities = rcUtils.retrieveAllActivities();
-			JSONArray data = activities.getJSONArray("activities");
-			for (int i = 0; i < data.length(); ++i) {
-				JSONObject item = data.getJSONObject(i);
-				cache.put(item.getString("genby"), item);
-			}
-			response.getWriter().println(activities.toString());
+			response.getWriter().println(allActivitiesStr);
 			response.getWriter().flush();
 			response.setStatus(HttpServletResponse.SC_OK);
 			baseRequest.setHandled(true);
