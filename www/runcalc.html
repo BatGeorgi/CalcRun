@@ -325,6 +325,8 @@
         }
 
         function loadAll() {
+			$("#y2017").selectmenu().selectmenu("menuWidget").addClass("overflow");
+			$("#y2016").selectmenu().selectmenu("menuWidget").addClass("overflow");
             initDialogs();
             loadActivities();
             $.tablesorter.addWidget({
@@ -402,6 +404,46 @@
         <H1><strong>Running stats</strong></H1>
     </div>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
+	<div id="filters">
+		<h4>Type</h4>
+		<input type="checkbox" id="typeRun" value="Running" checked>Running</input>
+		<input type="checkbox" id="typeTrail" value="Trail">Trail</input>
+		<input type="checkbox" id="typeHike" value="Hiking">Hiking</input>
+		<input type="checkbox" id="typeWalk" value="Walking">Walking</input>
+		<input type="checkbox" id="typeOther" value="Other">Other</input>
+		<button type="button">Select All</button>
+		<p>
+		<h4>Period</h4>
+		<input type="radio" name="selectPeriod" value="thisMonth">This month</input>
+		<input type="radio" name="selectPeriod" value="thisYear">This year</input>
+		<input type="radio" name="selectPeriod" value="last30d">Last 30 days</input>
+		<input type="radio" name="selectPeriod" value="last365d">Last 365 days</input>
+		<input type="radio" name="selectPeriod" value="lastCustom">Custom</input>
+		<input type="radio" name="selectPeriod" value="lastAlld">All</input>
+		<p>
+		<label for="y2017">2017</label>
+		<select name="y2017" id="y2017">
+			<option selected="selected">All</option>
+			<option>January</option>
+			<option>February</option>
+			<option>March</option>
+			<option>April</option>
+			<option>May</option>
+			<option>June</option>
+		</select>
+		<p>
+		<label for="y2016">2016</label>
+		<select name="y2016" id="y2016">
+			<option selected="selected">All</option>
+			<option>January</option>
+		</select>
+		<h4>Max number of records</h4>
+		<input type="radio" name="selectLast" value="last10">Last 10</input>
+		<input type="radio" name="selectLast" value="last20">Last 20</input>
+		<input type="radio" name="selectLast" value="last50">Last 50</input>
+		<input type="radio" name="selectLast" value="last100">Last 100</input>
+		<input type="radio" name="selectLast" value="lastAll">All</input>
+	</div>
     <div id="activities" class="highlight">
         <h2>Activities</h2>
         <table class="tablesorter" id="runs" cellspacing="0" summary="Running and hiking activities">
