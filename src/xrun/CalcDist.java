@@ -182,7 +182,7 @@ public class CalcDist {
     }
   }
   
-  private static String getUserFriendlyDate(String timeStart) {
+  private static String getUserFriendlyDate(String timeStart, Object[] ret) {
     StringTokenizer st = new StringTokenizer(timeStart, "-", false);
     String year = st.nextToken();
     String month = st.nextToken();
@@ -197,6 +197,7 @@ public class CalcDist {
     cal.set(Calendar.YEAR, Integer.parseInt(year));
     cal.set(Calendar.DATE, Integer.parseInt(date));
     cal.set(Calendar.MONTH, Integer.parseInt(month) - 1);
+    ret[0] = cal;
     sb.append(' ');
     sb.append(DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
     return sb.toString();
@@ -276,7 +277,12 @@ public class CalcDist {
           cal.set(Calendar.MILLISECOND, Integer.parseInt(st.nextToken()));
         }
         if (i == 0) {
-          data.put("date", getUserFriendlyDate(timeStart));
+          Object[] ret = new Object[1];
+          data.put("date", getUserFriendlyDate(timeStart, ret));
+          Calendar cc = (Calendar) ret[0];
+          data.put("year", cc.get(Calendar.YEAR));
+          data.put("month", cc.get(Calendar.MONTH));
+          data.put("day", cc.get(Calendar.DAY_OF_MONTH));
           data.put("timeRawMs", cal.getTimeInMillis());
         }
         if (i > 0) {
