@@ -129,15 +129,15 @@ class CalcDistHandler extends AbstractHandler {
 	}
 	
 	private boolean matchExact(Calendar matcher, JSONObject activity) {
-    int year = Integer.parseInt(activity.getString("year"));
-    int month = Integer.parseInt(activity.getString("month"));
+    int year = activity.getInt("year");
+    int month = activity.getInt("month");
     return matcher.get(Calendar.YEAR) == year && matcher.get(Calendar.MONTH) == month;
   }
 	
 	private boolean matchGreater(Calendar matcher, JSONObject activity) {
-    int year = Integer.parseInt(activity.getString("year"));
-    int month = Integer.parseInt(activity.getString("month"));
-    int day = Integer.parseInt(activity.getString("day"));
+    int year = activity.getInt("year");
+    int month = activity.getInt("month");
+    int day = activity.getInt("day");
     int myr = matcher.get(Calendar.YEAR);
     int mm = matcher.get(Calendar.MONTH);
     int md = matcher.get(Calendar.DAY_OF_MONTH);
@@ -207,8 +207,8 @@ class CalcDistHandler extends AbstractHandler {
 		  JSONObject result = new JSONObject();
 		  Map<Integer, List<Integer>> initInfo = new HashMap<Integer, List<Integer>>();
 		  for (JSONObject activity : cache.values()) {
-		    int year = Integer.parseInt(activity.getString("year"));
-		    int month = Integer.parseInt(activity.getString("month"));
+		    int year = activity.getInt("year");
+		    int month = activity.getInt("month");
 		    List<Integer> cr = initInfo.get(year);
 		    if (cr == null) {
 		      cr = new LinkedList<Integer>();
@@ -222,8 +222,11 @@ class CalcDistHandler extends AbstractHandler {
 		  Collections.sort(sortedKeys);
 		  for (int i = sortedKeys.size() - 1; i >= 0; --i) {
 		    Integer key = sortedKeys.get(i);
-		    result.put(key.toString(), initInfo.get(key));
+		    List<Integer> val = initInfo.get(key);
+		    Collections.sort(val);
+		    result.put(key.toString(), val);
 		  }
+		  response.setContentType("application/json");
 		  response.getWriter().println(result.toString());
       response.getWriter().flush();
       response.setStatus(HttpServletResponse.SC_OK);
@@ -319,6 +322,7 @@ class CalcDistHandler extends AbstractHandler {
 		    }
 		  }
 		  String result = filter(run, trail, hike, walk, other, records, startDate, matchers).toString();
+		  response.setContentType("application/json");
 		  response.getWriter().println(result);
 		  response.getWriter().flush();
       response.setStatus(HttpServletResponse.SC_OK);
