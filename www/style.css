@@ -43,6 +43,15 @@ th {
 	background-position: center right;
 	background-repeat: no-repeat;
 }
+#activities {
+	text-align: center;
+}
+#runs {
+	margin: auto;
+}
+#filters {
+	text-align: center;
+}
 .runitem {
 	text-decoration: underline;
 	font-weight: bold;
