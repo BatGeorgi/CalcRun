@@ -247,6 +247,9 @@ class CalcDistHandler extends AbstractHandler {
 		  } catch (NumberFormatException ignore) {
 		    // silent catch
 		  }
+		  if (records < 0) {
+		    records = Integer.MAX_VALUE;
+		  }
 		  Calendar startDate = null;
 		  List<Calendar> matchers = null;
 		  int dateOpt = -1;

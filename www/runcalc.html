@@ -351,6 +351,42 @@
 		function disableSearch() {
 			$("#search").button("option", "disabled", true);
 		}
+		
+		function fetch() {
+			var period = $('input[name=selectPeriod]:checked').attr('id');
+			var ymt = "";
+			if (period == "radio-7") {
+			 // TODO
+			}
+			var recs = $('input[name=selectLast]:checked').attr('id');
+			var records = ("l-inf" == recs ? -1 : recs.substr(2));
+			$.ajax({
+                url: 'fetch',
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'run': $("#checkbox-1").prop('checked'),
+					'trail': $("#checkbox-2").prop('checked'),
+					'hike': $("#checkbox-3").prop('checked'),
+					'walk': $("#checkbox-4").prop('checked'),
+					'other': $("#checkbox-5").prop('checked'),
+					'dateOpt': parseInt(period[period.length - 1]) - 1,
+					'ymt': ymt,
+					'records': records
+                },
+                statusCode: {
+                    200: function(data) {
+                        console.log(data);
+                    }
+                }
+            });
+		}
+		
+		function disableAndFetch() {
+			disableSearch();
+			fetch();
+		}
 
         $(document).ready(function () {
 			$("#selectAll").button();
@@ -370,17 +406,18 @@
 				$("#checkbox-4").prop('checked', true).change();
 				$("#checkbox-5").prop('checked', true).change();
 			});
-			$("#radio-1").change(disableSearch);
-			$("#radio-2").change(disableSearch);
-			$("#radio-3").change(disableSearch);
-			$("#radio-4").change(disableSearch);
-			$("#radio-5").change(disableSearch);
-			$("#radio-6").change(disableSearch);
+			$("#radio-1").change(fetch);
+			$("#radio-2").change(disableAndFetch);
+			$("#radio-3").change(disableAndFetch);
+			$("#radio-4").change(disableAndFetch);
+			$("#radio-5").change(disableAndFetch);
+			$("#radio-6").change(disableAndFetch);
 			$("#radio-7").change(function() {
 				if (this.checked) {
 					$('#search').button("option", "disabled", false);
 				}
 			});
+			$("input[name=selectLast]").change(fetch);
             initDialogs();
             loadActivities();
             $.tablesorter.addWidget({
@@ -498,16 +535,16 @@
 		<p>
 		<fieldset>
 			<legend>Max number of records</legend>
-			<label for="l-1">10</label>
-			<input type="radio" name="selectLast" id="l-1">
-			<label for="l-2">20</label>
-			<input type="radio" name="selectLast" id="l-2">
-			<label for="l-3">50</label>
-			<input type="radio" name="selectLast" id="l-3">
-			<label for="l-4">100</label>
-			<input type="radio" name="selectLast" id="l-4">
-			<label for="l-5">No limit</label>
-			<input type="radio" name="selectLast" id="l-5" checked>
+			<label for="l-10">10</label>
+			<input type="radio" name="selectLast" id="l-10">
+			<label for="l-20">20</label>
+			<input type="radio" name="selectLast" id="l-20">
+			<label for="l-50">50</label>
+			<input type="radio" name="selectLast" id="l-50">
+			<label for="l-100">100</label>
+			<input type="radio" name="selectLast" id="l-100">
+			<label for="l-inf">No limit</label>
+			<input type="radio" name="selectLast" id="l-inf" checked>
 		</fieldset>
 	</div>
     <div id="activities" class="highlight">
