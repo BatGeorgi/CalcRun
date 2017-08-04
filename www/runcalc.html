@@ -227,8 +227,32 @@
                 }
             });
         }
+		
+		function getInitInfo() {
+			$.post('getInitInfo', function(data) {
+				html = '';
+				var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+				$.each(data, function(key, value) {
+					html += '<label for="ch' + key + '">' + key + '</label>';
+					html += '<input type="checkbox" name="' + key + '" id="ch' + key + '" checked/>';
+					html += '<select name="y' + key + '" id="y' + key + '">';
+					html += '<option selected="selected">All months</option>';
+					$.each(value, function(i, item) {
+						html += '<option>' + months[item] + '</option>';
+					});
+					html += '</select>';
+					html += '<p/>';
+				});
+				$("#customDates").html(html);
+				$.each(data, function(key, value) {
+					$("#y" + key).selectmenu().selectmenu("menuWidget").addClass("overflow");
+					$("#ch" + key).checkboxradio();
+				});
+			});
+		}
 
         function loadActivities() {
+			getInitInfo();
             $.post('loadActivities', function(data) {
                 itemsDS = [];
                 $('#dataHolder').html('');
@@ -329,8 +353,6 @@
 		}
 
         $(document).ready(function () {
-			$("#y2017").selectmenu().selectmenu("menuWidget").addClass("overflow");
-			$("#y2016").selectmenu().selectmenu("menuWidget").addClass("overflow");
 			$("#selectAll").button();
 			$("#search").button();
 			$("#search").button("option", "disabled", true);
@@ -348,7 +370,6 @@
 				$("#checkbox-4").prop('checked', true).change();
 				$("#checkbox-5").prop('checked', true).change();
 			});
-			$("#ch17").checkboxradio();
 			$("#radio-1").change(disableSearch);
 			$("#radio-2").change(disableSearch);
 			$("#radio-3").change(disableSearch);
@@ -471,31 +492,21 @@
 			<input type="radio" name="selectPeriod" id="radio-7">
 		</fieldset>
 		<p>
-		<label for="ch17">2017</label>
-		<input type="checkbox" name="ch17" id="ch17" checked/>
-		<select name="y2017" id="y2017">
-			<option selected="selected">All months</option>
-			<option>January</option>
-			<option>February</option>
-			<option>March</option>
-			<option>April</option>
-			<option>May</option>
-			<option>June</option>
-		</select>
-		<p>
+		<div id="customDates">
+		</div>
 		<button id="search">Search</button>
 		<p>
 		<fieldset>
 			<legend>Max number of records</legend>
-			<label for="l-1">Last10</label>
+			<label for="l-1">10</label>
 			<input type="radio" name="selectLast" id="l-1">
-			<label for="l-2">Last 20</label>
+			<label for="l-2">20</label>
 			<input type="radio" name="selectLast" id="l-2">
-			<label for="l-3">Last 50</label>
+			<label for="l-3">50</label>
 			<input type="radio" name="selectLast" id="l-3">
-			<label for="l-4">Last 100</label>
+			<label for="l-4">100</label>
 			<input type="radio" name="selectLast" id="l-4">
-			<label for="l-5">All</label>
+			<label for="l-5">No limit</label>
 			<input type="radio" name="selectLast" id="l-5" checked>
 		</fieldset>
 	</div>
