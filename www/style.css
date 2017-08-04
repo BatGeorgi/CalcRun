@@ -4,7 +4,9 @@
 #heading {
 	text-align: center;
 	margin-bottom: 3em;
-	color: #42dcf4;
+}
+body {
+	background-color: #42f4d9;
 }
 h2 {
     display: block;

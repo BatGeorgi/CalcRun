@@ -323,10 +323,42 @@
                 });
             });
         }
+		
+		function disableSearch() {
+			$("#search").button("option", "disabled", true);
+		}
 
-        function loadAll() {
+        $(document).ready(function () {
 			$("#y2017").selectmenu().selectmenu("menuWidget").addClass("overflow");
 			$("#y2016").selectmenu().selectmenu("menuWidget").addClass("overflow");
+			$("#selectAll").button();
+			$("#search").button();
+			$("#search").button("option", "disabled", true);
+			$("input[name=selectPeriod]").checkboxradio();
+			$("input[name=selectLast]").checkboxradio();
+			$("#checkbox-1").checkboxradio();
+			$("#checkbox-2").checkboxradio();
+			$("#checkbox-3").checkboxradio();
+			$("#checkbox-4").checkboxradio();
+			$("#checkbox-5").checkboxradio();
+			$("#selectAll").click(function() {
+				$("#checkbox-1").prop('checked', true).change();
+				$("#checkbox-2").prop('checked', true).change();
+				$("#checkbox-3").prop('checked', true).change();
+				$("#checkbox-4").prop('checked', true).change();
+				$("#checkbox-5").prop('checked', true).change();
+			});
+			$("#ch17").checkboxradio();
+			$("#radio-1").change(disableSearch);
+			$("#radio-2").change(disableSearch);
+			$("#radio-3").change(disableSearch);
+			$("#radio-4").change(disableSearch);
+			$("#radio-5").change(disableSearch);
+			$("#radio-6").change(function() {
+				if (this.checked) {
+					$('#search').button("option", "disabled", false);
+				}
+			});
             initDialogs();
             loadActivities();
             $.tablesorter.addWidget({
@@ -395,35 +427,51 @@
                 },
                 widgets: ['numbering']
             });
-        }
+        });
     </script>
 </head>
 
-<body onload="loadAll();">
+<body>
     <div id="heading">
-        <H1><strong>Running stats</strong></H1>
+        <H1><strong>Run Analyzer 1.5</strong></H1>
     </div>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
 	<div id="filters">
-		<h4>Type</h4>
-		<input type="checkbox" id="typeRun" value="Running" checked>Running</input>
-		<input type="checkbox" id="typeTrail" value="Trail">Trail</input>
-		<input type="checkbox" id="typeHike" value="Hiking">Hiking</input>
-		<input type="checkbox" id="typeWalk" value="Walking">Walking</input>
-		<input type="checkbox" id="typeOther" value="Other">Other</input>
-		<button type="button">Select All</button>
+		<fieldset>
+			<legend>Activity Type</legend>
+			<label for="checkbox-1">Running</label>
+			<input type="checkbox" name="checkbox-1" id="checkbox-1" checked/>
+			<label for="checkbox-2">Trail</label>
+			<input type="checkbox" name="checkbox-2" id="checkbox-2" checked/>
+			<label for="checkbox-3">Hiking</label>
+			<input type="checkbox" name="checkbox-3" id="checkbox-3" checked/>
+			<label for="checkbox-4">Walking</label>
+			<input type="checkbox" name="checkbox-4" id="checkbox-4" checked/>
+			<label for="checkbox-5">Other</label>
+			<input type="checkbox" name="checkbox-5" id="checkbox-5" checked/>
+			<button id="selectAll">Select All</button>
+		</fieldset>
 		<p>
-		<h4>Period</h4>
-		<input type="radio" name="selectPeriod" value="thisMonth">This month</input>
-		<input type="radio" name="selectPeriod" value="thisYear">This year</input>
-		<input type="radio" name="selectPeriod" value="last30d">Last 30 days</input>
-		<input type="radio" name="selectPeriod" value="last365d">Last 365 days</input>
-		<input type="radio" name="selectPeriod" value="lastCustom">Custom</input>
-		<input type="radio" name="selectPeriod" value="lastAlld">All</input>
+		<fieldset>
+			<legend>Period</legend>
+			<label for="radio-1">This month</label>
+			<input type="radio" name="selectPeriod" id="radio-1">
+			<label for="radio-2">This year</label>
+			<input type="radio" name="selectPeriod" id="radio-2">
+			<label for="radio-3">Last 30 days</label>
+			<input type="radio" name="selectPeriod" id="radio-3">
+			<label for="radio-4">Last 365 days</label>
+			<input type="radio" name="selectPeriod" id="radio-4">
+			<label for="radio-5">From begining</label>
+			<input type="radio" name="selectPeriod" id="radio-5" checked>
+			<label for="radio-6">Custom</label>
+			<input type="radio" name="selectPeriod" id="radio-6">
+		</fieldset>
 		<p>
-		<label for="y2017">2017</label>
+		<label for="ch17">2017</label>
+		<input type="checkbox" name="ch17" id="ch17" checked/>
 		<select name="y2017" id="y2017">
-			<option selected="selected">All</option>
+			<option selected="selected">All months</option>
 			<option>January</option>
 			<option>February</option>
 			<option>March</option>
@@ -432,17 +480,21 @@
 			<option>June</option>
 		</select>
 		<p>
-		<label for="y2016">2016</label>
-		<select name="y2016" id="y2016">
-			<option selected="selected">All</option>
-			<option>January</option>
-		</select>
-		<h4>Max number of records</h4>
-		<input type="radio" name="selectLast" value="last10">Last 10</input>
-		<input type="radio" name="selectLast" value="last20">Last 20</input>
-		<input type="radio" name="selectLast" value="last50">Last 50</input>
-		<input type="radio" name="selectLast" value="last100">Last 100</input>
-		<input type="radio" name="selectLast" value="lastAll">All</input>
+		<button id="search">Search</button>
+		<p>
+		<fieldset>
+			<legend>Max number of records</legend>
+			<label for="l-1">Last10</label>
+			<input type="radio" name="selectLast" id="l-1">
+			<label for="l-2">Last 20</label>
+			<input type="radio" name="selectLast" id="l-2">
+			<label for="l-3">Last 50</label>
+			<input type="radio" name="selectLast" id="l-3">
+			<label for="l-4">Last 100</label>
+			<input type="radio" name="selectLast" id="l-4">
+			<label for="l-5">All</label>
+			<input type="radio" name="selectLast" id="l-5" checked>
+		</fieldset>
 	</div>
     <div id="activities" class="highlight">
         <h2>Activities</h2>
