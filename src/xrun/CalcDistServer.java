@@ -261,7 +261,7 @@ class CalcDistHandler extends AbstractHandler {
 		  } catch (NumberFormatException ignore) {
         // silent catch
       }
-		  if (dateOpt < 0 || dateOpt > 4) {
+		  if (dateOpt < 0 || dateOpt > 5) {
 		    String ymt = baseRequest.getHeader("ymt");
 		    StringTokenizer st = new StringTokenizer(ymt, ",", false);
 		    matchers = new LinkedList<Calendar>();

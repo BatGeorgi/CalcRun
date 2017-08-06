@@ -253,10 +253,14 @@
 
         function loadActivities() {
 			getInitInfo();
-            $.post('loadActivities', function(data) {
-                itemsDS = [];
+            $.post('loadActivities', initContent);
+        }
+		
+		function initContent(data) {
+			itemsDS = [];
                 $('#dataHolder').html('');
                 all = data['activities'];
+				$('#ht').text('Activities(' + all.length + ' record' + (all.length > 1 ? 's' : '') + ')');
                 runsHtml = '';
                 optsAll = '';
                 var dialog = {
@@ -314,7 +318,7 @@
                         '<span class="red">' + item['eleRunningNeg'] + '</span></td></tr><tr><td>Rest time</td><td>' + item['timeRest'] + '</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + '</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + '</td></tr></tbody></table>' + linkHtml + '<li><h3>Speed distribution</h3>' +
                         '</li>' + tableHtml + '</li><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
                 });
-                $('#runs tbody').append(runsHtml);
+                $('#runs tbody').html(runsHtml);
                 $('#runs').trigger('update');
                 $('#runs').tablesorter();
                 $.each(all, function(i, item) {
@@ -345,18 +349,22 @@
                     $('#rescanForm').dialog('option', 'title', 'Rescan activities');
                     $('#rescanForm').dialog('open');
                 });
-            });
-        }
+            }
 		
 		function disableSearch() {
 			$("#search").button("option", "disabled", true);
 		}
 		
+		var fetchEnabled = true;
+		
 		function fetch() {
+			if (!fetchEnabled) {
+				return false;
+			}
 			var period = $('input[name=selectPeriod]:checked').attr('id');
 			var ymt = "";
 			if (period == "radio-7") {
-			 // TODO
+			 console.log($("[id^=y]"));
 			}
 			var recs = $('input[name=selectLast]:checked').attr('id');
 			var records = ("l-inf" == recs ? -1 : recs.substr(2));
@@ -378,6 +386,7 @@
                 statusCode: {
                     200: function(data) {
                         console.log(data);
+						initContent(data);
                     }
                 }
             });
@@ -400,11 +409,14 @@
 			$("#checkbox-4").checkboxradio();
 			$("#checkbox-5").checkboxradio();
 			$("#selectAll").click(function() {
+				fetchEnabled = false;
 				$("#checkbox-1").prop('checked', true).change();
 				$("#checkbox-2").prop('checked', true).change();
 				$("#checkbox-3").prop('checked', true).change();
 				$("#checkbox-4").prop('checked', true).change();
 				$("#checkbox-5").prop('checked', true).change();
+				fetchEnabled = true;
+				fetch();
 			});
 			$("#radio-1").change(fetch);
 			$("#radio-2").change(disableAndFetch);
@@ -418,8 +430,14 @@
 				}
 			});
 			$("input[name=selectLast]").change(fetch);
+			$("#checkbox-1").change(fetch);
+			$("#checkbox-2").change(fetch);
+			$("#checkbox-3").change(fetch);
+			$("#checkbox-4").change(fetch);
+			$("#checkbox-5").change(fetch);
             initDialogs();
-            loadActivities();
+			getInitInfo();
+            fetch();
             $.tablesorter.addWidget({
                 id: "numbering",
                 format: function(table) {
@@ -548,7 +566,7 @@
 		</fieldset>
 	</div>
     <div id="activities" class="highlight">
-        <h2>Activities</h2>
+		<h2><div id="ht">Activities</div></h2>
         <table class="tablesorter" id="runs" cellspacing="0" summary="Running and hiking activities">
             <thead>
                 <tr>
@@ -567,8 +585,8 @@
             <tbody />
         </table>
     </div>
-    <div id="editable" />
-    <div id="details" />
+    <div id="editable"></div>
+    <div id="details"></div>
     <div id="rescanForm">Password <input type="password" id="passRescan" /></div>
     <div id="dataHolder" />
     <div id="comparable">
