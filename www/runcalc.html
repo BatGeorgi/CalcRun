@@ -349,6 +349,8 @@
 			var period = $('input[name=selectPeriod]:checked').attr('id');
 			var recs = $('input[name=selectLast]:checked').attr('id');
 			var records = ("l-inf" == recs ? -1 : recs.substr(2));
+			var ds = $('#dtStart').datepicker('getDate');
+			var de = $('#dtEnd').datepicker('getDate');
 			$.ajax({
                 url: 'fetch',
                 method: 'POST',
@@ -361,8 +363,8 @@
 					'walk': $("#checkbox-4").prop('checked'),
 					'other': $("#checkbox-5").prop('checked'),
 					'dateOpt': parseInt(period[period.length - 1]) - 1,
-					'dtStart': $('#dtStart').datepicker({ dateFormat: 'dd,MM,yyyy' }).val(),
-					'dtEnd': $('#dtEnd').datepicker({ dateFormat: 'dd,MM,yyyy' }).val(),
+					'dtStart': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
+					'dtEnd': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
 					'records': records
                 },
                 statusCode: {
