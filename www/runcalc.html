@@ -202,7 +202,7 @@
                             },
                             statusCode: {
                                 200: function(data) {
-                                    loadAll();
+                                    initContent(data);
                                 },
                                 401: function(xhr) {
                                     alert('DGD BOKLIK!');
@@ -228,39 +228,24 @@
             });
         }
 		
-		function getInitInfo() {
-			$.post('getInitInfo', function(data) {
-				html = '';
-				var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-				$.each(data, function(key, value) {
-					html += '<label for="ch' + key + '">' + key + '</label>';
-					html += '<input type="checkbox" name="' + key + '" id="ch' + key + '" checked/>';
-					html += '<select name="y' + key + '" id="y' + key + '">';
-					html += '<option selected="selected">All months</option>';
-					$.each(value, function(i, item) {
-						html += '<option>' + months[item] + '</option>';
-					});
-					html += '</select>';
-					html += '<p/>';
-				});
-				$("#customDates").html(html);
-				$.each(data, function(key, value) {
-					$("#y" + key).selectmenu().selectmenu("menuWidget").addClass("overflow");
-					$("#ch" + key).checkboxradio();
-				});
-			});
-		}
-
-        function loadActivities() {
-			getInitInfo();
-            $.post('loadActivities', initContent);
-        }
-		
 		function initContent(data) {
 			itemsDS = [];
                 $('#dataHolder').html('');
                 all = data['activities'];
+				if (all.length == 0) {
+					$('#ht').text('No activities found');
+					$('#runs tbody').html('');
+					$('#runs').trigger('update');
+					$('#runs').tablesorter();
+					$('#runs').hide();
+					$('#overall').hide();
+					return false;
+				}
+				$('#overall').show();
+				$('#runs').show();
 				$('#ht').text('Activities(' + all.length + ' record' + (all.length > 1 ? 's' : '') + ')');
+				$('#overall tbody').html('<tr><td>Total distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Total time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>'
+					+ '<tr><td>Est. elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Est. elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr>');
                 runsHtml = '';
                 optsAll = '';
                 var dialog = {
@@ -362,10 +347,6 @@
 				return false;
 			}
 			var period = $('input[name=selectPeriod]:checked').attr('id');
-			var ymt = "";
-			if (period == "radio-7") {
-			 console.log($("[id^=y]"));
-			}
 			var recs = $('input[name=selectLast]:checked').attr('id');
 			var records = ("l-inf" == recs ? -1 : recs.substr(2));
 			$.ajax({
@@ -380,12 +361,12 @@
 					'walk': $("#checkbox-4").prop('checked'),
 					'other': $("#checkbox-5").prop('checked'),
 					'dateOpt': parseInt(period[period.length - 1]) - 1,
-					'ymt': ymt,
+					'dtStart': $('#dtStart').datepicker({ dateFormat: 'dd,MM,yyyy' }).val(),
+					'dtEnd': $('#dtEnd').datepicker({ dateFormat: 'dd,MM,yyyy' }).val(),
 					'records': records
                 },
                 statusCode: {
                     200: function(data) {
-                        console.log(data);
 						initContent(data);
                     }
                 }
@@ -394,6 +375,8 @@
 		
 		function disableAndFetch() {
 			disableSearch();
+			$('#dtStart').datepicker('disable');
+			$('#dtEnd').datepicker('disable');
 			fetch();
 		}
 
@@ -418,6 +401,9 @@
 				fetchEnabled = true;
 				fetch();
 			});
+			$("#search").click(function() {
+				fetch();
+			});
 			$("#radio-1").change(fetch);
 			$("#radio-2").change(disableAndFetch);
 			$("#radio-3").change(disableAndFetch);
@@ -427,6 +413,8 @@
 			$("#radio-7").change(function() {
 				if (this.checked) {
 					$('#search').button("option", "disabled", false);
+					$('#dtStart').datepicker('enable');
+					$('#dtEnd').datepicker('enable');
 				}
 			});
 			$("input[name=selectLast]").change(fetch);
@@ -436,7 +424,10 @@
 			$("#checkbox-4").change(fetch);
 			$("#checkbox-5").change(fetch);
             initDialogs();
-			getInitInfo();
+			$('#dtStart').datepicker({yearRange: '2013:c', changeYear: true});
+			$('#dtEnd').datepicker({yearRange: '2013:c', changeYear: true});
+			$('#dtStart').datepicker('disable');
+			$('#dtEnd').datepicker('disable');
             fetch();
             $.tablesorter.addWidget({
                 id: "numbering",
@@ -548,6 +539,8 @@
 		</fieldset>
 		<p>
 		<div id="customDates">
+			<p>Start date: <input type="text" id="dtStart" />
+			<p>End date: <input type="text" id="dtEnd" />
 		</div>
 		<button id="search">Search</button>
 		<p>
@@ -565,9 +558,12 @@
 			<input type="radio" name="selectLast" id="l-inf" checked>
 		</fieldset>
 	</div>
-    <div id="activities" class="highlight">
+    <div id="activities">
+		<table id="overall">
+			<tbody></tbody>
+		</table>
 		<h2><div id="ht">Activities</div></h2>
-        <table class="tablesorter" id="runs" cellspacing="0" summary="Running and hiking activities">
+        <table class="tablesorter highlight" id="runs" cellspacing="0" summary="Running and hiking activities">
             <thead>
                 <tr>
                     <th>#</th>

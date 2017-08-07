@@ -49,6 +49,9 @@ th {
 #runs {
 	margin: auto;
 }
+#overall {
+	margin: auto;
+}
 #filters {
 	text-align: center;
 }
@@ -87,4 +90,7 @@ li {
 }
 .highlightOnly td:first-child {
   font-weight: bold
+}
+#overall tr {
+  background-color: white;
 }

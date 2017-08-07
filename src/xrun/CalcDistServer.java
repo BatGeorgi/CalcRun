@@ -9,7 +9,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -108,7 +107,6 @@ class CalcDistHandler extends AbstractHandler {
 
 	private RunCalcUtils rcUtils;
 	private Map<String, JSONObject> cache = new HashMap<String, JSONObject>();
-	private String allActivitiesStr;
 
 	public CalcDistHandler(File tracksBase) throws IOException {
 		rcUtils = new RunCalcUtils(tracksBase);
@@ -117,7 +115,6 @@ class CalcDistHandler extends AbstractHandler {
 	}
 	
 	private void scan() {
-	  allActivitiesStr = "{}";
 	  cache.clear();
 	  JSONObject activities = rcUtils.retrieveAllActivities();
     JSONArray data = activities.getJSONArray("activities");
@@ -125,14 +122,7 @@ class CalcDistHandler extends AbstractHandler {
       JSONObject item = data.getJSONObject(i);
       cache.put(item.getString("genby"), item);
     }
-    allActivitiesStr = activities.toString();
 	}
-	
-	private boolean matchExact(Calendar matcher, JSONObject activity) {
-    int year = activity.getInt("year");
-    int month = activity.getInt("month");
-    return matcher.get(Calendar.YEAR) == year && matcher.get(Calendar.MONTH) == month;
-  }
 	
 	private boolean matchGreater(Calendar matcher, JSONObject activity) {
     int year = activity.getInt("year");
@@ -153,8 +143,27 @@ class CalcDistHandler extends AbstractHandler {
     return false;
   }
 	
+	private boolean matchLess(Calendar matcher, JSONObject activity) {
+    int year = activity.getInt("year");
+    int month = activity.getInt("month");
+    int day = activity.getInt("day");
+    int myr = matcher.get(Calendar.YEAR);
+    int mm = matcher.get(Calendar.MONTH);
+    int md = matcher.get(Calendar.DAY_OF_MONTH);
+    if (myr > year) {
+      return true;
+    } else if (myr == year) {
+      if (mm > month) {
+        return true;
+      } else if (mm == month) {
+        return md >= day;
+      }
+    }
+    return false;
+  }
+	
 	private JSONObject filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other, int records,
-	    Calendar startDate, List<Calendar> matchers) {
+	    Calendar startDate, Calendar endDate) {
 	  JSONObject result = new JSONObject();
 	  JSONArray activities = new JSONArray();
 	  List<JSONObject> matched = new ArrayList<JSONObject>();
@@ -175,62 +184,62 @@ class CalcDistHandler extends AbstractHandler {
 	    if ("Other".equals(type) && !other) {
         continue;
       }
-	    if (matchers != null) {
-	      for (Calendar matcher : matchers) {
-	        if (matchExact(matcher, activity)) {
-	          matched.add(activity);
-	          break;
-	        }
-	      }
-	    } else if (startDate != null) {
-	      if (matchGreater(startDate, activity)) {
-	        matched.add(activity);
-	      }
-	    } else {
-	      matched.add(activity);
+	    if (startDate != null && !matchGreater(startDate, activity)) {
+	      continue;
 	    }
+	    if (endDate != null && !matchLess(endDate, activity)) {
+	      continue;
+	    }
+	    matched.add(activity);
 	  }
     Collections.sort(matched, new RunDateComparator());
+    double totalDistance = 0.0;
+    double totalTime = 0;
+    long elePos = 0;
+    long eleNeg = 0;
     for (int i = 0; i < Math.min(records, matched.size()); ++i) {
-      activities.put(matched.get(i));
+      JSONObject activity = matched.get(i);
+      activities.put(activity);
+      totalTime += (double) activity.getLong("timeTotalRaw");
+      totalDistance += Double.parseDouble(activity.getString("dist"));
+      elePos += activity.getLong("eleTotalPos");
+      eleNeg += activity.getLong("eleTotalNeg");
     }
     result.put("activities", activities);
+    if (activities.length() > 0) {
+      result.put("totalDistance", String.format("%.3f", totalDistance));
+      result.put("totalTime", CalcDist.formatTime((long) totalTime, true));
+      result.put("avgSpeed", String.format("%.3f", totalDistance / (totalTime / 3600.0)));
+      result.put("elePos", elePos);
+      result.put("eleNeg", eleNeg);
+    }
     return result;
+	}
+	
+	private Calendar parseDate(String dt) {
+	  if (dt == null) {
+	    return null;
+	  }
+	  StringTokenizer st = new StringTokenizer(dt, "/,;", false);
+	  if (st.countTokens() != 3) {
+	    return null;
+	  }
+	  Calendar cal = new GregorianCalendar();
+	  try {
+	    cal.set(Calendar.MONTH, Integer.parseInt(st.nextToken()) - 1);
+	    cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(st.nextToken()));
+	    cal.set(Calendar.YEAR, Integer.parseInt(st.nextToken()));
+	    return cal;
+	  } catch (Exception ignore) {
+	    // silent catch
+	  }
+	  return null;
 	}
 
 	public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
 			HttpServletResponse response) throws IOException, ServletException {
 		if (!"POST".equals(baseRequest.getMethod())) {
 			return;
-		}
-		if ("/getInitInfo".equalsIgnoreCase(target)) {
-		  JSONObject result = new JSONObject();
-		  Map<Integer, List<Integer>> initInfo = new HashMap<Integer, List<Integer>>();
-		  for (JSONObject activity : cache.values()) {
-		    int year = activity.getInt("year");
-		    int month = activity.getInt("month");
-		    List<Integer> cr = initInfo.get(year);
-		    if (cr == null) {
-		      cr = new LinkedList<Integer>();
-		      initInfo.put(year, cr);
-		    }
-		    if (!cr.contains(month)) {
-		      cr.add(month);
-		    }
-		  }
-		  List<Integer> sortedKeys = new ArrayList<Integer> (initInfo.keySet());
-		  Collections.sort(sortedKeys);
-		  for (int i = sortedKeys.size() - 1; i >= 0; --i) {
-		    Integer key = sortedKeys.get(i);
-		    List<Integer> val = initInfo.get(key);
-		    Collections.sort(val);
-		    result.put(key.toString(), val);
-		  }
-		  response.setContentType("application/json");
-		  response.getWriter().println(result.toString());
-      response.getWriter().flush();
-      response.setStatus(HttpServletResponse.SC_OK);
-      baseRequest.setHandled(true);
 		}
 		if ("/fetch".equalsIgnoreCase(target)) {
 		  boolean run = "true".equals(baseRequest.getHeader("run"));
@@ -251,7 +260,7 @@ class CalcDistHandler extends AbstractHandler {
 		    records = Integer.MAX_VALUE;
 		  }
 		  Calendar startDate = null;
-		  List<Calendar> matchers = null;
+		  Calendar endDate = null;
 		  int dateOpt = -1;
 		  String opts = baseRequest.getHeader("dateOpt");
 		  try {
@@ -261,70 +270,45 @@ class CalcDistHandler extends AbstractHandler {
 		  } catch (NumberFormatException ignore) {
         // silent catch
       }
-		  if (dateOpt < 0 || dateOpt > 5) {
-		    String ymt = baseRequest.getHeader("ymt");
-		    StringTokenizer st = new StringTokenizer(ymt, ",", false);
-		    matchers = new LinkedList<Calendar>();
-		    while (st.hasMoreTokens()) {
-		      String el = st.nextToken();
-		      StringTokenizer st2 = new StringTokenizer(el, ";", false);
-		      try {
-		        int yr = Integer.parseInt(st2.nextToken());
-		        int mt = Integer.parseInt(st2.nextToken());
-		        if (mt >= 0 && mt < 12) {
-		          Calendar cal = new GregorianCalendar();
-		          cal.set(Calendar.YEAR, yr);
-		          cal.set(Calendar.MONTH, mt);
-		          matchers.add(cal);
-		        } else {
-		          for (mt = 0; mt < 12; ++mt) {
-		            Calendar cal = new GregorianCalendar();
-		            cal.set(Calendar.YEAR, yr);
-	              cal.set(Calendar.MONTH, mt);
-	              matchers.add(cal);
-		          }
-		        }
-		      } catch (Exception ignore) {
-		        // silent
-		      }
-		    }
-		  } else {
-		    startDate = new GregorianCalendar(TimeZone.getDefault());
-		    int mt = 0;
-		    switch (dateOpt) {
-		      case 0: // this month
-		        startDate.set(Calendar.DAY_OF_MONTH, 1);
-		        break;
-		      case 1: // this year
-		        startDate.set(Calendar.DAY_OF_MONTH, 1);
-		        startDate.set(Calendar.MONTH, 0);
-		        break;
-		      case 2: // last 30
-		        mt = startDate.get(Calendar.MONTH);
-		        if (mt > 0) {
-		          startDate.set(Calendar.MONTH, mt - 1);
-		        } else {
-		          startDate.set(Calendar.MONTH, 11);
-		          startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
-		        }
-		        break;
-		      case 3: // last 3m
-		        mt = startDate.get(Calendar.MONTH);
-            if (mt > 3) {
-              startDate.set(Calendar.MONTH, mt - 3);
-            } else {
-              startDate.set(Calendar.MONTH, mt + 8);
-              startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
-            }
-            break;
-		      case 4: // last y
-		        startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
-		        break;
-		      case 5: // all
-		        startDate = null;
-		    }
-		  }
-		  String result = filter(run, trail, hike, walk, other, records, startDate, matchers).toString();
+		  startDate = new GregorianCalendar(TimeZone.getDefault());
+		  int mt = 0;
+      switch (dateOpt) {
+        case 0: // this month
+          startDate.set(Calendar.DAY_OF_MONTH, 1);
+          break;
+        case 1: // this year
+          startDate.set(Calendar.DAY_OF_MONTH, 1);
+          startDate.set(Calendar.MONTH, 0);
+          break;
+        case 2: // last 30
+          mt = startDate.get(Calendar.MONTH);
+          if (mt > 0) {
+            startDate.set(Calendar.MONTH, mt - 1);
+          } else {
+            startDate.set(Calendar.MONTH, 11);
+            startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+          }
+          break;
+        case 3: // last 3m
+          mt = startDate.get(Calendar.MONTH);
+          if (mt > 3) {
+            startDate.set(Calendar.MONTH, mt - 3);
+          } else {
+            startDate.set(Calendar.MONTH, mt + 8);
+            startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+          }
+          break;
+        case 4: // last y
+          startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+          break;
+        case 5: // all
+          startDate = null;
+          break;
+        case 6: // custom
+          startDate = parseDate(baseRequest.getHeader("dtStart"));
+          endDate = parseDate(baseRequest.getHeader("dtEnd"));
+      }
+		  String result = filter(run, trail, hike, walk, other, records, startDate, endDate).toString();
 		  response.setContentType("application/json");
 		  response.getWriter().println(result);
 		  response.getWriter().flush();
@@ -343,13 +327,6 @@ class CalcDistHandler extends AbstractHandler {
 			response.setStatus(HttpServletResponse.SC_OK);
 			baseRequest.setHandled(true);
 		}
-		if ("/loadActivities".equalsIgnoreCase(target)) {
-			response.setContentType("application/json");
-			response.getWriter().println(allActivitiesStr);
-			response.getWriter().flush();
-			response.setStatus(HttpServletResponse.SC_OK);
-			baseRequest.setHandled(true);
-		}
 		if ("/editActivity".equalsIgnoreCase(target)) {
 			String fileName = baseRequest.getHeader("File");
 			String name = baseRequest.getHeader("Name");
@@ -363,6 +340,10 @@ class CalcDistHandler extends AbstractHandler {
 			if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null
 					&& type.length() > 0) {
 				rcUtils.editActivity(fileName, name, type);
+				JSONObject activity = cache.get(fileName);
+				if (activity != null) {
+				  rcUtils.updateActivity(activity, fileName);
+				}
 				response.setStatus(HttpServletResponse.SC_OK);
 			} else {
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

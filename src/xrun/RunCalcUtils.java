@@ -252,6 +252,15 @@ public class RunCalcUtils {
     storage.mapName(fileName, newName);
     storage.mapType(fileName, newType);
   }
+  
+  void updateActivity(JSONObject activity, String fileName) {
+    String realName = storage.getName(fileName);
+    if (realName != null) {
+      activity.put("name", realName);
+    }
+    String realType = storage.getType(fileName);
+    activity.put("type", realType != null ? realType : "Running");
+  }
 
 }
 
