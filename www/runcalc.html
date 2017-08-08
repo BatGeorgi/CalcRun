@@ -202,6 +202,7 @@
                             },
                             statusCode: {
                                 200: function(data) {
+									getBest();
                                     fetch();
                                 },
                                 401: function(xhr) {
@@ -387,6 +388,48 @@
             $('#dtEnd').datepicker('disable');
             fetch();
         }
+		
+		function getStat(data, opt) {
+			if (data[opt]) {
+				return data[opt];
+			}
+			return opt == 'ach' ? 'Not unlocked' : '---';
+		}
+		
+		function getBest() {
+			$.ajax({
+                url: 'best',
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                statusCode: {
+                    200: function(data) {
+						var farthest = data['longest'];
+						var fastest = data['fastest'];
+						var maxAsc = data['maxAsc'];
+						var k1 = data['1K'];
+						var k25 = data['2K5'];
+						var k5 = data['5K'];
+						var k10 = data['10K'];
+						var semi = data['21K'];
+						var k30 = data['30K'];
+						var marathon = data['42K'];
+						$('#bestOf tbody').html('<tr><td>Farthest run</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
+						'<tr><td>Fastest run</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
+						'<tr><td>Max ascent</td><td>' + getStat(maxAsc, 'ach') + '</td><td>' + getStat(maxAsc, 'when') + '</td></tr>' +
+						'<tr><td>1K</td><td>' + getStat(k1, 'ach') + '</td><td>' + getStat(k1, 'when') + '</td></tr>' +
+						'<tr><td>2.5K</td><td>' + getStat(k25, 'ach') + '</td><td>' + getStat(k25, 'when') + '</td></tr>' +
+						'<tr><td>5K</td><td>' + getStat(k5, 'ach') + '</td><td>' + getStat(k5, 'when') + '</td></tr>' +
+						'<tr><td>10K</td><td>' + getStat(k10, 'ach') + '</td><td>' + getStat(k10, 'when') + '</td></tr>' +
+						'<tr><td>Half-marathon</td><td>' + getStat(semi, 'ach') + '</td><td>' + getStat(semi, 'when') + '</td></tr>' +
+						'<tr><td>30K</td><td>' + getStat(k30, 'ach') + '</td><td>' + getStat(k30, 'when') + '</td></tr>' +
+						'<tr><td>Marathon</td><td>' + getStat(marathon, 'ach') + '</td><td>' + getStat(marathon, 'when') + '</td></tr>');
+                    }
+                }
+            });
+		}
 
         $(document).ready(function() {
             $("#selectAll").button();
@@ -464,6 +507,7 @@
 			$("#spinnerMax").spinner();
 			$("#spinnerMin").spinner({min: 0});
 			$("#spinnerMax").spinner({min: 0});
+			getBest();
             var months = {
                 'Jan': 0,
                 'Feb': 1,
@@ -600,9 +644,31 @@
             </fieldset>
     </div>
     <div id="activities">
-        <table id="overall">
-            <tbody></tbody>
-        </table>
+		<div id="overallWrap">
+			<h2>Totals</h2>
+			<table id="overall">
+				<thead>
+					<tr>
+						<th>Type</th>
+						<th>Result</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
+		<div id="bestOfWrap">
+			<h2>Best</h2>
+			<table id="bestOf">
+				<thead>
+					<tr>
+						<th>Type</th>
+						<th>Achievement</th>
+						<th>Date</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+		</div>
         <h2>
             <div id="ht">Activities</div>
         </h2>
