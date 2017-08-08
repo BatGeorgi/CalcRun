@@ -202,7 +202,7 @@
                             },
                             statusCode: {
                                 200: function(data) {
-                                    initContent(data);
+                                    fetch();
                                 },
                                 401: function(xhr) {
                                     alert('DGD BOKLIK!');
@@ -365,7 +365,8 @@
                     'dateOpt': parseInt(period[period.length - 1]) - 1,
                     'dtStart': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
                     'dtEnd': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
-                    'records': records
+                    'records': records,
+					'nameFilter': $("#searchName").val()
                 },
                 statusCode: {
                     200: function(data) {
@@ -385,6 +386,7 @@
         $(document).ready(function() {
             $("#selectAll").button();
             $("#search").button();
+			$("#findNames").button();
             $("#search").button("option", "disabled", true);
             $("input[name=selectPeriod]").checkboxradio();
             $("input[name=selectLast]").checkboxradio();
@@ -393,6 +395,9 @@
             $("#checkbox-3").checkboxradio();
             $("#checkbox-4").checkboxradio();
             $("#checkbox-5").checkboxradio();
+			$("#findNames").click(function() {
+				fetch();
+			});
             $("#selectAll").click(function() {
                 fetchEnabled = false;
                 $("#checkbox-1").prop('checked', true).change();
@@ -528,6 +533,12 @@
             <button id="selectAll">Select All</button>
         </fieldset>
         <p>
+		<fieldset>
+            <legend>Activity name</legend>
+			<input type="text" name="searchName" id="searchName"/>
+			<button id="findNames">Search</button>
+		</fieldset>
+		<p>
             <fieldset>
                 <legend>Period</legend>
                 <label for="radio-1">This month</label>

@@ -4,14 +4,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,41 +40,11 @@ public class RunCalcUtils {
     new RunCalcUtils(base).rescan();
   }
   
-  private void cleanup() {
-    File txtBase = new File(base, "reports_txt");
-    File jsonBase = new File(base, "reports_json");
-    if (!txtBase.exists()) {
-    	txtBase.mkdir();
-    }
-    if (!jsonBase.exists()) {
-    	jsonBase.mkdir();
-    }
-    String[] all = txtBase.list();
-    for (String name : all) {
-      if (!name.endsWith(".txt")) {
-        continue;
-      }
-      File f = new File(txtBase, name);
-      if (f.isFile()) {
-        f.delete();
-      }
-    }
-    all = jsonBase.list();
-    for (String name : all) {
-      if (!name.endsWith(".json")) {
-        continue;
-      }
-      File f = new File(jsonBase, name);
-      if (f.isFile()) {
-        f.delete();
-      }
-    }
-  }
-  
-  JSONObject rescan() {
-    cleanup();
+  void rescan() {
+    Map<String, Boolean> available = new HashMap<String, Boolean>();
     List<JSONObject> runs = new ArrayList<JSONObject>();
     String[] all = gpxBase.list();
+    File jsonBase = new File(base, "reports_json");
     for (String fileName : all) {
       if (!fileName.endsWith(".gpx")) {
         continue;
@@ -83,9 +53,23 @@ public class RunCalcUtils {
       if (!targ.isFile()) {
         continue;
       }
+      available.put(targ.getName(), Boolean.TRUE);
+      long fmod = targ.lastModified();
+      long lastMod = storage.getLastMod(targ.getName());
+      if (fmod > 0 && fmod == lastMod) {
+        File source = new File(jsonBase, targ.getName());
+        if (source.isFile()) {
+          JSONObject json = readActivity(source);
+          if (json != null) {
+            runs.add(json);
+            continue;
+          }
+        }
+      }
       try {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, "9", "100", "1", current); // default values
+        storage.setLastMod(targ.getName(), targ.lastModified());
         String genby = current.getString("genby");
         String realName = storage.getName(genby);
         if (realName != null) {
@@ -97,16 +81,24 @@ public class RunCalcUtils {
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
         e.printStackTrace();
+        available.remove(targ.getName());
       }
     }
-    Collections.sort(runs, new RunDateComparator());
-    JSONObject result = new JSONObject();
-    JSONArray arr = new JSONArray();
-    for (JSONObject json : runs) {
-      arr.put(json);
+    all = jsonBase.list();
+    if (all != null) {
+      for (String name : all) {
+        File f = new File(jsonBase, name);
+        int ind = name.lastIndexOf('.');
+        if (ind != -1) {
+          name = name.substring(0, ind) + ".gpx";
+        }
+        if (!available.containsKey(name)) {
+          if (!f.delete()) {
+            f.deleteOnExit();
+          }
+        }
+      }
     }
-    result.put("activities", arr);
-    return result;
   }
   
   JSONObject retrieveAllActivities() {
@@ -126,73 +118,51 @@ public class RunCalcUtils {
       if (!f.isFile()) {
         continue;
       }
-      int rd = 0;
-      byte[] buff = new byte[8192];
-      InputStream is = null;
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      try {
-        is = new FileInputStream(f);
-        while ((rd = is.read(buff)) != -1) {
-          baos.write(buff, 0, rd);
-        }
-        JSONObject json = new JSONObject(new String(baos.toByteArray()));
-        String genby = json.getString("genby");
-        String realName = storage.getName(genby);
-        if (realName != null) {
-          json.put("name", realName);
-        }
-        String realType = storage.getType(genby);
-        json.put("type", realType != null ? realType : "Running");
+      JSONObject json = readActivity(f);
+      if (json != null) {
         runs.add(json);
-      } catch (Exception e) {
-        System.out.println("Error processing " + name);
-        e.printStackTrace();
-      } finally {
-        try {
-          if (is != null) {
-            is.close();
-          }
-        } catch (IOException ignore) {
-          // silent catch
-        }
       }
     }
     Collections.sort(runs, new RunDateComparator());
-    for (JSONObject json : runs) {
-      arr.put(json);
+    for (JSONObject run : runs) {
+      arr.put(run);
     }
     result.put("activities", arr);
     return result;
   }
   
-  JSONObject addActivity(InputStream is, String filename) { // fileName must be saved in gpx base folder
-    JSONObject status = new JSONObject();
-    File file = new File(gpxBase, filename);
-    if (file.exists() && !file.isFile()) {
-    	status.put("error", "Cannot write to " + filename);
-    	return status;
-    }
+  private JSONObject readActivity(File source) {
     byte[] buff = new byte[8192];
+    InputStream is = null;
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
     int rd = 0;
-    OutputStream os = null;
     try {
-    	os = new FileOutputStream(file);
-    	while ((rd = is.read(buff)) != -1) {
-    		os.write(buff, 0, rd);
-    	}
-    	os.flush();
-    	JSONObject newItem = new JSONObject();
-      CalcDist.run(file, "9", "100", "1", newItem);
-      status.put("item", newItem);
-    } catch (Exception e) {
-      status.put("error", e.getClass().getName() + ' ' + e.getMessage());
+      is = new FileInputStream(source);
+      while ((rd = is.read(buff)) != -1) {
+        baos.write(buff, 0, rd);
+      }
+      JSONObject json = new JSONObject(new String(baos.toByteArray()));
+      String genby = json.getString("genby");
+      String realName = storage.getName(genby);
+      if (realName != null) {
+        json.put("name", realName);
+      }
+      String realType = storage.getType(genby);
+      json.put("type", realType != null ? realType : "Running");
+      return json;
+    } catch (IOException ioe) {
+      System.out.println("Error reading " + source);
+      ioe.printStackTrace();
     } finally {
-    	silentClose(os);
-    	if (status.opt("error") != null && !file.delete()) {
-    	  file.deleteOnExit();
-    	}
+      try {
+        if (is != null) {
+          is.close();
+        }
+      } catch (IOException ignore) {
+        // silent catch
+      }
     }
-    return status;
+    return null;
   }
   
   static void silentClose(Closeable cl) {

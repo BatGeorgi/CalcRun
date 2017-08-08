@@ -488,7 +488,12 @@ public class CalcDist {
         }
       }
     }
-    File jsonOut = new File(outputBaseJson, cd.userFriendlyName.replace(',', '.') + "_report" + cd.suff + ".json");
+    String fn = file.getName();
+    int ind = fn.lastIndexOf('.');
+    if (ind != -1) {
+      fn = fn.substring(0, ind);
+    }
+    File jsonOut = new File(outputBaseJson, fn + ".json");
     FileWriter fwr = null;
     try {
       fwr = new FileWriter(jsonOut);
