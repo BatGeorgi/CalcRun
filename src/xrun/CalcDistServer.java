@@ -180,7 +180,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private JSONObject filter(String nameFilter, boolean run, boolean trail, boolean hike, boolean walk, boolean other, int records,
-      Calendar startDate, Calendar endDate) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
     List<JSONObject> matched = new ArrayList<JSONObject>();
@@ -208,6 +208,10 @@ class CalcDistHandler extends AbstractHandler {
         continue;
       }
       if (!matchName(nameFilter, activity.getString("name"))) {
+        continue;
+      }
+      double dist = Double.parseDouble(activity.getString("dist"));
+      if (dist < minDistance || dist > maxDistance) {
         continue;
       }
       matched.add(activity);
@@ -328,7 +332,32 @@ class CalcDistHandler extends AbstractHandler {
           startDate = parseDate(baseRequest.getHeader("dtStart"));
           endDate = parseDate(baseRequest.getHeader("dtEnd"));
       }
-      String result = filter(baseRequest.getHeader("nameFilter"), run, trail, hike, walk, other, records, startDate, endDate).toString();
+      String smin = baseRequest.getHeader("dmin");
+      String smax = baseRequest.getHeader("dmax");
+      int dmin = 0;
+      int dmax = Integer.MAX_VALUE;
+      boolean err = false;
+      try {
+        if (smin != null && smin.trim().length() > 0) {
+          dmin = Integer.parseInt(smin);
+        }
+      } catch (NumberFormatException nfe) {
+        err = true;
+      }
+      try {
+        if (smax != null && smax.trim().length() > 0) {
+          dmax = Integer.parseInt(smax);
+        }
+      } catch (NumberFormatException nfe) {
+        err = true;
+      }
+      if (dmin > dmax || err) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        baseRequest.setHandled(true);
+        return;
+      }
+      String result = filter(baseRequest.getHeader("nameFilter"), run, trail, hike, walk, other,
+          records, startDate, endDate, dmin, dmax).toString();
       response.setContentType("application/json");
       response.getWriter().println(result);
       response.getWriter().flush();

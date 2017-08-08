@@ -366,11 +366,16 @@
                     'dtStart': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
                     'dtEnd': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
                     'records': records,
-					'nameFilter': $("#searchName").val()
+					'nameFilter': $("#searchName").val(),
+					'dmin': $('#spinnerMin').val(),
+					'dmax': $('#spinnerMax').val()
                 },
                 statusCode: {
                     200: function(data) {
                         initContent(data);
+                    },
+					400: function(data) {
+                        alert('Invalid distance arguments');
                     }
                 }
             });
@@ -386,6 +391,7 @@
         $(document).ready(function() {
             $("#selectAll").button();
             $("#search").button();
+			$("#dsearch").button();
 			$("#findNames").button();
             $("#search").button("option", "disabled", true);
             $("input[name=selectPeriod]").checkboxradio();
@@ -409,6 +415,9 @@
                 fetch();
             });
             $("#search").click(function() {
+                fetch();
+            });
+			$("#dsearch").click(function() {
                 fetch();
             });
             $("#radio-1").change(fetch);
@@ -451,6 +460,10 @@
                     });
                 }
             });
+			$("#spinnerMin").spinner();
+			$("#spinnerMax").spinner();
+			$("#spinnerMin").spinner({min: 0});
+			$("#spinnerMax").spinner({min: 0});
             var months = {
                 'Jan': 0,
                 'Feb': 1,
@@ -557,25 +570,34 @@
                 <input type="radio" name="selectPeriod" id="radio-7">
             </fieldset>
             <p>
-                <div id="customDates">
-                    <p>Start date: <input type="text" id="dtStart" />
-                        <p>End date: <input type="text" id="dtEnd" />
-                </div>
-                <button id="search">Search</button>
-                <p>
-                    <fieldset>
-                        <legend>Max number of records</legend>
-                        <label for="l-10">10</label>
-                        <input type="radio" name="selectLast" id="l-10">
-                        <label for="l-20">20</label>
-                        <input type="radio" name="selectLast" id="l-20">
-                        <label for="l-50">50</label>
-                        <input type="radio" name="selectLast" id="l-50">
-                        <label for="l-100">100</label>
-                        <input type="radio" name="selectLast" id="l-100">
-                        <label for="l-inf">No limit</label>
-                        <input type="radio" name="selectLast" id="l-inf" checked>
-                    </fieldset>
+            <div id="customDates">
+                <p>Start date: <input type="text" id="dtStart" />
+                <p>End date: <input type="text" id="dtEnd" />
+            </div>
+            <button id="search">Search</button>
+			<p>
+            <fieldset>
+                <legend>Distance</legend>
+				<label for="spinnerMin">Min km</label>
+				<input id="spinnerMin" name="dmin"/>
+				<label for="spinnerMax">Max km</label>
+				<input id="spinnerMax" name="dmax"/>
+				<button id="dsearch">Search</button>
+			 </fieldset>
+            <p>
+            <fieldset>
+                <legend>Max number of records</legend>
+                <label for="l-10">10</label>
+                <input type="radio" name="selectLast" id="l-10">
+                <label for="l-20">20</label>
+                <input type="radio" name="selectLast" id="l-20">
+                <label for="l-50">50</label>
+                <input type="radio" name="selectLast" id="l-50">
+                <label for="l-100">100</label>
+                <input type="radio" name="selectLast" id="l-100">
+                <label for="l-inf">No limit</label>
+                <input type="radio" name="selectLast" id="l-inf" checked>
+            </fieldset>
     </div>
     <div id="activities">
         <table id="overall">
