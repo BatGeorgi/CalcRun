@@ -393,7 +393,7 @@
 			if (data[opt]) {
 				return data[opt];
 			}
-			return opt == 'ach' ? 'Not unlocked' : '---';
+			return opt == 'ach' ? 'Locked' : '---';
 		}
 		
 		function getBest() {
@@ -416,8 +416,8 @@
 						var semi = data['21K'];
 						var k30 = data['30K'];
 						var marathon = data['42K'];
-						$('#bestOf tbody').html('<tr><td>Farthest run</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
-						'<tr><td>Fastest run</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
+						$('#bestOf tbody').html('<tr><td>Farthest</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
+						'<tr><td>Fastest</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
 						'<tr><td>Max ascent</td><td>' + getStat(maxAsc, 'ach') + '</td><td>' + getStat(maxAsc, 'when') + '</td></tr>' +
 						'<tr><td>1K</td><td>' + getStat(k1, 'ach') + '</td><td>' + getStat(k1, 'when') + '</td></tr>' +
 						'<tr><td>2.5K</td><td>' + getStat(k25, 'ach') + '</td><td>' + getStat(k25, 'when') + '</td></tr>' +
@@ -683,7 +683,7 @@
                     <th>Time</th>
                     <th>Pace(min/km)&nbsp;&nbsp;</th>
                     <th>Speed(km/h)&nbsp;&nbsp;</th>
-                    <th>Elevation est.(m)</th>
+                    <th>Elevation est.</th>
                     <th>Actions</th>
                 </tr>
             </thead>

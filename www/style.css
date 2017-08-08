@@ -43,18 +43,54 @@ th {
 	background-position: center right;
 	background-repeat: no-repeat;
 }
+#runs td:nth-child(1) {
+	width: 6%;
+}
+#runs td:nth-child(2) {
+	width: 19%;
+}
+#runs td:nth-child(3) {
+	width: 30%;
+}
+#runs td:nth-child(4) {
+	width: 7%;
+}
+#runs td:nth-child(5) {
+	width: 7%;
+}
+#runs td:nth-child(6) {
+	width: 7%;
+}
+#runs td:nth-child(7) {
+	width: 6%;
+}
+#runs td:nth-child(8) {
+	width: 7%;
+}
+#runs td:nth-child(9) {
+	width: 13%;
+}
+#runs td:nth-child(10) {
+	width: 3%;
+}
 #activities {
 	text-align: center;
 }
 #runs {
 	margin: auto;
 	text-align: left;
+	width: 65%;
 }
 #overallWrap {
 	float: left;
+	width: 16%;
+}
+#overallWrap td:nth-child(2) {
+	width: 50%;
 }
 #bestOfWrap {
 	float: right;
+	width: 16%;
 }
 #filters {
 	text-align: center;
@@ -113,4 +149,8 @@ li {
 	text-align: left;
 	padding: 6px 6px 6px 12px;
 	color: #6D929B;
+}
+#runs th {
+	color: #1d1d1e;
+	background-color: #4286f4;
 }
