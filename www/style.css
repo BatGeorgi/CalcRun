@@ -37,6 +37,7 @@ th {
 	text-align: left;
 	padding: 6px 6px 6px 12px;
 	background: #CAE8EA url(images/bg_header.jpg) no-repeat;
+	border-radius: 10px;
 }
 #runs th:nth-child(2), #runs th:nth-child(3), #runs th:nth-child(5), #runs th:nth-child(6), #runs th:nth-child(7), #runs th:nth-child(8) {
 	background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
