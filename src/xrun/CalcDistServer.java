@@ -208,8 +208,8 @@ class CalcDistHandler extends AbstractHandler {
     double maxSpeed = 0.0;
     long maxEle = 0;
     for (JSONObject activity : cache.values()) {
-      double dist = Double.parseDouble(activity.getString("dist"));
-      double speed = Double.parseDouble(activity.getString("avgSpeed"));
+      double dist = Double.parseDouble(activity.getString("dist").replace(',', '.'));
+      double speed = Double.parseDouble(activity.getString("avgSpeed").replace(',', '.'));
       long ele = activity.getLong("eleTotalPos");
       if (dist > maxDist) {
         maxDist = dist;
@@ -292,7 +292,7 @@ class CalcDistHandler extends AbstractHandler {
       if (!matchName(nameFilter, activity.getString("name"))) {
         continue;
       }
-      double dist = Double.parseDouble(activity.getString("dist"));
+      double dist = Double.parseDouble(activity.getString("dist").replace(',', '.'));
       if (dist < minDistance || dist > maxDistance) {
         continue;
       }
@@ -307,7 +307,7 @@ class CalcDistHandler extends AbstractHandler {
       JSONObject activity = matched.get(i);
       activities.put(activity);
       totalTime += (double) activity.getLong("timeTotalRaw");
-      totalDistance += Double.parseDouble(activity.getString("dist"));
+      totalDistance += Double.parseDouble(activity.getString("dist").replace(',', '.'));
       elePos += activity.getLong("eleTotalPos");
       eleNeg += activity.getLong("eleTotalNeg");
     }
