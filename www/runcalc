@@ -572,7 +572,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 1.5</strong></H1>
+        <H1><strong>Run Analyzer 1.55</strong></H1>
     </div>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
     <div id="filters">
@@ -680,10 +680,10 @@
                     <th>Date</th>
                     <th>Name</th>
                     <th>Type</th>
-                    <th>Distance(km)&nbsp;&nbsp;</th>
+                    <th>Distance&nbsp;&nbsp;</th>
                     <th>Time</th>
-                    <th>Pace(min/km)&nbsp;&nbsp;</th>
-                    <th>Speed(km/h)&nbsp;&nbsp;</th>
+                    <th>Pace&nbsp;&nbsp;</th>
+                    <th>Speed&nbsp;&nbsp;</th>
                     <th>Elevation est.</th>
                     <th>Actions</th>
                 </tr>
