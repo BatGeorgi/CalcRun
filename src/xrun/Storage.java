@@ -105,6 +105,7 @@ public class Storage {
       oos = new ObjectOutputStream(new FileOutputStream(mappingsFile));
       oos.writeObject(nameMappings);
       oos.writeObject(typeMappings);
+      oos.flush();
     } catch (Exception e) {
       e.printStackTrace();
     } finally {

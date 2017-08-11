@@ -72,7 +72,7 @@ public class CalcDistServer {
     ResourceHandler resourceHandler = new ResourceHandler();
     resourceHandler.setDirAllowed(false);
     resourceHandler.setDirectoriesListed(false);
-    resourceHandler.setWelcomeFiles(new String[] { "runcalc.html" });
+    resourceHandler.setWelcomeFiles(new String[] { "runcalc" });
     resourceHandler.setResourceBase("www");
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
@@ -170,9 +170,9 @@ class CalcDistHandler extends AbstractHandler {
     if (namePattern.length() == 0) {
       return true;
     }
-    StringTokenizer st = new StringTokenizer(namePattern, "|", false);
-    while (st.hasMoreTokens()) {
-      if (name.contains(st.nextToken())) {
+    String[] splits = namePattern.split("%7C");
+    for (String str : splits) {
+      if (name.contains(str)) {
         return true;
       }
     }
