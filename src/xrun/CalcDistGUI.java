@@ -26,6 +26,9 @@ public class CalcDistGUI {
   
   private File currentDir;
   private JTextField textFieldSplit;
+  
+  private static final double DEFAULT_RUNNING = 9.0; // km/h
+  private static final double DEFAULT_INTERVAL = 100; // meters
 
   /**
    * Launch the application.
@@ -141,8 +144,26 @@ public class CalcDistGUI {
           if (filePath == null || filePath.length() == 0) {
             throw new IllegalArgumentException("Input file not specified");
           }
-          String result = CalcDist.run(new File(filePath), textFieldSpeed.getText(),
-              textFieldInterval.getText(), textFieldSplit.getText(), new JSONObject());
+          double minR = DEFAULT_RUNNING;
+          double intrv = DEFAULT_INTERVAL;
+          double splitM = 1000.0;
+          try {
+            minR = new Double(textFieldSpeed.getText()).doubleValue();
+          } catch (Exception ignore) {
+            // silent catch
+          }
+          try {
+            intrv = new Double(textFieldInterval.getText()).doubleValue();
+          } catch (Exception ignore) {
+            // silent catch
+          }
+          try {
+            splitM = new Double(textFieldSplit.getText()).doubleValue();
+          } catch (Exception ignore) {
+            // silent catch
+          }
+          String result = CalcDist.run(new File(filePath), minR,
+              intrv, splitM, new JSONObject());
           JOptionPane.showMessageDialog(frame,
               result,
               "Results",

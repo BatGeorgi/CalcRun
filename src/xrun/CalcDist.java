@@ -39,9 +39,6 @@ public class CalcDist {
       0.0, 6.0 * COEF, 7.0 * COEF, 8.0 * COEF, 9.0 * COEF, 10.0 * COEF, 11.0 * COEF, 12.0 * COEF
   }; // m/s
   
-  private static final double DEFAULT_RUNNING = 9.0; // km/h
-  private static final double DEFAULT_INTERVAL = 100; // meters
-  
   private File file;
   private double minRunningSpeedKmh;
   private double minRunningSpeed; // m/s
@@ -388,7 +385,7 @@ public class CalcDist {
     }
   }
   
-  static String run(File file, String minSpeed, String intR, String splitS, JSONObject data) throws Exception {
+  static String run(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
@@ -397,23 +394,8 @@ public class CalcDist {
     outputBaseTxt.mkdir();
     File outputBaseJson = new File(inputBase, "reports_json");
     outputBaseJson.mkdir();
-    double minR = DEFAULT_RUNNING;
-    double intrv = DEFAULT_INTERVAL;
-    try {
-      minR = new Double(minSpeed).doubleValue();
-    } catch (Exception ignore) {
-    }
-    try {
-      intrv = new Double(intR).doubleValue();
-    } catch (Exception ignore) {
-    }
-    double splitM = 1000.0;
-    try {
-      splitM = new Double(splitS).doubleValue();
-    } catch (Exception ignore) {
-    }
     StringBuffer sb = new StringBuffer();
-    CalcDist cd = new CalcDist(file, minR, intrv, splitM * 1000.0);
+    CalcDist cd = new CalcDist(file, minSpeed, intR, splitS * 1000.0);
     cd.process(sb, data);
     if (cd.userFriendlyName != null) {
       BufferedWriter writer = null;
