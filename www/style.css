@@ -57,6 +57,9 @@ th {
 	background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
 	border-bottom: #000 2px solid;
 }
+#runs tr td:not(:last-child) {
+	cursor:pointer;
+}
 #runs td:nth-child(1) {
 	width: 5%;
 }
@@ -110,7 +113,6 @@ th {
 	text-align: center;
 }
 .runitem {
-	text-decoration: underline;
 	font-weight: bold;
 	cursor:pointer;
 }
@@ -119,10 +121,9 @@ ul {
   margin: 0;
   padding: 0;
 }
- 
 li {
   font: 200 20px/1.1 Helvetica, Verdana, sans-serif;
-  color: #c6273f;
+  color: #2a6cd6;
 }
 .green {
 	color: #1c9e45;

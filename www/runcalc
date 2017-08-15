@@ -330,7 +330,7 @@
                 });
             });
             for (i = 0; i < itemsDS.length; ++i) {
-                $('#item' + i).click(itemsDS[i]);
+                $('#runs tr:eq(' + i + ') td:not(:last-child)').click(itemsDS[i]);
             }
             $('#rescanButton').click(function() {
                 $('#rescanForm').dialog('option', 'title', 'Rescan activities');
