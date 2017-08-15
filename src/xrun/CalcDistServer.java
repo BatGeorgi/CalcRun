@@ -300,7 +300,8 @@ class CalcDistHandler extends AbstractHandler {
     }
     Collections.sort(matched, new RunDateComparator());
     double totalDistance = 0.0;
-    double totalTime = 0;
+    double totalTime = 0.0;
+    double totalRunDist = 0.0;
     long elePos = 0;
     long eleNeg = 0;
     for (int i = 0; i < Math.min(records, matched.size()); ++i) {
@@ -308,6 +309,7 @@ class CalcDistHandler extends AbstractHandler {
       activities.put(activity);
       totalTime += (double) activity.getLong("timeTotalRaw");
       totalDistance += Double.parseDouble(activity.getString("dist").replace(',', '.'));
+      totalRunDist += Double.parseDouble(activity.getString("distRunning").replace(',', '.'));
       elePos += activity.getLong("eleTotalPos");
       eleNeg += activity.getLong("eleTotalNeg");
     }
@@ -318,6 +320,7 @@ class CalcDistHandler extends AbstractHandler {
       result.put("avgSpeed", String.format("%.3f", totalDistance / (totalTime / 3600.0)));
       result.put("elePos", elePos);
       result.put("eleNeg", eleNeg);
+      result.put("totalRunDist", String.format("%.3f", totalRunDist));
     }
     return result;
   }
