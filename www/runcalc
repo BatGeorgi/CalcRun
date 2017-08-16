@@ -349,8 +349,7 @@
                 return false;
             }
             var period = $('input[name=selectPeriod]:checked').attr('id');
-            var recs = $('input[name=selectLast]:checked').attr('id');
-            var records = ("l-inf" == recs ? -1 : recs.substr(2));
+            var records = parseInt($('input[name=selectLast]:checked').attr('cap'));
             var ds = $('#dtStart').datepicker('getDate');
             var de = $('#dtEnd').datepicker('getDate');
 			var nf = encodeURIComponent($("#searchName").val());
@@ -632,17 +631,17 @@
 			 </fieldset>
             <p>
             <fieldset>
-                <legend>Max number of records</legend>
-                <label for="l-10">10</label>
-                <input type="radio" name="selectLast" id="l-10">
-                <label for="l-20">20</label>
-                <input type="radio" name="selectLast" id="l-20">
-                <label for="l-50">50</label>
-                <input type="radio" name="selectLast" id="l-50">
-                <label for="l-100">100</label>
-                <input type="radio" name="selectLast" id="l-100">
-                <label for="l-inf">No limit</label>
-                <input type="radio" name="selectLast" id="l-inf" checked>
+                <legend>Most recent activities</legend>
+                <label for="l-10">Last 10</label>
+                <input type="radio" name="selectLast" id="l-10" cap="10">
+                <label for="l-20">Last 20</label>
+                <input type="radio" name="selectLast" id="l-20" cap="20">
+                <label for="l-50">Last 50</label>
+                <input type="radio" name="selectLast" id="l-50" cap="50">
+                <label for="l-100">Last 100</label>
+                <input type="radio" name="selectLast" id="l-100" cap="100">
+                <label for="l-inf">All</label>
+                <input type="radio" name="selectLast" id="l-inf" cap="1234567" checked>
             </fieldset>
     </div>
     <div id="activities">
