@@ -2,10 +2,13 @@ package xrun;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,6 +24,8 @@ public class RunCalcUtils {
   private File base;
   private File gpxBase;
   private Storage storage;
+  
+  Map<String, JSONObject> cache = new HashMap<String, JSONObject>();
   
   RunCalcUtils(File base) {
     this.base = base;
@@ -230,6 +235,46 @@ public class RunCalcUtils {
     }
     String realType = storage.getType(fileName);
     activity.put("type", realType != null ? realType : "Running");
+  }
+  
+  List<String> getActivityNames() {
+    return new ArrayList<String>(cache.keySet());
+  }
+  
+  File getBaseFolder() {
+    return base;
+  }
+  
+  void importActivity(DataInputStream dis) {
+    File output = null;
+    byte[] buff = new byte[8192];
+    int rd = 0;
+    OutputStream os = null;
+    try {
+      String name = dis.readUTF();
+      output = new File(gpxBase, name);
+      os = new FileOutputStream(output);
+      int len = dis.readInt();
+      while (len > 0 && (rd = dis.read(buff, 0, len)) != -1) {
+        os.write(buff, 0, len);
+        len -= rd;
+      }
+      os.flush();
+    } catch (IOException ioe) {
+      System.out.println("Error importing activity");
+      ioe.printStackTrace();
+      if (output != null && !output.delete()) {
+        output.deleteOnExit();
+      }
+    } finally {
+      try {
+        if (os != null) {
+          os.close();
+        }
+      } catch (IOException ignore) {
+        // silent catch
+      }
+    }
   }
 
 }

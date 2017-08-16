@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
@@ -76,7 +74,8 @@ public class CalcDistServer {
     resourceHandler.setResourceBase("www");
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
-    handlers.setHandlers(new Handler[] { resourceHandler, new CalcDistHandler(tracksBase) });
+    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase);
+    handlers.setHandlers(new Handler[] { resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
     final Scanner scanner = new Scanner(System.in);
@@ -93,6 +92,7 @@ public class CalcDistServer {
               e.printStackTrace();
             }
             scanner.close();
+            cdHandler.dispose();
             break;
           }
         }
@@ -106,21 +106,29 @@ public class CalcDistServer {
 class CalcDistHandler extends AbstractHandler {
 
   private RunCalcUtils rcUtils;
-  private Map<String, JSONObject> cache = new HashMap<String, JSONObject>();
+  private ImportExportUtils ieUtils;
 
   public CalcDistHandler(File tracksBase) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase);
+    ieUtils = new ImportExportUtils(rcUtils, -1);
     scan();
     System.out.println("Initial scan finished!");
+    ieUtils.activate();
+  }
+  
+  void dispose() {
+    if (ieUtils != null) {
+      ieUtils.deactivate();
+    }
   }
   
   private void scan() {
-    cache.clear();
+    rcUtils.cache.clear();
     JSONObject activities = rcUtils.retrieveAllActivities();
     JSONArray data = activities.getJSONArray("activities");
     for (int i = 0; i < data.length(); ++i) {
       JSONObject item = data.getJSONObject(i);
-      cache.put(item.getString("genby"), item);
+      rcUtils.cache.put(item.getString("genby"), item);
     }
   }
   
@@ -207,7 +215,7 @@ class CalcDistHandler extends AbstractHandler {
     double maxDist = 0.0;
     double maxSpeed = 0.0;
     long maxEle = 0;
-    for (JSONObject activity : cache.values()) {
+    for (JSONObject activity : rcUtils.cache.values()) {
       double dist = Double.parseDouble(activity.getString("dist").replace(',', '.'));
       double speed = Double.parseDouble(activity.getString("avgSpeed").replace(',', '.'));
       long ele = activity.getLong("eleTotalPos");
@@ -266,7 +274,7 @@ class CalcDistHandler extends AbstractHandler {
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
     List<JSONObject> matched = new ArrayList<JSONObject>();
-    for (JSONObject activity : cache.values()) {
+    for (JSONObject activity : rcUtils.cache.values()) {
       String type = activity.getString("type");
       if ("Running".equals(type) && !run) {
         continue;
@@ -481,7 +489,7 @@ class CalcDistHandler extends AbstractHandler {
       if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null
           && type.length() > 0) {
         rcUtils.editActivity(fileName, name, type);
-        JSONObject activity = cache.get(fileName);
+        JSONObject activity = rcUtils.cache.get(fileName);
         if (activity != null) {
           rcUtils.updateActivity(activity, fileName);
         }
@@ -492,8 +500,8 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
     }
     if ("/compare".equalsIgnoreCase(target)) {
-      JSONObject item1 = cache.get(baseRequest.getHeader("file1"));
-      JSONObject item2 = cache.get(baseRequest.getHeader("file2"));
+      JSONObject item1 = rcUtils.cache.get(baseRequest.getHeader("file1"));
+      JSONObject item2 = rcUtils.cache.get(baseRequest.getHeader("file2"));
       if (item1 == null || item2 == null) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       } else {
