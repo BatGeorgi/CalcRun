@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -106,68 +106,16 @@ public class CalcDistServer {
 class CalcDistHandler extends AbstractHandler {
 
   private RunCalcUtils rcUtils;
-  private ImportExportUtils ieUtils;
 
   public CalcDistHandler(File tracksBase) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase);
-    ieUtils = new ImportExportUtils(rcUtils, -1);
-    scan();
     System.out.println("Initial scan finished!");
-    ieUtils.activate();
   }
   
   void dispose() {
-    if (ieUtils != null) {
-      ieUtils.deactivate();
+    if (rcUtils != null) {
+      rcUtils.dispose();
     }
-  }
-  
-  private void scan() {
-    rcUtils.cache.clear();
-    JSONObject activities = rcUtils.retrieveAllActivities();
-    JSONArray data = activities.getJSONArray("activities");
-    for (int i = 0; i < data.length(); ++i) {
-      JSONObject item = data.getJSONObject(i);
-      rcUtils.cache.put(item.getString("genby"), item);
-    }
-  }
-  
-  private boolean matchGreater(Calendar matcher, JSONObject activity) {
-    int year = activity.getInt("year");
-    int month = activity.getInt("month");
-    int day = activity.getInt("day");
-    int myr = matcher.get(Calendar.YEAR);
-    int mm = matcher.get(Calendar.MONTH);
-    int md = matcher.get(Calendar.DAY_OF_MONTH);
-    if (myr < year) {
-      return true;
-    } else if (myr == year) {
-      if (mm < month) {
-        return true;
-      } else if (mm == month) {
-        return md <= day;
-      }
-    }
-    return false;
-  }
-  
-  private boolean matchLess(Calendar matcher, JSONObject activity) {
-    int year = activity.getInt("year");
-    int month = activity.getInt("month");
-    int day = activity.getInt("day");
-    int myr = matcher.get(Calendar.YEAR);
-    int mm = matcher.get(Calendar.MONTH);
-    int md = matcher.get(Calendar.DAY_OF_MONTH);
-    if (myr > year) {
-      return true;
-    } else if (myr == year) {
-      if (mm > month) {
-        return true;
-      } else if (mm == month) {
-        return md >= day;
-      }
-    }
-    return false;
   }
   
   private boolean matchName(String namePattern, String name) {
@@ -201,6 +149,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private JSONObject getBest() {
+    // TODO - use queries
     JSONObject result = new JSONObject();
     JSONObject longestRun = new JSONObject();
     JSONObject fastestRun = new JSONObject();
@@ -215,7 +164,10 @@ class CalcDistHandler extends AbstractHandler {
     double maxDist = 0.0;
     double maxSpeed = 0.0;
     long maxEle = 0;
-    for (JSONObject activity : rcUtils.cache.values()) {
+    JSONObject all = rcUtils.retrieveAllActivities();
+    JSONArray arr = all.getJSONArray("activities");
+    for (int i = 0; i < arr.length(); ++i) {
+      JSONObject activity = arr.getJSONObject(i);
       double dist = Double.parseDouble(activity.getString("dist").replace(',', '.'));
       double speed = Double.parseDouble(activity.getString("avgSpeed").replace(',', '.'));
       long ele = activity.getLong("eleTotalPos");
@@ -271,41 +223,17 @@ class CalcDistHandler extends AbstractHandler {
   
   private JSONObject filter(String nameFilter, boolean run, boolean trail, boolean hike, boolean walk, boolean other, int records,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+    long startAt = System.currentTimeMillis();
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
-    List<JSONObject> matched = new ArrayList<JSONObject>();
-    for (JSONObject activity : rcUtils.cache.values()) {
-      String type = activity.getString("type");
-      if ("Running".equals(type) && !run) {
-        continue;
+    List<JSONObject> matched = rcUtils.filter(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance);
+    for (Iterator<JSONObject> it = matched.iterator(); it.hasNext();) {
+      JSONObject cr = it.next();
+      if (!matchName(nameFilter, cr.getString("name"))) {
+        it.remove();
       }
-      if ("Trail".equals(type) && !trail) {
-        continue;
-      }
-      if ("Hiking".equals(type) && !hike) {
-        continue;
-      }
-      if ("Walking".equals(type) && !walk) {
-        continue;
-      }
-      if ("Other".equals(type) && !other) {
-        continue;
-      }
-      if (startDate != null && !matchGreater(startDate, activity)) {
-        continue;
-      }
-      if (endDate != null && !matchLess(endDate, activity)) {
-        continue;
-      }
-      if (!matchName(nameFilter, activity.getString("name"))) {
-        continue;
-      }
-      double dist = Double.parseDouble(activity.getString("dist").replace(',', '.'));
-      if (dist < minDistance || dist > maxDistance) {
-        continue;
-      }
-      matched.add(activity);
     }
+    System.out.println("DB filtering " + (System.currentTimeMillis() - startAt));
     Collections.sort(matched, new RunDateComparator());
     double totalDistance = 0.0;
     double totalTime = 0.0;
@@ -472,7 +400,6 @@ class CalcDistHandler extends AbstractHandler {
         return;
       }
       rcUtils.rescan();
-      scan();
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);
     }
@@ -481,18 +408,14 @@ class CalcDistHandler extends AbstractHandler {
       String name = baseRequest.getHeader("Name");
       String type = baseRequest.getHeader("Type");
       String pass = baseRequest.getHeader("Password");
-      if (!CalcDistServer.isAuthorized(pass)) {
+      /*if (!CalcDistServer.isAuthorized(pass)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         baseRequest.setHandled(true);
         return;
-      }
+      }*/
       if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null
           && type.length() > 0) {
         rcUtils.editActivity(fileName, name, type);
-        JSONObject activity = rcUtils.cache.get(fileName);
-        if (activity != null) {
-          rcUtils.updateActivity(activity, fileName);
-        }
         response.setStatus(HttpServletResponse.SC_OK);
       } else {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -500,8 +423,8 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
     }
     if ("/compare".equalsIgnoreCase(target)) {
-      JSONObject item1 = rcUtils.cache.get(baseRequest.getHeader("file1"));
-      JSONObject item2 = rcUtils.cache.get(baseRequest.getHeader("file2"));
+      JSONObject item1 = rcUtils.getActivity(baseRequest.getHeader("file1"));
+      JSONObject item2 = rcUtils.getActivity(baseRequest.getHeader("file2"));
       if (item1 == null || item2 == null) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       } else {

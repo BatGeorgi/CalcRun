@@ -353,6 +353,7 @@ public class CalcDist {
       String distKm = String.format("%.3f", (distTotal / 1000.0));
       sb.append("Total distance is " + distKm + " km\r\n");
       data.put("dist", distKm);
+      data.put("distRaw", distTotal / 1000.0);
       sb.append("Total running distance is " + String.format("%.3f", (distRunning / 1000.0)) + " km\r\n");
       data.put("distRunning", String.format("%.3f", (distRunning / 1000.0)));
       sb.append("Running(>=" + minRunningSpeedKmh + " km/h) in " + String.format("%.3f", (distRunning / distTotal) * 100.0) + "% of the path\r\n");

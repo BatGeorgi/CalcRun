@@ -4,8 +4,10 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,14 +17,14 @@ public class SQLiteManager {
   
   private static final String TABLE_NAME = "runs";
   private static final String[] KEYS = new String[] {
-      "genby", "name", "type", "date", "year", "month", "day", "dist",
+      "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
       "avgSpeed", "avgPace", "distRunning",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "speedDist", "splits"
   };
   private static final String[] TYPES = new String[] {
-      "text", "text", "text", "text", "integer", "integer", "integer", "text",
+      "text", "text", "text", "text", "integer", "integer", "integer", "text", "real",
       "text", "text", "real", "integer", "text", "text",
       "text", "text", "text",
       "integer", "integer", "integer", "integer",
@@ -30,12 +32,11 @@ public class SQLiteManager {
   };
 
 	private File db;
-	private String path;
 	private String createStatement;
+	private Connection conn = null;
 
 	SQLiteManager(File base) {
 		db = new File(base, "activities.db");
-		path = db.getAbsolutePath().replace('\\', '/');
 		StringBuffer cr = new StringBuffer();
 		cr.append("CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (");
 		cr.append(KEYS[0] + ' ' + TYPES[0] + " PRIMARY KEY NOT NULL, ");
@@ -47,33 +48,36 @@ public class SQLiteManager {
 		createStatement = cr.toString();
 	}
 	
-	void dropExistingDB() {
-	  if (db.isFile() && !db.delete()) {
-	    Connection conn = null;
-	    try {
-	      String url = "jdbc:sqlite:" + db.getAbsolutePath();
-	      conn = DriverManager.getConnection(url);
-	      conn.createStatement().executeQuery("DROP TABLE " + TABLE_NAME);
-	    } catch (SQLException e) {
-	      e.printStackTrace();
-	    } finally {
-	      try {
-	        if (conn != null) {
-	          conn.close();
-	        }
-	      } catch (SQLException ignore) {
-	        // silent catch
-	      }
-	    }
+	synchronized void ensureInitConnection() throws SQLException {
+	  if (conn != null) {
+	    return;
 	  }
+	  conn = DriverManager.getConnection("jdbc:sqlite:" + db.getAbsolutePath().replace('\\', '/'));
+	}
+	
+  private ResultSet executeQuery(String query, boolean returnResult) {
+    try {
+      ensureInitConnection();
+      if (returnResult) {
+        return conn.createStatement().executeQuery(query);
+      }
+      conn.createStatement().executeUpdate(query);
+    } catch (SQLException e) {
+      System.out.println("Error working with db");
+      e.printStackTrace();
+    }
+    return null;
+  }
+	
+	void dropExistingDB() {
+	  executeQuery("DROP TABLE " + TABLE_NAME, false);
 	}
 
-	void createTableIfNotExists(Connection conn) throws SQLException {
-	  conn.createStatement().executeUpdate(createStatement);
+	void createTableIfNotExists() {
+	  executeQuery(createStatement, false);
 	}
 	
 	void addEntry(JSONObject entry) {
-	  Connection conn = null;
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + TABLE_NAME + " VALUES (");
 	  for (int i = 0; i < KEYS.length; ++i) {
@@ -89,25 +93,8 @@ public class SQLiteManager {
 	    }
 	  }
 	  sb.append(')');
-	  System.out.println(sb.toString());
-	  String insert = sb.toString();
-    try {
-      String url = "jdbc:sqlite:" + path;
-      conn = DriverManager.getConnection(url);
-      System.out.println("Connection to SQLite has been established.");
-      createTableIfNotExists(conn);
-      conn.createStatement().executeUpdate(insert);
-    } catch (SQLException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (conn != null) {
-          conn.close();
-        }
-      } catch (SQLException ignore) {
-        // silent catch
-      }
-    }
+    createTableIfNotExists();
+    executeQuery(sb.toString(), false);
 	}
 	
 	private JSONObject readActivity(ResultSet rs) throws JSONException, SQLException {
@@ -116,36 +103,122 @@ public class SQLiteManager {
 	  for (int i = 0; i < len - 2; ++i) {
 	    activity.put(KEYS[i], rs.getObject(i + 1));
 	  }
-	  System.out.println(rs.getObject(len - 1));
 	  activity.put(KEYS[len - 2], new JSONArray(rs.getString(len - 1)));
 	  activity.put(KEYS[len - 1], new JSONArray(rs.getString(len)));
 	  return activity;
 	}
 	
-	JSONArray retrieveAll() {
-	  JSONArray arr = new JSONArray();
-	  Connection conn = null;
-	  try {
-      String url = "jdbc:sqlite:" + path;
-      conn = DriverManager.getConnection(url);
-      System.out.println("Connection to SQLite has been established.");
-      ResultSet rs = conn.createStatement().executeQuery("SELECT * FROM " + TABLE_NAME);
+  JSONArray retrieveAll() {
+    JSONArray arr = new JSONArray();
+    ResultSet rs = executeQuery("SELECT * FROM " + TABLE_NAME, true);
+    try {
       while (rs.next()) {
         arr.put(readActivity(rs));
       }
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (conn != null) {
-          conn.close();
-        }
-      } catch (SQLException ignore) {
-        // silent catch
-      }
+    } catch (Exception ignore) {
+      // silent catch
     }
-	  System.out.println(arr);
-	  return arr;
+    return arr;
+  }
+	
+	List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+	  List<JSONObject> result = new ArrayList<JSONObject>();
+	  StringBuffer sb = new StringBuffer();
+	  sb.append("SELECT * FROM " + TABLE_NAME + " WHERE ");
+	  sb.append("(distRaw > " + minDistance + " AND distRaw < " + maxDistance + ')');
+	  if (run || trail || hike || walk || other) {
+	    sb.append(" AND ");
+	    sb.append('(');
+	    List<String> types = new ArrayList<String>();
+	    if (run) {
+        types.add("Running");
+      }
+      if (trail) {
+        types.add("Trail");
+      }
+      if (hike) {
+        types.add("Hiking");
+      }
+      if (walk) {
+        types.add("Walking");
+      }
+      if (other) {
+        types.add("Other");
+      }
+      for (int i = 0; i < types.size(); ++i) {
+        sb.append("type = '" + types.get(i) + '\'');
+        if (i < types.size() - 1) {
+          sb.append(" OR ");
+        }
+      }
+	    sb.append(')');
+	  }
+	  if (startDate != null) {
+	    int yr = startDate.get(Calendar.YEAR);
+	    int mt = startDate.get(Calendar.MONTH);
+	    int d = startDate.get(Calendar.DAY_OF_MONTH);
+	    sb.append(" AND (");
+	    sb.append("(YEAR > " + yr + ") OR ");
+	    sb.append("(YEAR = " + yr + " AND MONTH > " + mt + ") OR ");
+	    sb.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY >= " + d + ")");
+	    sb.append(')');
+	  }
+	  if (endDate != null) {
+      int yr = endDate.get(Calendar.YEAR);
+      int mt = endDate.get(Calendar.MONTH);
+      int d = endDate.get(Calendar.DAY_OF_MONTH);
+      sb.append(" AND (");
+      sb.append("(YEAR < " + yr + ") OR ");
+      sb.append("(YEAR = " + yr + " AND MONTH < " + mt + ") OR ");
+      sb.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY <= " + d + ")");
+      sb.append(')');
+    }
+	  ResultSet rs = executeQuery(sb.toString(), true);
+	  try {
+      while (rs.next()) {
+        result.add(readActivity(rs));
+      }
+	  } catch (Exception ignore) {
+      // silent catch
+    }
+	  return result;
+  }
+	
+	void updateEntry(String fileName, String newName, String newType) {
+	  StringBuffer sb = new StringBuffer();
+	  sb.append("UPDATE " + TABLE_NAME + " SET name = " + newName + ", type = " + newType);
+	  sb.append(" WHERE genby=" + fileName);
+	  executeQuery(sb.toString(), false);
+	}
+	
+	JSONObject getActivity(String fileName) {
+	  try {
+	    return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby=" + fileName, true));
+	  } catch (Exception e) {
+	    System.out.println("Error reading activity " + fileName);
+	    e.printStackTrace();
+	  }
+	  return null;
+	}
+	
+	boolean hasRecord(String fileName) {
+	  try {
+      return executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby=" + fileName, true).next();
+    } catch (SQLException e) {
+      return false;
+    }
+	}
+	
+	synchronized void close() {
+	  try {
+      if (conn != null) {
+        conn.close();
+      }
+    } catch (SQLException ignore) {
+      // silent catch
+    }
+	  conn = null;
 	}
 
 }
