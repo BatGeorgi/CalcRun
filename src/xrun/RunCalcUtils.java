@@ -24,11 +24,13 @@ public class RunCalcUtils {
   private File base;
   private File gpxBase;
   private Storage storage;
+  private SQLiteManager sqLite;
   
   Map<String, JSONObject> cache = new HashMap<String, JSONObject>();
   
   RunCalcUtils(File base) {
     this.base = base;
+    sqLite = new SQLiteManager(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
     storage = new Storage(base);
@@ -49,6 +51,7 @@ public class RunCalcUtils {
     Map<String, Boolean> available = new HashMap<String, Boolean>();
     List<JSONObject> runs = new ArrayList<JSONObject>();
     String[] all = gpxBase.list();
+    sqLite.dropExistingDB();
     File jsonBase = new File(base, "reports_json");
     for (String fileName : all) {
       if (!fileName.endsWith(".gpx")) {
@@ -83,6 +86,7 @@ public class RunCalcUtils {
         String realType = storage.getType(genby);
         current.put("type", realType != null ? realType : "Running");
         runs.add(current);
+        sqLite.addEntry(current);
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
         e.printStackTrace();
@@ -108,6 +112,8 @@ public class RunCalcUtils {
   
   JSONObject retrieveAllActivities() {
     JSONObject result = new JSONObject();
+    result.put("activities", sqLite.retrieveAll());
+    /*JSONObject result = new JSONObject();
     File jsonBase = new File(base, "reports_json");
     if (!jsonBase.isDirectory()) {
       return result.put("activities", new JSONArray());
@@ -132,7 +138,7 @@ public class RunCalcUtils {
     for (JSONObject run : runs) {
       arr.put(run);
     }
-    result.put("activities", arr);
+    result.put("activities", arr);*/
     return result;
   }
   
