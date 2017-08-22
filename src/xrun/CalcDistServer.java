@@ -336,8 +336,8 @@ class CalcDistHandler extends AbstractHandler {
       String fileName = baseRequest.getHeader("File");
       String name = baseRequest.getHeader("Name");
       String type = baseRequest.getHeader("Type");
-      String pass = baseRequest.getHeader("Password");
-      /*if (!CalcDistServer.isAuthorized(pass)) {
+      /*String pass = baseRequest.getHeader("Password");
+      if (!CalcDistServer.isAuthorized(pass)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         baseRequest.setHandled(true);
         return;
