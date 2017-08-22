@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -350,6 +349,7 @@ public class CalcDist {
       data.put("name", convertName(name));
       sb.append(timeStart + "\r\n");
       data.put("starttime", timeStart);
+      data.put("type", "Running");
       String distKm = String.format("%.3f", (distTotal / 1000.0));
       sb.append("Total distance is " + distKm + " km\r\n");
       data.put("dist", distKm);
@@ -366,6 +366,7 @@ public class CalcDist {
       data.put("timeRest", formatTime((long) timeRest));
       sb.append("Average speed: " + String.format("%.3f km/h", (distTotal / timeTotal) / COEF) + "\r\n");
       data.put("avgSpeed", String.format("%.3f", (distTotal / timeTotal) / COEF));
+      data.put("avgSpeedRaw", (distTotal / timeTotal) / COEF);
       data.put("avgPace", speedToPace((distTotal / timeTotal) / COEF));
       data.put("avgPaceRaw", speedToPaceRaw((distTotal / timeTotal) / COEF));
       sb.append("Elevation running: " + String.format("+%dm, -%dm", (long) eleRunningPos, (long) eleRunningNeg) + "\r\n");
@@ -391,10 +392,8 @@ public class CalcDist {
       throw new IllegalArgumentException("Input file not valid");
     }
     File inputBase = file.getParentFile().getParentFile();
-    File outputBaseTxt = new File(inputBase, "reports_txt");
+    File outputBaseTxt = new File(inputBase, "reports");
     outputBaseTxt.mkdir();
-    File outputBaseJson = new File(inputBase, "reports_json");
-    outputBaseJson.mkdir();
     StringBuffer sb = new StringBuffer();
     CalcDist cd = new CalcDist(file, minSpeed, intR, splitS * 1000.0);
     cd.process(sb, data);
@@ -469,25 +468,6 @@ public class CalcDist {
           }
         } catch (IOException ignore) {
         }
-      }
-    }
-    String fn = file.getName();
-    int ind = fn.lastIndexOf('.');
-    if (ind != -1) {
-      fn = fn.substring(0, ind);
-    }
-    File jsonOut = new File(outputBaseJson, fn + ".json");
-    FileWriter fwr = null;
-    try {
-      fwr = new FileWriter(jsonOut);
-      fwr.write(data.toString());
-      fwr.flush();
-    } finally {
-      try {
-        if (fwr != null) {
-          fwr.close();
-        }
-      } catch (IOException ignore) {
       }
     }
     return sb.toString();

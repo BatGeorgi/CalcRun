@@ -19,14 +19,14 @@ public class SQLiteManager {
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
-      "avgSpeed", "avgPace", "distRunning",
+      "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "speedDist", "splits"
   };
   private static final String[] TYPES = new String[] {
       "text", "text", "text", "text", "integer", "integer", "integer", "text", "real",
       "text", "text", "real", "integer", "text", "text",
-      "text", "text", "text",
+      "text", "real", "text", "text",
       "integer", "integer", "integer", "integer",
       "text", "text"
   };
@@ -48,16 +48,17 @@ public class SQLiteManager {
 		createStatement = cr.toString();
 	}
 	
-	synchronized void ensureInitConnection() throws SQLException {
+	synchronized void ensureInit() throws SQLException {
 	  if (conn != null) {
 	    return;
 	  }
 	  conn = DriverManager.getConnection("jdbc:sqlite:" + db.getAbsolutePath().replace('\\', '/'));
+	  createTableIfNotExists();
 	}
 	
   private ResultSet executeQuery(String query, boolean returnResult) {
     try {
-      ensureInitConnection();
+      ensureInit();
       if (returnResult) {
         return conn.createStatement().executeQuery(query);
       }
@@ -71,6 +72,7 @@ public class SQLiteManager {
 	
 	void dropExistingDB() {
 	  executeQuery("DROP TABLE " + TABLE_NAME, false);
+	  createTableIfNotExists();
 	}
 
 	void createTableIfNotExists() {
@@ -98,6 +100,9 @@ public class SQLiteManager {
 	}
 	
 	private JSONObject readActivity(ResultSet rs) throws JSONException, SQLException {
+	  if (!rs.next()) {
+	    return null;
+	  }
 	  JSONObject activity = new JSONObject();
 	  int len = KEYS.length;
 	  for (int i = 0; i < len - 2; ++i) {
@@ -126,7 +131,7 @@ public class SQLiteManager {
 	  List<JSONObject> result = new ArrayList<JSONObject>();
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("SELECT * FROM " + TABLE_NAME + " WHERE ");
-	  sb.append("(distRaw > " + minDistance + " AND distRaw < " + maxDistance + ')');
+	  sb.append("(distRaw >= " + minDistance + " AND distRaw <= " + maxDistance + ')');
 	  if (run || trail || hike || walk || other) {
 	    sb.append(" AND ");
 	    sb.append('(');
@@ -176,8 +181,9 @@ public class SQLiteManager {
     }
 	  ResultSet rs = executeQuery(sb.toString(), true);
 	  try {
-      while (rs.next()) {
-        result.add(readActivity(rs));
+	    JSONObject json = null;
+      while ((json = readActivity(rs)) != null) {
+        result.add(json);
       }
 	  } catch (Exception ignore) {
       // silent catch
@@ -188,13 +194,13 @@ public class SQLiteManager {
 	void updateEntry(String fileName, String newName, String newType) {
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("UPDATE " + TABLE_NAME + " SET name = " + newName + ", type = " + newType);
-	  sb.append(" WHERE genby=" + fileName);
+	  sb.append(" WHERE genby='" + fileName + '\'');
 	  executeQuery(sb.toString(), false);
 	}
 	
 	JSONObject getActivity(String fileName) {
 	  try {
-	    return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby=" + fileName, true));
+	    return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby='" + fileName + '\'', true));
 	  } catch (Exception e) {
 	    System.out.println("Error reading activity " + fileName);
 	    e.printStackTrace();
@@ -204,10 +210,32 @@ public class SQLiteManager {
 	
 	boolean hasRecord(String fileName) {
 	  try {
-      return executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby=" + fileName, true).next();
+      return executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby='" + fileName + '\'', true).next();
     } catch (SQLException e) {
       return false;
     }
+	}
+	
+	JSONObject getBest(String columnName) {
+    try {
+      return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + columnName +
+          "=(SELECT MAX(" + columnName + ") FROM " + TABLE_NAME + ')', true));
+    } catch (Exception e) {
+      System.out.println("Error reading activities");
+      e.printStackTrace();
+    }
+    return null;
+	}
+	
+	JSONObject getBest(double distMin, double distMax) {
+	  try {
+      return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME +
+          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw LIMIT 1", true));
+    } catch (Exception e) {
+      System.out.println("Error reading activities");
+      e.printStackTrace();
+    }
+	  return null;
 	}
 	
 	synchronized void close() {

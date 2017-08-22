@@ -37,7 +37,7 @@ public class RunCalcUtils {
     String[] all = gpxBase.list();
     sqLite.dropExistingDB();
     for (String fileName : all) {
-      if (!fileName.endsWith(".gpx") || !sqLite.hasRecord(fileName)) {
+      if (!fileName.endsWith(".gpx") || sqLite.hasRecord(fileName)) {
         continue;
       }
       File targ = new File(gpxBase, fileName);
@@ -121,6 +121,29 @@ public class RunCalcUtils {
     }
     result.put("general", general);
     result.put("times", diffsByTime);
+    return result;
+  }
+  
+  JSONObject getBest(String columnName, String suff) {
+    JSONObject best = sqLite.getBest(columnName);
+    JSONObject result = new JSONObject();
+    Object val = best.get(columnName);
+    if (val instanceof Double) {
+      val = String.format("%.3f", (Double) val);
+    }
+    result.put("ach", val + " " + suff);
+    result.put("when", best.get("date"));
+    return result;
+  }
+  
+  JSONObject getBest(double distMin, double distMax) {
+    JSONObject best = sqLite.getBest(distMin, distMax);
+    if (best == null) {
+      return new JSONObject();
+    }
+    JSONObject result = new JSONObject();
+    result.put("ach", best.get("timeTotal"));
+    result.put("when", best.get("date"));
     return result;
   }
   

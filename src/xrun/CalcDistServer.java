@@ -135,89 +135,18 @@ class CalcDistHandler extends AbstractHandler {
     return false;
   }
   
-  private void checkAch(JSONObject achObj, JSONObject activity) {
-    double currentTime = activity.getDouble("timeTotalRaw");
-    double fkt = Double.MAX_VALUE;
-    if (achObj.has("raw")) {
-      fkt = achObj.optDouble("raw");
-    }
-    if (currentTime < fkt) {
-      achObj.put("raw", currentTime);
-      achObj.put("ach", activity.get("timeTotal"));
-      achObj.put("when", activity.get("date"));
-    }
-  }
-  
   private JSONObject getBest() {
-    // TODO - use queries
     JSONObject result = new JSONObject();
-    JSONObject longestRun = new JSONObject();
-    JSONObject fastestRun = new JSONObject();
-    JSONObject maxAscent = new JSONObject();
-    JSONObject fastest1K = new JSONObject();
-    JSONObject fastest2K5 = new JSONObject();
-    JSONObject fastest5K = new JSONObject();
-    JSONObject fastest10K = new JSONObject();
-    JSONObject fastest21K = new JSONObject();
-    JSONObject fastest30K = new JSONObject();
-    JSONObject fastest42K = new JSONObject();
-    double maxDist = 0.0;
-    double maxSpeed = 0.0;
-    long maxEle = 0;
-    JSONObject all = rcUtils.retrieveAllActivities();
-    JSONArray arr = all.getJSONArray("activities");
-    for (int i = 0; i < arr.length(); ++i) {
-      JSONObject activity = arr.getJSONObject(i);
-      double dist = Double.parseDouble(activity.getString("dist").replace(',', '.'));
-      double speed = Double.parseDouble(activity.getString("avgSpeed").replace(',', '.'));
-      long ele = activity.getLong("eleTotalPos");
-      if (dist > maxDist) {
-        maxDist = dist;
-        longestRun.put("ach", dist + " km");
-        longestRun.put("when", activity.get("date"));
-      }
-      if (speed > maxSpeed) {
-        maxSpeed = speed;
-        fastestRun.put("ach", speed + " km/h");
-        fastestRun.put("when", activity.get("date"));
-      }
-      if (ele > maxEle) {
-        maxEle = ele;
-        maxAscent.put("ach", ele + " m");
-        maxAscent.put("when", activity.get("date"));
-      }
-      if (dist >= 0.99 && dist < 1.1) {
-        checkAch(fastest1K, activity);
-      }
-      if (dist >= 2.49 && dist < 2.55) {
-        checkAch(fastest2K5, activity);
-      }
-      if (dist >= 4.99 && dist < 5.2) {
-        checkAch(fastest5K, activity);
-      }
-      if (dist >= 9.98 && dist < 10.3) {
-        checkAch(fastest10K, activity);
-      }
-      if (dist >= 21 && dist < 21.8) {
-        checkAch(fastest21K, activity);
-      }
-      if (dist >= 30 && dist < 31) {
-        checkAch(fastest30K, activity);
-      }
-      if (dist >= 42 && dist < 43.5) {
-        checkAch(fastest42K, activity);
-      }
-    }
-    result.put("longest", longestRun);
-    result.put("fastest", fastestRun);
-    result.put("maxAsc", maxAscent);
-    result.put("1K", fastest1K);
-    result.put("2K5", fastest2K5);
-    result.put("5K", fastest5K);
-    result.put("10K", fastest10K);
-    result.put("21K", fastest21K);
-    result.put("30K", fastest30K);
-    result.put("42K", fastest42K);
+    result.put("longest", rcUtils.getBest("distRaw", "km"));
+    result.put("fastest", rcUtils.getBest("avgSpeedRaw", "km/h"));
+    result.put("maxAsc", rcUtils.getBest("eleTotalPos", "m"));
+    result.put("1K", rcUtils.getBest(0.99, 1.1));
+    result.put("2K5", rcUtils.getBest(2.49, 2.55));
+    result.put("5K", rcUtils.getBest(4.99, 5.2));
+    result.put("10K", rcUtils.getBest(9.98, 10.3));
+    result.put("21K", rcUtils.getBest(21, 21.8));
+    result.put("30K", rcUtils.getBest(30, 31));
+    result.put("42K", rcUtils.getBest(42, 43.5));
     return result;
   }
   
