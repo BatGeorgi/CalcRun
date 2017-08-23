@@ -356,6 +356,7 @@ public class CalcDist {
       data.put("distRaw", distTotal / 1000.0);
       sb.append("Total running distance is " + String.format("%.3f", (distRunning / 1000.0)) + " km\r\n");
       data.put("distRunning", String.format("%.3f", (distRunning / 1000.0)));
+      data.put("distRunningRaw", distRunning / 1000.0);
       sb.append("Running(>=" + minRunningSpeedKmh + " km/h) in " + String.format("%.3f", (distRunning / distTotal) * 100.0) + "% of the path\r\n");
       sb.append("Running time " + formatTime((long) timeRunning) + "\r\n");
       data.put("timeRunning", formatTime((long) timeRunning));
