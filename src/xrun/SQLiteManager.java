@@ -19,14 +19,14 @@ public class SQLiteManager {
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
-      "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning",
+      "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "speedDist", "splits"
   };
   private static final String[] TYPES = new String[] {
       "text", "text", "text", "text", "integer", "integer", "integer", "text", "real",
       "text", "text", "real", "integer", "text", "text",
-      "text", "real", "text", "text",
+      "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
       "text", "text"
   };
@@ -113,28 +113,17 @@ public class SQLiteManager {
 	  return activity;
 	}
 	
-  JSONArray retrieveAll() {
-    JSONArray arr = new JSONArray();
-    ResultSet rs = executeQuery("SELECT * FROM " + TABLE_NAME, true);
-    try {
-      while (rs.next()) {
-        arr.put(readActivity(rs));
-      }
-    } catch (Exception ignore) {
-      // silent catch
-    }
-    return arr;
-  }
-	
 	List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
 	  List<JSONObject> result = new ArrayList<JSONObject>();
-	  StringBuffer sb = new StringBuffer();
-	  sb.append("SELECT * FROM " + TABLE_NAME + " WHERE ");
-	  sb.append("(distRaw >= " + minDistance + " AND distRaw <= " + maxDistance + ')');
+	  StringBuffer selectClause = new StringBuffer();
+	  StringBuffer whereClause = new StringBuffer();
+	  selectClause.append("SELECT * FROM " + TABLE_NAME);
+	  whereClause.append("WHERE ");
+	  whereClause.append("(distRaw >= " + minDistance + " AND distRaw <= " + maxDistance + ") ");
 	  if (run || trail || hike || walk || other) {
-	    sb.append(" AND ");
-	    sb.append('(');
+	    whereClause.append(" AND ");
+	    whereClause.append('(');
 	    List<String> types = new ArrayList<String>();
 	    if (run) {
         types.add("Running");
@@ -152,36 +141,57 @@ public class SQLiteManager {
         types.add("Other");
       }
       for (int i = 0; i < types.size(); ++i) {
-        sb.append("type = '" + types.get(i) + '\'');
+        whereClause.append("type = '" + types.get(i) + '\'');
         if (i < types.size() - 1) {
-          sb.append(" OR ");
+          whereClause.append(" OR ");
         }
       }
-	    sb.append(')');
+	    whereClause.append(')');
 	  }
 	  if (startDate != null) {
 	    int yr = startDate.get(Calendar.YEAR);
 	    int mt = startDate.get(Calendar.MONTH);
 	    int d = startDate.get(Calendar.DAY_OF_MONTH);
-	    sb.append(" AND (");
-	    sb.append("(YEAR > " + yr + ") OR ");
-	    sb.append("(YEAR = " + yr + " AND MONTH > " + mt + ") OR ");
-	    sb.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY >= " + d + ")");
-	    sb.append(')');
+	    whereClause.append(" AND (");
+	    whereClause.append("(YEAR > " + yr + ") OR ");
+	    whereClause.append("(YEAR = " + yr + " AND MONTH > " + mt + ") OR ");
+	    whereClause.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY >= " + d + ")");
+	    whereClause.append(')');
 	  }
 	  if (endDate != null) {
       int yr = endDate.get(Calendar.YEAR);
       int mt = endDate.get(Calendar.MONTH);
       int d = endDate.get(Calendar.DAY_OF_MONTH);
-      sb.append(" AND (");
-      sb.append("(YEAR < " + yr + ") OR ");
-      sb.append("(YEAR = " + yr + " AND MONTH < " + mt + ") OR ");
-      sb.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY <= " + d + ")");
-      sb.append(')');
+      whereClause.append(" AND (");
+      whereClause.append("(YEAR < " + yr + ") OR ");
+      whereClause.append("(YEAR = " + yr + " AND MONTH < " + mt + ") OR ");
+      whereClause.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY <= " + d + ")");
+      whereClause.append(')');
     }
-	  ResultSet rs = executeQuery(sb.toString(), true);
+	  selectClause.append(' ' + whereClause.toString());
+	  selectClause.append(" ORDER BY timeRawMs DESC");
+    if (maxCount != Integer.MAX_VALUE) {
+      selectClause.append(" LIMIT " + maxCount);
+    }
+    StringBuffer aggQuery = new StringBuffer();
+    aggQuery.append("SELECT SUM(distRaw), SUM(timeTotalRaw), AVG(avgSpeedRaw), SUM(eleTotalPos), SUM(eleTotalNeg), SUM(distRunningRaw) ");
+    aggQuery.append("FROM (" + selectClause + ')');
+    ResultSet rs = executeQuery(aggQuery.toString(), true);
+    JSONObject totals = new JSONObject();
+    try {
+      totals.put("totalDistance", String.format("%.3f", rs.getDouble(1)));
+      totals.put("totalTime", CalcDist.formatTime(rs.getLong(2), true));
+      totals.put("avgSpeed", String.format("%.3f", rs.getDouble(3)));
+      totals.put("elePos", rs.getLong(4));
+      totals.put("eleNeg", rs.getLong(5));
+      totals.put("totalRunDist", String.format("%.3f", rs.getDouble(6)));
+    } catch (SQLException ignore) {
+      // no data
+    }
+    result.add(totals);
+	  rs = executeQuery(selectClause.toString(), true);
+	  JSONObject json = null;
 	  try {
-	    JSONObject json = null;
       while ((json = readActivity(rs)) != null) {
         result.add(json);
       }

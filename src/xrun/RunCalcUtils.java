@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -44,6 +43,7 @@ public class RunCalcUtils {
       if (!targ.isFile()) {
         continue;
       }
+      System.out.println("Process file " + targ);
       try {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, 9, 100, 1, current); // default values
@@ -56,15 +56,9 @@ public class RunCalcUtils {
     }
   }
   
-  JSONObject retrieveAllActivities() {
-    JSONObject result = new JSONObject();
-    result.put("activities", sqLite.retrieveAll());
-    return result;
-  }
-  
   List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
-    return sqLite.filter(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance);
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
+    return sqLite.filter(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
   }
   
   JSONObject getActivity(String fileName) {
@@ -72,12 +66,12 @@ public class RunCalcUtils {
   }
   
   static void silentClose(Closeable cl) {
-  	try {
-  		if (cl != null) {
-  			cl.close();
-  		}
-  	} catch (Exception ignore) {
-  	}
+    try {
+      if (cl != null) {
+        cl.close();
+      }
+    } catch (Exception ignore) {
+    }
   }
   
   JSONObject compare(JSONObject run1, JSONObject run2) {
@@ -157,17 +151,4 @@ public class RunCalcUtils {
     }
   }
 
-}
-
-class RunDateComparator implements Comparator<JSONObject> {
-
-  public int compare(JSONObject o1, JSONObject o2) {
-    long time1 = o1.getLong("timeRawMs");
-    long time2 = o2.getLong("timeRawMs");
-    if (time1 == time2) {
-      return 0;
-    }
-    return time1 < time2 ? 1 : -1;
-  }
-  
 }
