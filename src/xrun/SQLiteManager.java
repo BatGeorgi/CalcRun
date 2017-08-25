@@ -30,6 +30,7 @@ public class SQLiteManager {
       "integer", "integer", "integer", "integer",
       "text", "text"
   };
+  private static final String DB_FILE_PREF = "activities";
 
 	private File db;
 	private String createStatement;
@@ -37,6 +38,18 @@ public class SQLiteManager {
 
 	SQLiteManager(File base) {
 		db = new File(base, "activities.db");
+		if (!db.isFile()) {
+		  File[] children = base.listFiles();
+		  if (children != null) {
+		    for (File child : children) {
+		      String name = child.getName();
+		      if (name.startsWith(DB_FILE_PREF) && name.endsWith(".db")) {
+		        db = child;
+		        break;
+		      }
+		    }
+		  }
+		}
 		StringBuffer cr = new StringBuffer();
 		cr.append("CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (");
 		cr.append(KEYS[0] + ' ' + TYPES[0] + " PRIMARY KEY NOT NULL, ");
@@ -69,11 +82,6 @@ public class SQLiteManager {
     }
     return null;
   }
-	
-	void dropExistingDB() {
-	  executeQuery("DROP TABLE " + TABLE_NAME, false);
-	  createTableIfNotExists();
-	}
 
 	void createTableIfNotExists() {
 	  executeQuery(createStatement, false);
@@ -203,9 +211,13 @@ public class SQLiteManager {
 	
 	void updateEntry(String fileName, String newName, String newType) {
 	  StringBuffer sb = new StringBuffer();
-	  sb.append("UPDATE " + TABLE_NAME + " SET name = " + newName + ", type = " + newType);
-	  sb.append(" WHERE genby='" + fileName + '\'');
+	  sb.append("UPDATE " + TABLE_NAME + " SET name ='" + newName + "', type ='" + newType);
+	  sb.append("' WHERE genby='" + fileName + '\'');
 	  executeQuery(sb.toString(), false);
+	}
+	
+	File getDB() {
+	  return db;
 	}
 	
 	JSONObject getActivity(String fileName) {

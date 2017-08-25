@@ -321,7 +321,7 @@
                 $('#edit' + i).click(function() {
                     type = $('#type' + i).text();
                     $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) + getOption("Trail", type) +
-                        getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Password </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
+                        getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Security key </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
                     $("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                     $("#editable").attr('genby', item['genby']);
                     $("#editable").attr('refname', 'item' + i);
@@ -572,7 +572,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 1.6</strong></H1>
+        <H1><strong>Run Analyzer 1.7</strong></H1>
     </div>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
     <div id="filters">
@@ -693,7 +693,7 @@
     </div>
     <div id="editable"></div>
     <div id="details"></div>
-    <div id="rescanForm">Password <input type="password" id="passRescan" /></div>
+    <div id="rescanForm">Security key <input type="password" id="passRescan" /></div>
     <div id="dataHolder" />
     <div id="comparable">
         <div id="compareResults" />
