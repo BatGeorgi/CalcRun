@@ -13,11 +13,15 @@ public class RunCalcUtils {
   
   private File gpxBase;
   private SQLiteManager sqLite;
+  private GoogleDrive drive;
   
-  RunCalcUtils(File base) {
+  RunCalcUtils(File base, File clientSecret) {
     sqLite = new SQLiteManager(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
+    if (clientSecret != null) {
+      drive = new GoogleDrive(clientSecret);
+    }
   }
 
   public static void main(String[] args) {
@@ -28,13 +32,13 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base).rescan();
+    new RunCalcUtils(base, null).rescan();
   }
   
   void rescan() {
     List<JSONObject> runs = new ArrayList<JSONObject>();
     String[] all = gpxBase.list();
-    sqLite.dropExistingDB();
+    boolean entriesAdded = false;
     for (String fileName : all) {
       if (!fileName.endsWith(".gpx") || sqLite.hasRecord(fileName)) {
         continue;
@@ -49,10 +53,14 @@ public class RunCalcUtils {
         CalcDist.run(targ, 9, 100, 1, current); // default values
         runs.add(current);
         sqLite.addEntry(current);
+        entriesAdded = true;
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
         e.printStackTrace();
       }
+    }
+    if (entriesAdded && drive != null) {
+      drive.backupDB(sqLite.getDB());
     }
   }
   
@@ -143,6 +151,9 @@ public class RunCalcUtils {
   
   void editActivity(String fileName, String newName, String newType) {
     sqLite.updateEntry(fileName, newName, newType);
+    if (drive != null) {
+      drive.backupDB(sqLite.getDB());
+    }
   }
   
   void dispose() {

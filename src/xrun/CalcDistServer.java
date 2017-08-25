@@ -52,9 +52,9 @@ public class CalcDistServer {
     return true;
   }
 
-  // 0 - port, 1 - tracks base
+  // 0 - port, 1 - tracks base, 2 - client secret path
   public static void main(String[] args) throws Exception {
-    if (args == null || args.length < 2) {
+    if (args == null || args.length < 3) {
       throw new IllegalArgumentException("Not enough args");
     }
     int port = Integer.parseInt(args[0]);
@@ -65,6 +65,10 @@ public class CalcDistServer {
     if (!tracksBase.isDirectory()) {
       throw new IllegalArgumentException("Not a folder " + tracksBase);
     }
+    File clientSecret = new File(args[2]);
+    if (!clientSecret.isFile()) {
+      throw new IllegalArgumentException("Client secret file " + args[2] + " does not exist");
+    }
     System.out.println("Current time is " + new GregorianCalendar(TimeZone.getDefault()).getTime());
     ResourceHandler resourceHandler = new ResourceHandler();
     resourceHandler.setDirAllowed(false);
@@ -73,7 +77,7 @@ public class CalcDistServer {
     resourceHandler.setResourceBase("www");
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
-    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase);
+    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret);
     handlers.setHandlers(new Handler[] { resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
@@ -106,8 +110,8 @@ class CalcDistHandler extends AbstractHandler {
 
   private RunCalcUtils rcUtils;
 
-  public CalcDistHandler(File tracksBase) throws IOException {
-    rcUtils = new RunCalcUtils(tracksBase);
+  public CalcDistHandler(File tracksBase, File clientSecret) throws IOException {
+    rcUtils = new RunCalcUtils(tracksBase, clientSecret);
     System.out.println("Initial scan finished!");
   }
   
@@ -324,12 +328,12 @@ class CalcDistHandler extends AbstractHandler {
       String fileName = baseRequest.getHeader("File");
       String name = baseRequest.getHeader("Name");
       String type = baseRequest.getHeader("Type");
-      /*String pass = baseRequest.getHeader("Password");
+      String pass = baseRequest.getHeader("Password");
       if (!CalcDistServer.isAuthorized(pass)) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         baseRequest.setHandled(true);
         return;
-      }*/
+      }
       if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null
           && type.length() > 0) {
         rcUtils.editActivity(fileName, name, type);

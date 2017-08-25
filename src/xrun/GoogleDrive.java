@@ -14,12 +14,16 @@
  */
 package xrun;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -27,12 +31,14 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.File;
 
 public class GoogleDrive {
 
@@ -53,9 +59,13 @@ public class GoogleDrive {
       System.exit(1);
     }
   }
-
-  private static Credential authorize() throws IOException {
-      InputStream in = GoogleDrive.class.getResourceAsStream("/client_secret.json");
+  
+  private static final String BACKUP_FOLDER_ID = "0B22GzCU9umn-RkhmQkxzY09YdzQ";
+  
+  private Drive service;
+  
+  private Credential authorize(java.io.File clientSecret) throws IOException {
+      InputStream in = new FileInputStream(clientSecret);
       GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
       GoogleAuthorizationCodeFlow flow =
               new GoogleAuthorizationCodeFlow.Builder(
@@ -68,49 +78,40 @@ public class GoogleDrive {
       return credential;
   }
 
-  private static Drive getDriveService() throws IOException {
-      Credential credential = authorize();
+  private Drive getDriveService(java.io.File clientSecret) throws IOException {
+      Credential credential = authorize(clientSecret);
       return new Drive.Builder(
               HTTP_TRANSPORT, JSON_FACTORY, credential)
               .setApplicationName(APPLICATION_NAME)
               .build();
   }
   
-  private Drive service;
-  private static final String BASE_FOLDER_ID = "0B22GzCU9umn-SFJlOUd4REJGQUU";
-  private static final String GPX_FOLDER_ID = "0B22GzCU9umn-bndYWWsxVmhXeUk";
-  
-  GoogleDrive() {
+  GoogleDrive(java.io.File clientSecret) {
     try {
-      service = getDriveService();
+      service = getDriveService(clientSecret);
     } catch (IOException ioe) {
       System.out.println("Error getting drive service");
       ioe.printStackTrace();
     }
   }
-
-  public static void main(String[] args) throws IOException {
-      // Build a new authorized API client service.
-      Drive service = getDriveService();
-
-      /*System.out.println(service.getBaseUrl());
-      File file = service.files().get("0B22GzCU9umn-Wi1XanBNTGp0Ukk").execute();
-      for (Entry<String, Object> e : file.entrySet()) {
-        System.out.println(e.getValue());
+  
+  void backupDB(final java.io.File db) {
+    final File fileMetadata = new File();
+    Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("EET"));
+    fileMetadata.setName("activities_" + cal.get(Calendar.YEAR) + '_' + (cal.get(Calendar.MONTH) + 1) + '_' +
+        cal.get(Calendar.DATE) + '_' + cal.getTimeInMillis() + ".db");
+    fileMetadata.setParents(Collections.singletonList(BACKUP_FOLDER_ID));
+    final FileContent mediaContent = new FileContent("text/xml", db);
+    new Thread(new Runnable() {
+      public void run() {
+        try {
+          service.files().create(fileMetadata, mediaContent).setFields("id, parents").execute();
+        } catch (IOException e) {
+          System.out.println("Error backuping db " + fileMetadata.getName());
+          e.printStackTrace();
+        }
       }
-      System.out.println(file);
-      System.out.println(file.getParents());
-      System.out.println(file.entrySet());*/
-      
-      /*String folderId = "0B22GzCU9umn-c0pGQVZONkRvMTg";
-      File fileMetadata = new File();
-      fileMetadata.setName("bai_hui.xml");
-      fileMetadata.setParents(Collections.singletonList(folderId));
-      java.io.File filePath = new java.io.File("C:/GBV/bai_hui.xml");
-      FileContent mediaContent = new FileContent("text/xml", filePath);
-      File up = service.files().create(fileMetadata, mediaContent)
-              .setFields("id, parents")
-              .execute();
-      System.out.println("File ID: " + up.getId());*/
+    }).start();
   }
+  
 }
