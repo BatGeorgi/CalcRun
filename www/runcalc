@@ -132,6 +132,48 @@
                     });
                 }
             });
+			$("#removable").dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Save": function() {
+                        $.ajax({
+                            url: 'deleteActivity',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'File': $("#removable").attr('genby'),
+                                'Password': $('#passRem').val()
+                            },
+                            method: 'POST',
+                            dataType: 'json',
+                            statusCode: {
+                                200: function(xhr) {
+                                    getBest();
+									fetch();
+                                },
+                                401: function(xhr) {
+                                    alert('DGD BOKLIK!');
+                                },
+                                400: function(xhr) {
+                                    alert('Empty name!');
+                                }
+                            }
+                        });
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min($(window).width() * 0.4, 400),
+                height: Math.min($(window).height() * 0.4, 300),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 70,
+                        "top": 140
+                    });
+                }
+            });
             $('#comparable').dialog({
                 autoOpen: false,
                 modal: true,
@@ -287,6 +329,12 @@
                     $("#editable").attr('reftype', 'type' + i);
                     $("#editable").dialog('open');
                 });
+				$('#trash' + i).click(function() {
+					$("#removable").html('<table><tbody><tr><td>Security key </td><td><input type="password" id="passRem"/></td></tr></tbody></table>');
+                    $("#removable").dialog('option', 'title', 'Remove ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
+                    $("#removable").attr('genby', item['genby']);
+                    $("#removable").dialog('open');
+				});
             });
             for (i = 0; i < itemsDS.length; ++i) {
                 $('#runs tr:eq(' + (i + 1) + ') td:not(:last-child)').click(itemsDS[i]);
@@ -661,6 +709,7 @@
         </table>
     </div>
     <div id="editable"></div>
+	<div id="removable"></div>
     <div id="details"></div>
     <div id="dataHolder" />
     <div id="comparable">

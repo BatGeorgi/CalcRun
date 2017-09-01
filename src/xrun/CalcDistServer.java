@@ -337,6 +337,22 @@ class CalcDistHandler extends AbstractHandler {
       }
       baseRequest.setHandled(true);
     }
+    if ("/deleteActivity".equalsIgnoreCase(target)) {
+      String fileName = baseRequest.getHeader("File");
+      String pass = baseRequest.getHeader("Password");
+      if (!CalcDistServer.isAuthorized(pass)) {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        baseRequest.setHandled(true);
+        return;
+      }
+      if (fileName != null && fileName.length() > 0) {
+        rcUtils.deleteActivity(fileName);
+        response.setStatus(HttpServletResponse.SC_OK);
+      } else {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      }
+      baseRequest.setHandled(true);
+    }
     if ("/compare".equalsIgnoreCase(target)) {
       JSONObject item1 = rcUtils.getActivity(baseRequest.getHeader("file1"));
       JSONObject item2 = rcUtils.getActivity(baseRequest.getHeader("file2"));
