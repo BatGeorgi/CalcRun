@@ -61,6 +61,7 @@ public class GoogleDrive {
   }
   
   private static final String BACKUP_FOLDER_ID = "0B22GzCU9umn-RkhmQkxzY09YdzQ";
+  private static final String TRACKS_FOLDER_ID = "0B22GzCU9umn-eF9mVWpGeFMza3c";
   
   private Drive service;
   
@@ -101,13 +102,33 @@ public class GoogleDrive {
     fileMetadata.setName("activities_" + cal.get(Calendar.YEAR) + '_' + (cal.get(Calendar.MONTH) + 1) + '_' +
         cal.get(Calendar.DATE) + '_' + cal.getTimeInMillis() + ".db");
     fileMetadata.setParents(Collections.singletonList(BACKUP_FOLDER_ID));
-    final FileContent mediaContent = new FileContent("text/xml", db);
+    final FileContent mediaContent = new FileContent("app/db", db);
     new Thread(new Runnable() {
       public void run() {
         try {
           service.files().create(fileMetadata, mediaContent).setFields("id, parents").execute();
         } catch (IOException e) {
           System.out.println("Error backuping db " + fileMetadata.getName());
+          e.printStackTrace();
+        }
+      }
+    }).start();
+  }
+  
+  void backupTrack(final java.io.File track) {
+    final File fileMetadata = new File();
+    fileMetadata.setName(track.getName());
+    fileMetadata.setParents(Collections.singletonList(TRACKS_FOLDER_ID));
+    final FileContent mediaContent = new FileContent("text/xml", track);
+    new Thread(new Runnable() {
+      public void run() {
+        try {
+          service.files().create(fileMetadata, mediaContent).setFields("id, parents").execute();
+          if (!track.delete()) {
+            track.deleteOnExit();
+          }
+        } catch (IOException e) {
+          System.out.println("Error backuping track " + fileMetadata.getName());
           e.printStackTrace();
         }
       }
