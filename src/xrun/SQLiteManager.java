@@ -21,6 +21,7 @@ public class SQLiteManager {
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
+      "garminLink",
       "speedDist", "splits"
   };
   private static final String[] TYPES = new String[] {
@@ -28,6 +29,7 @@ public class SQLiteManager {
       "text", "text", "real", "integer", "text", "text",
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
+      "text",
       "text", "text"
   };
   private static final String DB_FILE_PREF = "activities";
