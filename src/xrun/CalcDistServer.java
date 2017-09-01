@@ -314,12 +314,6 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
     }
     if ("/rescanActivities".equalsIgnoreCase(target)) {
-      String pass = baseRequest.getHeader("Password");
-      if (!CalcDistServer.isAuthorized(pass)) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        baseRequest.setHandled(true);
-        return;
-      }
       rcUtils.rescan();
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);

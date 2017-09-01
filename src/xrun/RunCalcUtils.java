@@ -53,6 +53,7 @@ public class RunCalcUtils {
         CalcDist.run(targ, 9, 100, 1, current); // default values
         runs.add(current);
         sqLite.addEntry(current);
+        drive.backupTrack(targ);
         entriesAdded = true;
       } catch (Exception e) {
         System.out.println("Error processing " + targ);

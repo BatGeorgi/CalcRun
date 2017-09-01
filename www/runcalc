@@ -292,9 +292,18 @@
                 $('#runs tr:eq(' + (i + 1) + ') td:not(:last-child)').click(itemsDS[i]);
             }
             $('#rescanButton').click(function() {
-                getBest();
-                fetch();
-				alert('Rescan triggered');
+				$.ajax({
+					url: 'rescanActivities',
+					method: 'POST',
+					dataType: 'json',
+					statusCode: {
+						200: function(data) {
+							getBest();
+							fetch();
+							alert('Rescan completed');
+						}
+					}
+				});  
             });
         }
 
