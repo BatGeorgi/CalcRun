@@ -157,6 +157,17 @@ public class RunCalcUtils {
     }
   }
   
+  void deleteActivity(String fileName) {
+    File file = new File(gpxBase, fileName);
+    if (file.isFile() && !file.delete()) {
+      file.deleteOnExit();
+    }
+    sqLite.deleteEntry(fileName);
+    if (drive != null) {
+      drive.backupDB(sqLite.getDB());
+    }
+  }
+  
   void dispose() {
     if (sqLite != null) {
       sqLite.close();

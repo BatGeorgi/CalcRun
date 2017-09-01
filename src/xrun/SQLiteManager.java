@@ -218,6 +218,10 @@ public class SQLiteManager {
 	  executeQuery(sb.toString(), false);
 	}
 	
+	void deleteEntry(String fileName) {
+	  executeQuery("DELETE FROM " + TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
+	}
+	
 	File getDB() {
 	  return db;
 	}
