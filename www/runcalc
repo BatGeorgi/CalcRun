@@ -249,7 +249,7 @@
                 });
                 splitHtml += '</tbody></table></span>';
                 linkHtml = '';
-                if (item.hasOwnProperty('garminLink')) {
+                if (item['garminLink'] != 'none') {
                     linkHtml = '</ul><a href="' + item['garminLink'] + '" target="_blank"><h3>Garmin Connect</h3></a><ul>';
                 }
                 itemsDS.push(function() {
