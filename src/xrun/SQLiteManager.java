@@ -184,17 +184,16 @@ public class SQLiteManager {
       selectClause.append(" LIMIT " + maxCount);
     }
     StringBuffer aggQuery = new StringBuffer();
-    aggQuery.append("SELECT SUM(distRaw), SUM(timeTotalRaw), AVG(avgSpeedRaw), SUM(eleTotalPos), SUM(eleTotalNeg), SUM(distRunningRaw) ");
+    aggQuery.append("SELECT SUM(distRaw), SUM(timeTotalRaw), SUM(eleTotalPos), SUM(eleTotalNeg), SUM(distRunningRaw)");
     aggQuery.append("FROM (" + selectClause + ')');
     ResultSet rs = executeQuery(aggQuery.toString(), true);
     JSONObject totals = new JSONObject();
     try {
-      totals.put("totalDistance", String.format("%.3f", rs.getDouble(1)));
-      totals.put("totalTime", CalcDist.formatTime(rs.getLong(2), true));
-      totals.put("avgSpeed", String.format("%.3f", rs.getDouble(3)));
-      totals.put("elePos", rs.getLong(4));
-      totals.put("eleNeg", rs.getLong(5));
-      totals.put("totalRunDist", String.format("%.3f", rs.getDouble(6)));
+      totals.put("totalDistance", rs.getDouble(1));
+      totals.put("totalTime", rs.getLong(2));
+      totals.put("elePos", rs.getLong(3));
+      totals.put("eleNeg", rs.getLong(4));
+      totals.put("totalRunDist", rs.getDouble(5));
     } catch (SQLException ignore) {
       // no data
     }
