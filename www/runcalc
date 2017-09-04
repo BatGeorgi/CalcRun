@@ -309,6 +309,11 @@
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
             $('#runs').trigger("sorton", [ [[1, 'dates']] ]);
+			var table = document.getElementById('runs');
+			var rowLength = table.rows.length;
+			for(var i=1; i<rowLength; i++) {
+				table.rows[i].cells[0].innerHTML=(i).toString();
+			}
             $.each(all, function(i, item) {
                 optsAll += '<option genby="' + item['genby'] + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">' + $('#item' + i).text() + ' ' + $('#date' + i).text() + '</option>';
             });
