@@ -160,23 +160,37 @@ class CalcDistHandler extends AbstractHandler {
     List<JSONObject> matched = rcUtils.filter(run, trail, hike, walk, other, startDate, endDate,
         minDistance, maxDistance, records);
     Iterator<JSONObject> it = matched.iterator();
+    JSONObject totals = null;
     if (it.hasNext()) {
-      it.next();
+      totals = it.next();
     }
     while(it.hasNext()) {
       JSONObject cr = it.next();
       if (!matchName(nameFilter, cr.getString("name"))) {
         it.remove();
+        totals.put("totalDistance", totals.getDouble("totalDistance") - cr.getDouble("distRaw"));
+        totals.put("totalTime", totals.getLong("totalTime") - cr.getLong("timeTotalRaw"));
+        totals.put("elePos", totals.getLong("elePos") - cr.getLong("eleTotalPos"));
+        totals.put("eleNeg", totals.getLong("eleNeg") - cr.getLong("eleTotalNeg"));
+        totals.put("totalRunDist", totals.getDouble("totalRunDist") - cr.getDouble("distRunningRaw"));
       }
+    }
+    if (totals != null) {
+    	totals.put("avgSpeed", String.format("%.3f", totals.getDouble("totalDistance") / (totals.getLong("totalTime") / 3600.0)));
+    	totals.put("totalTime", CalcDist.formatTime(totals.getLong("totalTime"), true));
     }
     for (int i = 1; i < matched.size(); ++i) {
       activities.put(matched.get(i));
     }
     result.put("activities", activities);
     if (activities.length() > 0) {
-      JSONObject totals = matched.get(0);
       for (String key : totals.keySet()) {
-        result.put(key, totals.get(key));
+      	Object value = totals.get(key);
+      	if (value instanceof Double) {
+      		result.put(key, String.format("%.3f", (Double) value));
+      	} else {
+      		result.put(key, totals.get(key));
+      	}
       }
     }
     return result;
