@@ -308,7 +308,7 @@
             });
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
-            $('#runs').tablesorter();
+            $('#runs').trigger("sorton", [ [[1, 'dates']] ]);
             $.each(all, function(i, item) {
                 optsAll += '<option genby="' + item['genby'] + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">' + $('#item' + i).text() + ' ' + $('#date' + i).text() + '</option>';
             });
