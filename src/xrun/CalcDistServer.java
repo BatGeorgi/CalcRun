@@ -228,6 +228,13 @@ class CalcDistHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);
     }
+    if ("/bestSplits".equalsIgnoreCase(target)) {
+      response.setContentType("application/json");
+      response.getWriter().println(rcUtils.getBestSplits());
+      response.getWriter().flush();
+      response.setStatus(HttpServletResponse.SC_OK);
+      baseRequest.setHandled(true);
+    }
     if ("/fetch".equalsIgnoreCase(target)) {
       boolean run = "true".equals(baseRequest.getHeader("run"));
       boolean trail = "true".equals(baseRequest.getHeader("trail"));
