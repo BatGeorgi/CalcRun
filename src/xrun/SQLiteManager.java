@@ -265,6 +265,25 @@ public class SQLiteManager {
 	  return null;
 	}
 	
+	JSONArray getSplits() {
+	  JSONArray result = new JSONArray();
+	  ResultSet rs = executeQuery("SELECT name, date, splits FROM " + TABLE_NAME +
+	      " WHERE (type='Running' OR type='Trail')", true);
+	  try {
+      while (rs.next()) {
+        JSONObject crnt = new JSONObject();
+        crnt.put("name", rs.getString(1));
+        crnt.put("date", rs.getString(2));
+        crnt.put("splits", new JSONArray(rs.getString(3)));
+        result.put(crnt);
+      }
+    } catch (SQLException e) {
+      System.out.println("Error reading activities");
+      e.printStackTrace();
+    }
+	  return result;
+	}
+	
 	synchronized void close() {
 	  try {
       if (conn != null) {

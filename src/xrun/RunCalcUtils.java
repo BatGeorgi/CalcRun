@@ -5,6 +5,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -147,6 +150,43 @@ public class RunCalcUtils {
     JSONObject result = new JSONObject();
     result.put("ach", best.get("timeTotal"));
     result.put("when", best.get("date"));
+    return result;
+  }
+  
+  JSONObject getBestSplits() {
+    JSONArray arr = sqLite.getSplits();
+    Map<Integer, Long> best = new TreeMap<Integer, Long>();
+    Map<Integer, String[]> bestAttrs = new TreeMap<Integer, String[]>();
+    for (int i = 0; i < arr.length(); ++i) {
+      JSONObject crnt = arr.getJSONObject(i);
+      JSONArray splits = crnt.getJSONArray("splits");
+      for (int j = 0; j < splits.length(); ++j) {
+        JSONObject sp = splits.getJSONObject(j);
+        double point = sp.getDouble("totalRaw");
+        if (Math.abs(point - Math.round(point)) > 1e-3) {
+          continue;
+        }
+        int rounded = (int) Math.round(point);
+        long totalTimeRaw = CalcDist.getRealTime(sp.getString("timeTotal"));
+        Long currentBest = best.get(rounded);
+        if (currentBest == null || totalTimeRaw < currentBest.longValue()) {
+          best.put(rounded, totalTimeRaw);
+          bestAttrs.put(rounded, new String[] {crnt.getString("name"), crnt.getString("date")});
+        }
+      }
+    }
+    JSONObject result = new JSONObject();
+    arr = new JSONArray();
+    for (Entry<Integer, Long> entry : best.entrySet()) {
+      String[] ba = bestAttrs.get(entry.getKey());
+      JSONObject ach = new JSONObject();
+      ach.put("point", entry.getKey());
+      ach.put("name", ba[0]);
+      ach.put("date", ba[1]);
+      ach.put("ach", CalcDist.formatTime(entry.getValue(), true));
+      arr.put(ach);
+    }
+    result.put("totals", arr);
     return result;
   }
   
