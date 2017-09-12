@@ -285,9 +285,9 @@
                 });
                 tableHtml += '</tbody></table></span>';
                 splits = item['splits'];
-                splitHtml = '<span class="highlight"><table><thead><th>Point(km)</th><th>Pace(min/km)</th><th>Speed(km/h)</th><th>Diff(m)</th></thead><tbody>';
+                splitHtml = '<span class="highlight"><table><thead><th>Point(km)</th><th>Pace(min/km)</th><th>Speed(km/h)</th><th>Diff(m)</th><th>Total time</th></thead><tbody>';
                 $.each(splits, function(i, sp) {
-                    splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td></tr>';
+                    splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] + '</td></tr>';
                 });
                 splitHtml += '</tbody></table></span>';
                 linkHtml = '';
