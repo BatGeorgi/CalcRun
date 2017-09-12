@@ -227,6 +227,26 @@
                     });
                 }
             });
+			$("#bestSplits").dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min($(window).width() * 0.7, 700),
+                height: Math.min($(window).height() * 0.85, 800),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 50,
+                        "top": 150
+                    });
+                }
+            });
         }
 
         function initContent(data) {
@@ -453,12 +473,36 @@
                 }
             });
 		}
+		
+		function initSplitsBest() {
+			$.ajax({
+                url: 'bestSplits',
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                statusCode: {
+                    200: function(data) {
+						$("#bestSplits").dialog('option', 'title', 'Best split times');
+						totals = data['totals'];
+						splits = '';
+						$.each(totals, function(i, item) {
+							splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td></tr>';
+						});
+						$("#bestSplits").html('<h2>Not optimal accuracy, real times may be higher :)</h2><span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
+						$("#bestSplits").dialog('open');
+                    }
+                }
+            });
+		}
 
         $(document).ready(function() {
             $("#selectAll").button();
             $("#search").button();
 			$("#dsearch").button();
 			$("#findNames").button();
+			$("#bestTotalsBtn").button();
             $("#search").button("option", "disabled", true);
             $("input[name=selectPeriod]").checkboxradio();
             $("input[name=selectLast]").checkboxradio();
@@ -485,6 +529,9 @@
             });
 			$("#dsearch").click(function() {
                 fetch();
+            });
+			$("#bestTotalsBtn").click(function() {
+                initSplitsBest();
             });
             $("#radio-1").change(fetch);
             $("#radio-2").change(disableAndFetch);
@@ -594,7 +641,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 1.7</strong></H1>
+        <H1><strong>Run Analyzer 1.75</strong></H1>
     </div>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
     <div id="filters">
@@ -680,6 +727,7 @@
 			</table>
 		</div>
 		<div id="bestOfWrap">
+			<button id="bestTotalsBtn">View best split times</button>
 			<h2>Best</h2>
 			<table id="bestOf">
 				<thead>
@@ -716,6 +764,7 @@
     <div id="editable"></div>
 	<div id="removable"></div>
     <div id="details"></div>
+	<div id="bestSplits"></div>
     <div id="dataHolder" />
     <div id="comparable">
         <div id="compareResults" />
