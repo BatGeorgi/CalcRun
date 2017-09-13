@@ -167,7 +167,7 @@ public class RunCalcUtils {
           continue;
         }
         int rounded = (int) Math.round(point);
-        long totalTimeRaw = CalcDist.getRealTime(sp.getString("timeTotal"));
+        long totalTimeRaw = sp.getLong("timeTotalRaw");
         Long currentBest = best.get(rounded);
         if (currentBest == null || totalTimeRaw < currentBest.longValue()) {
           best.put(rounded, totalTimeRaw);
