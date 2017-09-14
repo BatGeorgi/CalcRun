@@ -446,6 +446,7 @@ public class CalcDist {
         writer.write("Splits");
         writer.newLine();
         double tot = 0.0;
+        double timeTotalRaw = 0;
         for (int i = 0; i < cd.splitTimes.size(); ++i) {
           JSONObject sp = new JSONObject();
           double currentLen = 0.0;
@@ -464,7 +465,10 @@ public class CalcDist {
           String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
           writer.write(splitTime);
           sp.put("time", splitTime);
-          sp.put("timeRaw", (long) cd.splitTimes.get(i).doubleValue());
+          sp.put("timeRaw", Math.round(cd.splitTimes.get(i).doubleValue()));
+          timeTotalRaw += cd.splitTimes.get(i).doubleValue();
+          sp.put("timeTotalRaw", Math.round(timeTotalRaw));
+          sp.put("timeTotal", formatTime(Math.round(timeTotalRaw), true));
           double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
           sp.put("pace", formatPace(splitPace));
           sp.put("paceRaw", formatPaceRaw(splitPace));
