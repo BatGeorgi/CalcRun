@@ -490,7 +490,7 @@
 						$.each(totals, function(i, item) {
 							splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td></tr>';
 						});
-						$("#bestSplits").html('<h2>Not optimal accuracy, real times may be higher :)</h2><span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
+						$("#bestSplits").html('<h2>Best split times by distance</h2><span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
 						$("#bestSplits").dialog('open');
                     }
                 }
