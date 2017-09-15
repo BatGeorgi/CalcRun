@@ -56,7 +56,9 @@ public class RunCalcUtils {
         CalcDist.run(targ, 9, 100, 1, current); // default values
         runs.add(current);
         sqLite.addEntry(current);
-        drive.backupTrack(targ);
+        if (drive != null) {
+          drive.backupTrack(targ);
+        }
         entriesAdded = true;
       } catch (Exception e) {
         System.out.println("Error processing " + targ);
@@ -133,6 +135,9 @@ public class RunCalcUtils {
   JSONObject getBest(String columnName, String suff) {
     JSONObject best = sqLite.getBest(columnName);
     JSONObject result = new JSONObject();
+    if (best == null) {
+      return result;
+    }
     Object val = best.get(columnName);
     if (val instanceof Double) {
       val = String.format("%.3f", (Double) val);
