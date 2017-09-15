@@ -18,10 +18,6 @@ h2 {
     font-weight: bold;
 }
 td {
-	border-left: 1px solid #C1DAD7;
-	border-top: 1px solid #C1DAD7;
-	border-right: 1px solid #C1DAD7;
-	border-bottom: 1px solid #C1DAD7;
 	padding: 6px 6px 6px 12px;
 	color: #6D929B;
 }
@@ -97,6 +93,10 @@ th {
 	margin: auto;
 	text-align: left;
 	width: 65%;
+}
+#runs td {
+	padding-top: .5em;
+    padding-bottom: .5em;
 }
 #overallWrap {
 	float: left;
