@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <title>Upload Activity</title>
+    <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
+    <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
+    <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
+    <script src="jquery-3.2.1.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="js/jquery.tablesorter.js"></script>
+    <script src="js/jquery.tablesorter.widgets.js"></script>
+    <script src="js/parsers/parser-ipv6.js"></script>
+    <script src="js/jquery.metadata.js"></script>
+</head>
+
+<body style="text-align:center">
+	<H1><strong>Upload activity</strong></H1>
+	<table>
+		<tbody>
+			<tr><td>Security key&nbsp;<input type="password" id="pass"/></td><td><button id="authorize">Authorize</button></td></tr>
+			<tr><td>Select file&nbsp;</td><td>
+				<form id="upload" action="upload" method="post" enctype="multipart/form-data">
+					<input type="file" name="fileToUpload" id="fileToUpload">
+					<input type="submit" value="Upload File" name="submit">
+				</form>
+			</td></tr>
+		</tbody>
+	</table>
+<body>
+
+</html>

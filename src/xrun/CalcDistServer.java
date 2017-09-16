@@ -109,15 +109,20 @@ public class CalcDistServer {
 class CalcDistHandler extends AbstractHandler {
 
   private RunCalcUtils rcUtils;
+  private TokenHandler tokenHandler;
 
   public CalcDistHandler(File tracksBase, File clientSecret) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase, clientSecret);
-    System.out.println("Initial scan finished!");
+    tokenHandler = new TokenHandler();
+    System.out.println("Initialize finished!");
   }
   
   void dispose() {
     if (rcUtils != null) {
       rcUtils.dispose();
+    }
+    if (tokenHandler != null) {
+    	tokenHandler.dispose();
     }
   }
   
@@ -220,6 +225,17 @@ class CalcDistHandler extends AbstractHandler {
       HttpServletResponse response) throws IOException, ServletException {
     if (!"POST".equals(baseRequest.getMethod())) {
       return;
+    }
+    if ("/authorize".equalsIgnoreCase(target)) {
+    	response.setContentType("application/json");
+    	if (!CalcDistServer.isAuthorized(baseRequest.getHeader("Password"))) {
+    		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    	} else {
+    		response.getWriter().println(tokenHandler.getToken());
+    		response.getWriter().flush();
+    		response.setStatus(HttpServletResponse.SC_OK);
+    	}
+      baseRequest.setHandled(true);
     }
     if ("/best".equalsIgnoreCase(target)) {
       response.setContentType("application/json");
