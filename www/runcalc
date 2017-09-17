@@ -138,7 +138,7 @@
                 show: "blind",
                 hide: "blind",
                 buttons: {
-                    "Save": function() {
+                    "Remove": function() {
                         $.ajax({
                             url: 'deleteActivity',
                             headers: {
