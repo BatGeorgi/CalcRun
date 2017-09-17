@@ -2,6 +2,10 @@ package xrun;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -68,6 +72,70 @@ public class RunCalcUtils {
     if (entriesAdded && drive != null) {
       drive.backupDB(sqLite.getDB());
     }
+  }
+  
+  private File addActivity0(String name, InputStream is) {
+  	if (sqLite.hasRecord(name)) {
+  		String sname = null;
+  		int i;
+  		for (i = 0; i < 1000; ++i) {
+  			sname = name + i;
+  			if (!sqLite.hasRecord(sname)) {
+  				name = sname;
+  				break;
+  			}
+  		}
+  		if (i == 1000) {
+  			return null;
+  		}
+  	}
+  	File file = new File(gpxBase, name);
+  	OutputStream os = null;
+  	int rd = 0;
+  	byte[] buff = new byte[8192];
+  	try {
+  		os = new FileOutputStream(file);
+  		while ((rd = is.read(buff)) != -1) {
+  			os.write(buff, 0, rd);
+  		}
+  		os.flush();
+  	} catch (IOException ioe) {
+  		ioe.printStackTrace();
+  		file.delete();
+  		return null;
+  	} finally {
+  		try {
+  			if (os != null) {
+  				os.close();
+  			}
+  		} catch (IOException ignore) {
+  			// silent catch
+  		}
+  	}
+  	return file;
+  }
+  
+  boolean addActivity(String name, InputStream is) {
+  	File file = addActivity0(name, is);
+  	if (file != null) {
+  		try {
+        JSONObject current = new JSONObject();
+        CalcDist.run(file, 9, 100, 1, current); // default values
+        sqLite.addEntry(current);
+        if (drive != null) {
+          drive.backupTrack(file);
+        }
+      } catch (Exception e) {
+        System.out.println("Error processing " + file);
+        e.printStackTrace();
+        file.delete();
+        return false;
+      }
+  		if (drive != null) {
+        drive.backupDB(sqLite.getDB());
+      }
+  	}
+  	return true;
   }
   
   List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,

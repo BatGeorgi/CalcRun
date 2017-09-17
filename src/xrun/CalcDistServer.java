@@ -2,6 +2,7 @@ package xrun;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
@@ -16,6 +17,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -78,7 +82,7 @@ public class CalcDistServer {
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
     final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret);
-    handlers.setHandlers(new Handler[] { resourceHandler, cdHandler });
+    handlers.setHandlers(new Handler[] { new MultipartConfigInjectionHandler(), resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
     final Scanner scanner = new Scanner(System.in);
@@ -220,18 +224,60 @@ class CalcDistHandler extends AbstractHandler {
     }
     return null;
   }
+  
+	private boolean handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
+		ServletFileUpload upload = new ServletFileUpload();
+		try {
+			FileItemIterator iter = upload.getItemIterator(request);
+			while (iter.hasNext()) {
+				FileItemStream item = iter.next();
+				if (!item.isFormField()) {
+					return rcUtils.addActivity(item.getName(), item.openStream());
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-    if (!"POST".equals(baseRequest.getMethod())) {
+  	System.out.println(target + " " + baseRequest.getMethod());
+    if (!"POST".equals(baseRequest.getMethod()) || target.length() < 2) {
       return;
+    }
+    if (target.startsWith("/upload") && target.length() > 7) {
+    	String token = target.substring(7);
+    	if (tokenHandler.isAuthorized(token)) {
+    		tokenHandler.removeToken(token);
+    		boolean result = handleFileUpload(baseRequest, request, response);
+    		response.setContentType("application/text");
+    		if (result) {
+    			response.getWriter().println("Upload finished!");
+    			response.getWriter().flush();
+    			response.setStatus(HttpServletResponse.SC_OK);
+    		} else {
+    			response.getWriter().println("Upload failed!");
+    			response.getWriter().flush();
+    			response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+    		}
+    	} else {
+    		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    		response.setContentType("application/text");
+    		response.getWriter().println("Not authorized!");
+        response.getWriter().flush();
+    	}
+    	baseRequest.setHandled(true);
     }
     if ("/authorize".equalsIgnoreCase(target)) {
     	response.setContentType("application/json");
     	if (!CalcDistServer.isAuthorized(baseRequest.getHeader("Password"))) {
     		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     	} else {
-    		response.getWriter().println(tokenHandler.getToken());
+    		JSONObject json = new JSONObject();
+    		json.put("token", tokenHandler.getToken());
+    		response.getWriter().println(json.toString());
     		response.getWriter().flush();
     		response.setStatus(HttpServletResponse.SC_OK);
     	}
