@@ -256,17 +256,19 @@ class CalcDistHandler extends AbstractHandler {
     		boolean result = handleFileUpload(baseRequest, request, response);
     		response.setContentType("text/html");
     		if (result) {
-    			response.getWriter().println("Upload finished!");
+    			response.getWriter().println("<h2>Upload finished!</h2>");
+    			response.getWriter().println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
     			response.getWriter().flush();
     			response.setStatus(HttpServletResponse.SC_OK);
     		} else {
-    			response.getWriter().println("Upload failed!");
+    			response.getWriter().println("<h2>Upload failed!</h2>");
+    			response.getWriter().println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
     			response.getWriter().flush();
     			response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
     		}
-    	} else {
+    	} else { // just in case
     		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    		response.setContentType("application/text");
+    		response.setContentType("text/html");
     		response.getWriter().println("Not authorized!");
         response.getWriter().flush();
     	}
