@@ -1,1 +1,1 @@
-nohup java -cp "bin:jetty-all-9.4.6.v20170531-uber.jar:json.jar:sqlite-jdbc-3.20.0.jar:drive_deps/*" xrun.CalcDistServer 7272 /home/pi/Tracks /home/pi/Tracks/client_secret.json &
+nohup java -cp "bin:jetty-all-9.4.6.v20170531-uber.jar:json.jar:sqlite-jdbc-3.20.0.jar:commons-io-1.3.2.jar:commons-fileupload-1.3.3.jar:drive_deps/*" xrun.CalcDistServer 7272 /home/pi/Tracks /home/pi/Tracks/client_secret.json &

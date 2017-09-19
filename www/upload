@@ -30,6 +30,7 @@
 						alert('Authorized, token valid for 5 minutes');
 						$('#upload').attr('action', 'upload' + data['token']);
 						$('#pass').val('');
+						$("#submit").button('option', 'disabled', false);
 					},
 					401: function(data) {
 						alert('DGD boklik!');
@@ -54,7 +55,7 @@
 	<p>Select file&nbsp;
 	<form id="upload" action="upload1" method="post" enctype="multipart/form-data">
 		<input type="file" name="fileToUpload" id="fileToUpload" />
-		<input type="submit" value="Upload" name="submit" id="submit"/>
+		<input type="submit" value="Upload" name="submit" id="submit" disabled/>
 	</form>
 </body>
 

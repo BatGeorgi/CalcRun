@@ -533,7 +533,7 @@
 			$("#bestTotalsBtn").click(function() {
 				$("#bestSplits").dialog('open');
             });
-            $("#radio-1").change(fetch);
+            $("#radio-1").change(disableAndFetch);
             $("#radio-2").change(disableAndFetch);
             $("#radio-3").change(disableAndFetch);
             $("#radio-4").change(disableAndFetch);
