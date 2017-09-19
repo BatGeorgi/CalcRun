@@ -31,6 +31,7 @@
 						$('#upload').attr('action', 'upload' + data['token']);
 						$('#pass').val('');
 						$("#submit").button('option', 'disabled', false);
+						$("#authorize").button('option', 'disabled', true);
 					},
 					401: function(data) {
 						alert('DGD boklik!');
