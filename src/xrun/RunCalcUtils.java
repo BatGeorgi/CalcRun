@@ -79,7 +79,7 @@ public class RunCalcUtils {
   		String sname = null;
   		int i;
   		for (i = 0; i < 1000; ++i) {
-  			sname = name + i;
+  			sname = name + CalcDist.FILE_SUFF + i;
   			if (!sqLite.hasRecord(sname)) {
   				name = sname;
   				break;

@@ -24,6 +24,8 @@ import org.w3c.dom.NodeList;
 
 public class CalcDist {
   
+  static final String FILE_SUFF = "_-REV-_";
+  
   private static final String[] MONTHS = new String[] {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -215,6 +217,11 @@ public class CalcDist {
   
   private void process(StringBuffer sb, JSONObject data) throws Exception {
     String fileName = file.getName();
+    String garminName = fileName;
+    int ind = garminName.indexOf(FILE_SUFF);
+    if (ind != -1) {
+      garminName = garminName.substring(0, ind);
+    }
     int dott = fileName.lastIndexOf('.');
     if (dott != -1) {
       fileName = fileName.substring(0, dott);
@@ -353,7 +360,7 @@ public class CalcDist {
       data.put("genby", file.getName());
       data.put("garminLink", "none");
       if (isGarminTrack) {
-        String fname = file.getName();
+        String fname = garminName;
         int ind1 = fname.indexOf('_');
         int ind2 = fname.lastIndexOf('.');
         if (ind1 != -1 && ind1 < ind2) {
