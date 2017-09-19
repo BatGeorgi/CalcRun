@@ -641,7 +641,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 1.8</strong></H1>
+        <H1><strong>Run Analyzer 1.81</strong></H1>
     </div>
 	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
@@ -718,12 +718,6 @@
 		<div id="overallWrap">
 			<h2>Totals</h2>
 			<table id="overall">
-				<thead>
-					<tr>
-						<th>Type</th>
-						<th>Result</th>
-					</tr>
-				</thead>
 				<tbody></tbody>
 			</table>
 		</div>
@@ -731,13 +725,6 @@
 			<button id="bestTotalsBtn">View best split times</button>
 			<h2>Best</h2>
 			<table id="bestOf">
-				<thead>
-					<tr>
-						<th>Type</th>
-						<th>Achievement</th>
-						<th>Date</th>
-					</tr>
-				</thead>
 				<tbody></tbody>
 			</table>
 		</div>
