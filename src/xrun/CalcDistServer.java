@@ -227,7 +227,7 @@ class CalcDistHandler extends AbstractHandler {
     return null;
   }
   
-	private boolean handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
+	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
 		ServletFileUpload upload = new ServletFileUpload();
 		try {
 			FileItemIterator iter = upload.getItemIterator(request);
@@ -240,7 +240,7 @@ class CalcDistHandler extends AbstractHandler {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
+		return null;
 	}
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
@@ -253,15 +253,16 @@ class CalcDistHandler extends AbstractHandler {
     	String token = target.substring(7);
     	if (tokenHandler.isAuthorized(token)) {
     		tokenHandler.removeToken(token);
-    		boolean result = handleFileUpload(baseRequest, request, response);
+    		String result = handleFileUpload(baseRequest, request, response);
     		response.setContentType("text/html");
-    		if (result) {
+    		if (result == null) { // all normal
     			response.getWriter().println("<h2>Upload finished!</h2>");
     			response.getWriter().println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
     			response.getWriter().flush();
     			response.setStatus(HttpServletResponse.SC_OK);
     		} else {
     			response.getWriter().println("<h2>Upload failed!</h2>");
+    			response.getWriter().println(result);
     			response.getWriter().println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
     			response.getWriter().flush();
     			response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
