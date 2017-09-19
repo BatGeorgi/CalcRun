@@ -2,7 +2,6 @@ package xrun;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
@@ -58,7 +57,7 @@ public class CalcDistServer {
 
   // 0 - port, 1 - tracks base, 2 - client secret path
   public static void main(String[] args) throws Exception {
-    if (args == null || args.length < 3) {
+    if (args == null || args.length < 2) {
       throw new IllegalArgumentException("Not enough args");
     }
     int port = Integer.parseInt(args[0]);
@@ -69,9 +68,12 @@ public class CalcDistServer {
     if (!tracksBase.isDirectory()) {
       throw new IllegalArgumentException("Not a folder " + tracksBase);
     }
-    File clientSecret = new File(args[2]);
-    if (!clientSecret.isFile()) {
-      throw new IllegalArgumentException("Client secret file " + args[2] + " does not exist");
+    File clientSecret = null;
+    if (args.length > 2) {
+      clientSecret = new File(args[2]);
+      if (!clientSecret.isFile()) {
+        throw new IllegalArgumentException("Client secret file " + args[2] + " does not exist");
+      }
     }
     System.out.println("Current time is " + new GregorianCalendar(TimeZone.getDefault()).getTime());
     ResourceHandler resourceHandler = new ResourceHandler();
@@ -252,7 +254,7 @@ class CalcDistHandler extends AbstractHandler {
     	if (tokenHandler.isAuthorized(token)) {
     		tokenHandler.removeToken(token);
     		boolean result = handleFileUpload(baseRequest, request, response);
-    		response.setContentType("application/text");
+    		response.setContentType("text/html");
     		if (result) {
     			response.getWriter().println("Upload finished!");
     			response.getWriter().flush();
