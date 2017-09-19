@@ -74,7 +74,7 @@ public class RunCalcUtils {
     }
   }
   
-  private File addActivity0(String name, InputStream is) {
+  private File addActivity0(String name, InputStream is) throws IOException {
   	if (sqLite.hasRecord(name)) {
   		String sname = null;
   		int i;
@@ -100,9 +100,8 @@ public class RunCalcUtils {
   		}
   		os.flush();
   	} catch (IOException ioe) {
-  		ioe.printStackTrace();
   		file.delete();
-  		return null;
+  		throw ioe;
   	} finally {
   		try {
   			if (os != null) {
@@ -115,27 +114,33 @@ public class RunCalcUtils {
   	return file;
   }
   
-  boolean addActivity(String name, InputStream is) {
-  	File file = addActivity0(name, is);
-  	if (file != null) {
-  		try {
-        JSONObject current = new JSONObject();
-        CalcDist.run(file, 9, 100, 1, current); // default values
-        sqLite.addEntry(current);
-        if (drive != null) {
-          drive.backupTrack(file);
-        }
-      } catch (Exception e) {
-        System.out.println("Error processing " + file);
-        e.printStackTrace();
-        file.delete();
-        return false;
-      }
-  		if (drive != null) {
-        drive.backupDB(sqLite.getDB());
-      }
+  String addActivity(String name, InputStream is) {
+  	File file = null;
+  	try {
+  	  file = addActivity0(name, is);
+  	} catch (IOException ioe) {
+  	  return "I/O error: " + ioe.getMessage();
   	}
-  	return true;
+  	if (file == null) {
+  	  return "DB error";
+  	}
+    try {
+      JSONObject current = new JSONObject();
+      CalcDist.run(file, 9, 100, 1, current); // default values
+      sqLite.addEntry(current);
+      if (drive != null) {
+        drive.backupTrack(file);
+      }
+    } catch (Exception e) {
+      System.out.println("Error processing " + file);
+      e.printStackTrace();
+      file.delete();
+      return "Processing file error: " + e.getMessage();
+    }
+    if (drive != null) {
+      drive.backupDB(sqLite.getDB());
+    }
+  	return null;
   }
   
   List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,

@@ -51,7 +51,7 @@
 </head>
 
 <body style="text-align:center">
-	<H1><strong>Upload activity</strong></H1>
+	<H1><strong>Upload gpx track</strong></H1>
 	Security key&nbsp;<input type="password" id="pass"/>&nbsp;<button id="authorize">Authorize</button>
 	<p>Select file&nbsp;
 	<form id="upload" action="upload1" method="post" enctype="multipart/form-data">
