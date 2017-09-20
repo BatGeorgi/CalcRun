@@ -245,7 +245,6 @@ class CalcDistHandler extends AbstractHandler {
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-  	System.out.println(target + " " + baseRequest.getMethod());
     if (!"POST".equals(baseRequest.getMethod()) || target.length() < 2) {
       return;
     }
