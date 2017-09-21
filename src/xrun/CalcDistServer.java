@@ -194,6 +194,7 @@ class CalcDistHandler extends AbstractHandler {
       activities.put(matched.get(i));
     }
     result.put("activities", activities);
+    result.put("mtotals", rcUtils.getMonthlyTotals());
     if (activities.length() > 0) {
       for (String key : totals.keySet()) {
       	Object value = totals.get(key);

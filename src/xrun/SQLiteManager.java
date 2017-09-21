@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -61,6 +62,54 @@ public class SQLiteManager {
 		}
 		cr.append(KEYS[len - 1] + ' ' + TYPES[len - 1] + " NOT NULL)");
 		createStatement = cr.toString();
+	}
+	
+	JSONArray getMonthlyTotals() {
+	  JSONArray result = new JSONArray();
+	  try {
+	    ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + TABLE_NAME, true);
+	    List<Integer> years = new ArrayList<Integer>();
+	    while (rs.next()) {
+        years.add(rs.getInt(1));
+      }
+	    Collections.sort(years);
+	    String[] filters = new String[] {"type='" + RunCalcUtils.RUNNING + '\'',
+	        "type='" + RunCalcUtils.TRAIL + '\'',
+	        "type='" + RunCalcUtils.HIKING + '\'',
+	        "type='" + RunCalcUtils.RUNNING + "' OR type='" + RunCalcUtils.TRAIL + '\''
+	    };
+	    String[] acms = new String[] {
+	        "r", "t", "h", "rt"
+	    };
+	    for (int i = years.size() - 1; i >= 0; --i) {
+	      int year = years.get(i);
+	      JSONObject[] months = new JSONObject[12];
+	      for (int j = 0; j < 12; ++j) {
+	        months[j] = new JSONObject();
+	        months[j].put("name", CalcDist.MONTHS[j] + ' ' + year);
+	        for (int k = 0; k < 4; ++k) {
+	          months[j].put(acms[k], "0");
+	        }
+	        months[j].put("emp", true);
+	      }
+        for (int j = 0; j < filters.length; ++j) {
+          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + TABLE_NAME + " WHERE (" + filters[j] +
+              ") AND year=" + years.get(i) + " GROUP BY month", true);
+	        while (rs.next()) {
+	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
+	          months[rs.getInt(1)].remove("emp");
+	        }
+	      }
+        for (int j = months.length - 1; j >= 0; --j) {
+          if (months[j].opt("emp") == null) {
+            result.put(months[j]);
+          }
+        }
+	    }
+	  } catch (Exception e) {
+	    e.printStackTrace();
+	  }
+	  return result;
 	}
 	
 	synchronized void ensureInit() throws SQLException {
@@ -136,19 +185,19 @@ public class SQLiteManager {
 	    whereClause.append('(');
 	    List<String> types = new ArrayList<String>();
 	    if (run) {
-        types.add("Running");
+        types.add(RunCalcUtils.RUNNING);
       }
       if (trail) {
-        types.add("Trail");
+        types.add(RunCalcUtils.TRAIL);
       }
       if (hike) {
-        types.add("Hiking");
+        types.add(RunCalcUtils.HIKING);
       }
       if (walk) {
-        types.add("Walking");
+        types.add(RunCalcUtils.WALKING);
       }
       if (other) {
-        types.add("Other");
+        types.add(RunCalcUtils.OTHER);
       }
       for (int i = 0; i < types.size(); ++i) {
         whereClause.append("type = '" + types.get(i) + '\'');
