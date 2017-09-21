@@ -180,3 +180,20 @@ li {
 .legend-cap {
 	color: #ce2c0c;
 }
+tr.border_bottom td {
+  border-bottom:1pt solid black;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+#mTotals {
+	text-align: center;
+}
+#mtt { 
+    border-collapse: collapse; 
+	text-align: center;
+}
+.innermtt tr td{
+	border-bottom: none;
+	border-collapse: collapse; 
+	text-align: center;
+}

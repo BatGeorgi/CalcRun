@@ -26,7 +26,7 @@ public class CalcDist {
   
   static final String FILE_SUFF = "_-REV-_";
   
-  private static final String[] MONTHS = new String[] {
+  static final String[] MONTHS = new String[] {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   };
@@ -371,7 +371,7 @@ public class CalcDist {
       data.put("name", convertName(name));
       sb.append(timeStart + "\r\n");
       data.put("starttime", timeStart);
-      data.put("type", "Running");
+      data.put("type", RunCalcUtils.RUNNING);
       String distKm = String.format("%.3f", (distTotal / 1000.0));
       sb.append("Total distance is " + distKm + " km\r\n");
       data.put("dist", distKm);

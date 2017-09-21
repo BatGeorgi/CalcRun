@@ -88,6 +88,19 @@
         }
 
         function initDialogs() {
+			$('#rsOk').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "OK": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 300,
+                height: 200
+            });
             $("#editable").dialog({
                 autoOpen: false,
                 modal: true,
@@ -247,6 +260,26 @@
                     });
                 }
             });
+			$("#mTotals").dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min(400),
+                height: Math.min($(window).height() * 0.85, 900),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 50,
+                        "top": 150
+                    });
+                }
+            });
         }
 
         function initContent(data) {
@@ -267,7 +300,8 @@
             $('#ht').text('Activities(' + all.length + ' record' + (all.length > 1 ? 's' : '') + ')');
             $('#overall tbody').html('<tr><td>Total distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Total time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Est. elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Est. elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Est. running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
-            runsHtml = '';
+            initMonthlyTotals(data['mtotals']);
+			runsHtml = '';
             optsAll = '';
             var dialog = {
                 autoOpen: false,
@@ -373,7 +407,9 @@
 						200: function(data) {
 							getBest();
 							fetch();
-							alert('Rescan completed');
+							$('#rsOk').html('Rescan completed!');
+							$('#rsOk').dialog('option', 'title', 'Action finished');
+							$('#rsOk').dialog('open');
 						}
 					}
 				});  
@@ -496,6 +532,22 @@
                 }
             });
 		}
+		
+		function getMTable(item) {
+			return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h']
+				+ '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
+		}
+		
+		function initMonthlyTotals(data) {
+			$("#mTotals").dialog('option', 'title', 'Monthly total distances');
+			tableHtml = '<table id="mtt" align="center"><tbody>';
+			$.each(data, function(i, item) {
+				console.log(item);
+				tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getMTable(item) + '</td></tr>';
+			});
+			tableHtml += '</tbody></table>';
+			$("#mTotals").html('<h2>Total distance by month</h2><p>' + tableHtml);
+		}
 
         $(document).ready(function() {
             $("#selectAll").button();
@@ -503,6 +555,7 @@
 			$("#dsearch").button();
 			$("#findNames").button();
 			$("#bestTotalsBtn").button();
+			$("#mTotalsBtn").button();
             $("#search").button("option", "disabled", true);
             $("input[name=selectPeriod]").checkboxradio();
             $("input[name=selectLast]").checkboxradio();
@@ -532,6 +585,9 @@
             });
 			$("#bestTotalsBtn").click(function() {
 				$("#bestSplits").dialog('open');
+            });
+			$("#mTotalsBtn").click(function() {
+				$("#mTotals").dialog('open');
             });
             $("#radio-1").change(disableAndFetch);
             $("#radio-2").change(disableAndFetch);
@@ -641,7 +697,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 1.82</strong></H1>
+        <H1><strong>Run Analyzer 1.85</strong></H1>
     </div>
 	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
@@ -716,6 +772,7 @@
     </div>
     <div id="activities">
 		<div id="overallWrap">
+			<button id="mTotalsBtn">View monthly totals</button>
 			<h2>Totals</h2>
 			<table id="overall">
 				<tbody></tbody>
@@ -753,10 +810,12 @@
 	<div id="removable"></div>
     <div id="details"></div>
 	<div id="bestSplits"></div>
+	<div id="mTotals"></div>
     <div id="dataHolder" />
     <div id="comparable">
         <div id="compareResults" />
     </div>
+	<div id="rsOk"></div>
 </body>
 
 </html>

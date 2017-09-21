@@ -18,6 +18,12 @@ import org.json.JSONObject;
 
 public class RunCalcUtils {
   
+  static final String RUNNING = "Running";
+  static final String TRAIL = "Trail";
+  static final String HIKING = "Hiking";
+  static final String WALKING = "Walking";
+  static final String OTHER = "Other";
+  
   private File gpxBase;
   private SQLiteManager sqLite;
   private GoogleDrive drive;
@@ -112,6 +118,10 @@ public class RunCalcUtils {
   		}
   	}
   	return file;
+  }
+  
+  JSONArray getMonthlyTotals() {
+    return sqLite.getMonthlyTotals();
   }
   
   String addActivity(String name, InputStream is) {
