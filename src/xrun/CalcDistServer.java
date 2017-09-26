@@ -228,14 +228,18 @@ class CalcDistHandler extends AbstractHandler {
     return null;
   }
   
-	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response) {
+	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+	    String activityName, String activityType) {
+	  if (activityName != null && activityName.length() == 0) {
+	    activityName = null;
+	  }
 		ServletFileUpload upload = new ServletFileUpload();
 		try {
 			FileItemIterator iter = upload.getItemIterator(request);
 			while (iter.hasNext()) {
 				FileItemStream item = iter.next();
 				if (!item.isFormField()) {
-					return rcUtils.addActivity(item.getName(), item.openStream());
+					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType);
 				}
 			}
 		} catch (Exception e) {
@@ -251,9 +255,23 @@ class CalcDistHandler extends AbstractHandler {
     }
     if (target.startsWith("/upload") && target.length() > 7) {
     	String token = target.substring(7);
-    	if (tokenHandler.isAuthorized(token)) {
-    		tokenHandler.removeToken(token);
-    		String result = handleFileUpload(baseRequest, request, response);
+    	int ind = token.indexOf('.');
+    	String uid = (ind != -1 ? token.substring(0, ind) : token);
+    	String name = null;
+    	String type = null;
+    	if (ind != -1) {
+    	  int to = token.lastIndexOf('.');
+    	  if (to != -1 && to > ind) {
+    	    name = token.substring(ind + 1, to);
+    	    type = token.substring(to + 1);
+    	  }
+    	}
+      if (type == null || type.length() == 0) {
+        type = RunCalcUtils.RUNNING;
+      }
+    	if (tokenHandler.isAuthorized(uid)) {
+    		tokenHandler.removeToken(uid);
+    		String result = handleFileUpload(baseRequest, request, response, name, type);
     		response.setContentType("text/html");
     		if (result == null) { // all normal
     			response.getWriter().println("<h2>Upload finished!</h2>");
@@ -271,6 +289,7 @@ class CalcDistHandler extends AbstractHandler {
     		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     		response.setContentType("text/html");
     		response.getWriter().println("Not authorized!");
+    		response.getWriter().println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
         response.getWriter().flush();
     	}
     	baseRequest.setHandled(true);

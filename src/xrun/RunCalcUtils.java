@@ -124,7 +124,7 @@ public class RunCalcUtils {
     return sqLite.getMonthlyTotals();
   }
   
-  String addActivity(String name, InputStream is) {
+  String addActivity(String name, InputStream is, String activityName, String activityType) {
   	File file = null;
   	try {
   	  file = addActivity0(name, is);
@@ -137,6 +137,10 @@ public class RunCalcUtils {
     try {
       JSONObject current = new JSONObject();
       CalcDist.run(file, 9, 100, 1, current); // default values
+      if (activityName != null) {
+        current.put("name", activityName);
+      }
+      current.put("type", activityType);
       sqLite.addEntry(current);
       if (drive != null) {
         drive.backupTrack(file);

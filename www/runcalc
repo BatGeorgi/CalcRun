@@ -542,7 +542,6 @@
 			$("#mTotals").dialog('option', 'title', 'Monthly total distances');
 			tableHtml = '<table id="mtt" align="center"><tbody>';
 			$.each(data, function(i, item) {
-				console.log(item);
 				tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getMTable(item) + '</td></tr>';
 			});
 			tableHtml += '</tbody></table>';
