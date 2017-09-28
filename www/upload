@@ -48,7 +48,6 @@
 			$('#authorize').click(authorization); 
 			$("#upload").submit(function( event ) {
 				suff = "." + encodeURIComponent($('#name').val()) +  "." + $('#type').find(':selected').val();
-				alert(suff);
 				initVal = $('#upload').attr('action');
 				$('#upload').attr('action', initVal + suff);
 			});
