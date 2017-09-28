@@ -49,7 +49,7 @@
 			$("#upload").submit(function( event ) {
 				suff = "." + encodeURIComponent($('#name').val()) +  "." + $('#type').find(':selected').val();
 				initVal = $('#upload').attr('action');
-				$('#upload').attr('action', initVal + suff);
+				$('#upload').attr('action', encodeURIComponent(initVal + suff));
 			});
 		});
 	</script>
