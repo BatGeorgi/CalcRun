@@ -17,6 +17,11 @@ import javax.swing.filechooser.FileFilter;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * The first implementation to test the concept.
+ */
+@Deprecated
 public class CalcDistGUI {
 
   private JFrame frame;
@@ -31,9 +36,9 @@ public class CalcDistGUI {
   private static final double DEFAULT_INTERVAL = 100; // meters
 
   /**
-   * Launch the application.
+   * Launch the application. Rename to use.
    */
-  public static void main(String[] args) {
+  public static void xmain(String[] args) {
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         try {
