@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -157,9 +158,53 @@ public class RunCalcUtils {
   	return null;
   }
   
-  List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
+  private List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
     return sqLite.filter(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
+  }
+  
+  JSONObject filter(String nameFilter, boolean run, boolean trail, boolean hike, boolean walk, boolean other, int records,
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+    JSONObject result = new JSONObject();
+    JSONArray activities = new JSONArray();
+    List<JSONObject> matched = filter(run, trail, hike, walk, other, startDate, endDate,
+        minDistance, maxDistance, records);
+    Iterator<JSONObject> it = matched.iterator();
+    JSONObject totals = null;
+    if (it.hasNext()) {
+      totals = it.next();
+    }
+    while(it.hasNext()) {
+      JSONObject cr = it.next();
+      if (!matchName(nameFilter, cr.getString("name"))) {
+        it.remove();
+        totals.put("totalDistance", totals.getDouble("totalDistance") - cr.getDouble("distRaw"));
+        totals.put("totalTime", totals.getLong("totalTime") - cr.getLong("timeTotalRaw"));
+        totals.put("elePos", totals.getLong("elePos") - cr.getLong("eleTotalPos"));
+        totals.put("eleNeg", totals.getLong("eleNeg") - cr.getLong("eleTotalNeg"));
+        totals.put("totalRunDist", totals.getDouble("totalRunDist") - cr.getDouble("distRunningRaw"));
+      }
+    }
+    if (totals != null) {
+      totals.put("avgSpeed", String.format("%.3f", totals.getDouble("totalDistance") / (totals.getLong("totalTime") / 3600.0)));
+      totals.put("totalTime", CalcDist.formatTime(totals.getLong("totalTime"), true));
+    }
+    for (int i = 1; i < matched.size(); ++i) {
+      activities.put(matched.get(i));
+    }
+    result.put("activities", activities);
+    result.put("mtotals", getMonthlyTotals());
+    if (activities.length() > 0) {
+      for (String key : totals.keySet()) {
+        Object value = totals.get(key);
+        if (value instanceof Double) {
+          result.put(key, String.format("%.3f", (Double) value));
+        } else {
+          result.put(key, totals.get(key));
+        }
+      }
+    }
+    return result;
   }
   
   JSONObject getActivity(String fileName) {
@@ -173,6 +218,23 @@ public class RunCalcUtils {
       }
     } catch (Exception ignore) {
     }
+  }
+  
+  private static boolean matchName(String namePattern, String name) {
+    if (namePattern == null) {
+      return true;
+    }
+    namePattern = namePattern.trim();
+    if (namePattern.length() == 0) {
+      return true;
+    }
+    String[] splits = namePattern.split("%7C");
+    for (String str : splits) {
+      if (name.contains(str)) {
+        return true;
+      }
+    }
+    return false;
   }
   
   JSONObject compare(JSONObject run1, JSONObject run2) {
@@ -218,7 +280,7 @@ public class RunCalcUtils {
     return result;
   }
   
-  JSONObject getBest(String columnName, String suff) {
+  private JSONObject getBest(String columnName, String suff) {
     JSONObject best = sqLite.getBest(columnName);
     JSONObject result = new JSONObject();
     if (best == null) {
@@ -233,7 +295,7 @@ public class RunCalcUtils {
     return result;
   }
   
-  JSONObject getBest(double distMin, double distMax) {
+  private JSONObject getBest(double distMin, double distMax) {
     JSONObject best = sqLite.getBest(distMin, distMax);
     if (best == null) {
       return new JSONObject();
@@ -241,6 +303,21 @@ public class RunCalcUtils {
     JSONObject result = new JSONObject();
     result.put("ach", best.get("timeTotal"));
     result.put("when", best.get("date"));
+    return result;
+  }
+  
+  JSONObject getBest() {
+    JSONObject result = new JSONObject();
+    result.put("longest", getBest("distRaw", "km"));
+    result.put("fastest", getBest("avgSpeedRaw", "km/h"));
+    result.put("maxAsc", getBest("eleTotalPos", "m"));
+    result.put("1K", getBest(0.99, 1.1));
+    result.put("2K5", getBest(2.49, 2.55));
+    result.put("5K", getBest(4.99, 5.2));
+    result.put("10K", getBest(9.98, 10.3));
+    result.put("21K", getBest(21, 21.8));
+    result.put("30K", getBest(30, 31));
+    result.put("42K", getBest(42, 43.5));
     return result;
   }
   
