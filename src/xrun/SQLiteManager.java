@@ -367,6 +367,32 @@ public class SQLiteManager {
     }
     return false;
   }
+  
+  private boolean isCookieValid(String expires) {
+    if (expires == null) {
+      return true;
+    }
+    String[] tokens = expires.split(" ");
+    if (tokens.length != 3) {
+      return false;
+    }
+    Calendar current = new GregorianCalendar(TimeZone.getDefault());
+    int year = new Integer(tokens[0]);
+    int month = new Integer(tokens[1]);
+    int date = new Integer(tokens[2]);
+    if (current.get(Calendar.YEAR) < year) {
+      return true;
+    }
+    if (current.get(Calendar.YEAR) == year) {
+      if (current.get(Calendar.MONTH) < month) {
+        return true;
+      }
+      if (current.get(Calendar.MONTH) == month) {
+        return current.get(Calendar.DATE) < date;
+      }
+    }
+    return false;
+  }
 	
 	synchronized boolean isValidCookie(String uid) {
 	  try {
@@ -374,34 +400,33 @@ public class SQLiteManager {
 	    if (!rs.next()) {
 	      return false;
 	    }
-	    String exp = rs.getString(1);
-	    if (exp == null) {
-	      return false;
-	    }
-	    String[] tokens = exp.split(" ");
-	    if (tokens.length != 3) {
-	      return false;
-	    }
-	    Calendar current = new GregorianCalendar(TimeZone.getDefault());
-	    int year = new Integer(tokens[0]);
-	    int month = new Integer(tokens[1]);
-	    int date = new Integer(tokens[2]);
-	    if (current.get(Calendar.YEAR) < year) {
+	    if (!isCookieValid(rs.getString(1))) {
 	      return true;
 	    }
-	    if (current.get(Calendar.YEAR) == year) {
-	      if (current.get(Calendar.MONTH) < month) {
-	        return true;
-	      }
-	      if (current.get(Calendar.MONTH) == month) {
-	        return current.get(Calendar.DATE) < date;
-	      }
-	    }
+	    deleteCookie(uid);
 	  } catch (Exception e) {
       System.out.println("Error verifying cookie");
       e.printStackTrace();
     }
 	  return false;
+	}
+	
+	synchronized void deleteCookie(String uid) {
+	  executeQuery("DELETE FROM "+ COOKIES_TABLE_NAME + " WHERE uid='" + uid + "'", false);
+	}
+	
+	synchronized void checkForExpiredCookies() {
+	  ResultSet rs = executeQuery("SELECT * FROM " + COOKIES_TABLE_NAME, true);
+	  try {
+	    while (rs.next()) {
+	      String uid = rs.getString(1);
+	      if (!isCookieValid(rs.getString(2))) {
+	        deleteCookie(uid);
+	      }
+	    }
+	  } catch (Exception ignore) {
+	    // silent catch
+	  }
 	}
 	
 	synchronized void close() {
