@@ -8,7 +8,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,7 +18,9 @@ import org.json.JSONObject;
 
 public class SQLiteManager {
   
-  private static final String TABLE_NAME = "runs";
+  private static final String RUNS_TABLE_NAME = "runs";
+  private static final String COOKIES_TABLE_NAME = "cookies";
+  
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
@@ -34,9 +38,12 @@ public class SQLiteManager {
       "text", "text"
   };
   private static final String DB_FILE_PREF = "activities";
+  
+  private static final String CREATE_STATEMENT_COOKIES_TABLE = "CREATE TABLE IF NOT EXISTS " + COOKIES_TABLE_NAME + 
+      "(uid PRIMARY KEY NOT NULL, expires NOT NULL)";
 
 	private File db;
-	private String createStatement;
+	private String createStatementRunsTable;
 	private Connection conn = null;
 
 	SQLiteManager(File base) {
@@ -54,20 +61,20 @@ public class SQLiteManager {
 		  }
 		}
 		StringBuffer cr = new StringBuffer();
-		cr.append("CREATE TABLE IF NOT EXISTS "+ TABLE_NAME + " (");
+		cr.append("CREATE TABLE IF NOT EXISTS "+ RUNS_TABLE_NAME + " (");
 		cr.append(KEYS[0] + ' ' + TYPES[0] + " PRIMARY KEY NOT NULL, ");
 		int len = KEYS.length;
 		for (int i = 1; i < len - 1; ++i) {
 		  cr.append(KEYS[i] + ' ' + TYPES[i] + " NOT NULL, ");
 		}
 		cr.append(KEYS[len - 1] + ' ' + TYPES[len - 1] + " NOT NULL)");
-		createStatement = cr.toString();
+		createStatementRunsTable = cr.toString();
 	}
 	
-	JSONArray getMonthlyTotals() {
+	synchronized JSONArray getMonthlyTotals() {
 	  JSONArray result = new JSONArray();
 	  try {
-	    ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + TABLE_NAME, true);
+	    ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + RUNS_TABLE_NAME, true);
 	    List<Integer> years = new ArrayList<Integer>();
 	    while (rs.next()) {
         years.add(rs.getInt(1));
@@ -93,7 +100,7 @@ public class SQLiteManager {
 	        months[j].put("emp", true);
 	      }
         for (int j = 0; j < filters.length; ++j) {
-          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + TABLE_NAME + " WHERE (" + filters[j] +
+          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE (" + filters[j] +
               ") AND year=" + years.get(i) + " GROUP BY month", true);
 	        while (rs.next()) {
 	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
@@ -117,7 +124,7 @@ public class SQLiteManager {
 	    return;
 	  }
 	  conn = DriverManager.getConnection("jdbc:sqlite:" + db.getAbsolutePath().replace('\\', '/'));
-	  createTableIfNotExists();
+	  createTablesIfNotExists();
 	}
 	
   private ResultSet executeQuery(String query, boolean returnResult) {
@@ -133,14 +140,24 @@ public class SQLiteManager {
     }
     return null;
   }
+  
+  private void executeCreate(String statement) {
+    try {
+      conn.createStatement().executeUpdate(statement);
+    } catch (SQLException e) {
+      System.out.println("Error working with db - table creation");
+      e.printStackTrace();
+    }
+  }
 
-	void createTableIfNotExists() {
-	  executeQuery(createStatement, false);
+	private void createTablesIfNotExists() {
+	  executeCreate(createStatementRunsTable);
+	  executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
 	}
 	
-	void addEntry(JSONObject entry) {
+	synchronized void addActivity(JSONObject entry) {
 	  StringBuffer sb = new StringBuffer();
-	  sb.append("INSERT INTO " + TABLE_NAME + " VALUES (");
+	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
 	  for (int i = 0; i < KEYS.length; ++i) {
 	    String str = entry.get(KEYS[i]).toString();
 	    if ("real".equals(TYPES[i])) {
@@ -154,7 +171,6 @@ public class SQLiteManager {
 	    }
 	  }
 	  sb.append(')');
-    createTableIfNotExists();
     executeQuery(sb.toString(), false);
 	}
 	
@@ -172,12 +188,12 @@ public class SQLiteManager {
 	  return activity;
 	}
 	
-	List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
+	synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
 	  List<JSONObject> result = new ArrayList<JSONObject>();
 	  StringBuffer selectClause = new StringBuffer();
 	  StringBuffer whereClause = new StringBuffer();
-	  selectClause.append("SELECT * FROM " + TABLE_NAME);
+	  selectClause.append("SELECT * FROM " + RUNS_TABLE_NAME);
 	  whereClause.append("WHERE ");
 	  whereClause.append("(distRaw >= " + minDistance + " AND distRaw <= " + maxDistance + ") ");
 	  if (run || trail || hike || walk || other) {
@@ -259,24 +275,24 @@ public class SQLiteManager {
 	  return result;
   }
 	
-	void updateEntry(String fileName, String newName, String newType) {
+	synchronized void updateActivity(String fileName, String newName, String newType) {
 	  StringBuffer sb = new StringBuffer();
-	  sb.append("UPDATE " + TABLE_NAME + " SET name ='" + newName + "', type ='" + newType);
+	  sb.append("UPDATE " + RUNS_TABLE_NAME + " SET name ='" + newName + "', type ='" + newType);
 	  sb.append("' WHERE genby='" + fileName + '\'');
 	  executeQuery(sb.toString(), false);
 	}
 	
-	void deleteEntry(String fileName) {
-	  executeQuery("DELETE FROM " + TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
+	synchronized void deleteActivities(String fileName) {
+	  executeQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
 	}
 	
-	File getDB() {
+	File getDBFile() {
 	  return db;
 	}
 	
-	JSONObject getActivity(String fileName) {
+	synchronized JSONObject getActivity(String fileName) {
 	  try {
-	    return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby='" + fileName + '\'', true));
+	    return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', true));
 	  } catch (Exception e) {
 	    System.out.println("Error reading activity " + fileName);
 	    e.printStackTrace();
@@ -284,18 +300,18 @@ public class SQLiteManager {
 	  return null;
 	}
 	
-	boolean hasRecord(String fileName) {
+	synchronized boolean hasActivity(String fileName) {
 	  try {
-      return executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE genby='" + fileName + '\'', true).next();
+      return executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', true).next();
     } catch (SQLException e) {
       return false;
     }
 	}
 	
-	JSONObject getBest(String columnName) {
+	synchronized JSONObject getBestActivities(String columnName) {
     try {
-      return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + columnName +
-          "=(SELECT MAX(" + columnName + ") FROM " + TABLE_NAME + ')', true));
+      return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE " + columnName +
+          "=(SELECT MAX(" + columnName + ") FROM " + RUNS_TABLE_NAME + ')', true));
     } catch (Exception e) {
       System.out.println("Error reading activities");
       e.printStackTrace();
@@ -303,9 +319,9 @@ public class SQLiteManager {
     return null;
 	}
 	
-	JSONObject getBest(double distMin, double distMax) {
+	synchronized JSONObject getBestActivities(double distMin, double distMax) {
 	  try {
-      return readActivity(executeQuery("SELECT * FROM " + TABLE_NAME +
+      return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME +
           " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw LIMIT 1", true));
     } catch (Exception e) {
       System.out.println("Error reading activities");
@@ -314,9 +330,9 @@ public class SQLiteManager {
 	  return null;
 	}
 	
-	JSONArray getSplits() {
+	synchronized JSONArray getActivitySplits() {
 	  JSONArray result = new JSONArray();
-	  ResultSet rs = executeQuery("SELECT name, date, splits FROM " + TABLE_NAME +
+	  ResultSet rs = executeQuery("SELECT name, date, splits FROM " + RUNS_TABLE_NAME +
 	      " WHERE (type='Running' OR type='Trail')", true);
 	  try {
       while (rs.next()) {
@@ -331,6 +347,61 @@ public class SQLiteManager {
       e.printStackTrace();
     }
 	  return result;
+	}
+	
+  synchronized boolean saveCookie(String uid, Calendar expires) {
+    try {
+      boolean hasCookie = executeQuery("SELECT uid FROM " + COOKIES_TABLE_NAME + " WHERE uid='" + uid + "'", true)
+          .next();
+      if (!hasCookie) {
+        StringBuffer sb = new StringBuffer();
+        sb.append("INSERT INTO " + COOKIES_TABLE_NAME + " VALUES ('" + uid + "', '");
+        sb.append(expires.get(Calendar.YEAR) + "-" + expires.get(Calendar.MONTH) + "-" + expires.get(Calendar.DATE));
+        sb.append("')");
+        executeQuery(sb.toString(), false);
+      }
+      return hasCookie;
+    } catch (SQLException e) {
+      System.out.println("Error saving cookie");
+      e.printStackTrace();
+    }
+    return false;
+  }
+	
+	synchronized boolean isValidCookie(String uid) {
+	  try {
+	    ResultSet rs = executeQuery("SELECT expires FROM " + COOKIES_TABLE_NAME + " WHERE uid='" + uid + "'", true);
+	    if (!rs.next()) {
+	      return false;
+	    }
+	    String exp = rs.getString(1);
+	    if (exp == null) {
+	      return false;
+	    }
+	    String[] tokens = exp.split(" ");
+	    if (tokens.length != 3) {
+	      return false;
+	    }
+	    Calendar current = new GregorianCalendar(TimeZone.getDefault());
+	    int year = new Integer(tokens[0]);
+	    int month = new Integer(tokens[1]);
+	    int date = new Integer(tokens[2]);
+	    if (current.get(Calendar.YEAR) < year) {
+	      return true;
+	    }
+	    if (current.get(Calendar.YEAR) == year) {
+	      if (current.get(Calendar.MONTH) < month) {
+	        return true;
+	      }
+	      if (current.get(Calendar.MONTH) == month) {
+	        return current.get(Calendar.DATE) < date;
+	      }
+	    }
+	  } catch (Exception e) {
+      System.out.println("Error verifying cookie");
+      e.printStackTrace();
+    }
+	  return false;
 	}
 	
 	synchronized void close() {
