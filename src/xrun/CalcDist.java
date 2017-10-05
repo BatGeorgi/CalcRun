@@ -1,12 +1,9 @@
 package xrun;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -46,8 +43,6 @@ public class CalcDist {
   private double interval; // meters
   private double splitM; // meters
   
-  private String userFriendlyName;
-  private String suff = "";
   private double[] histDist = new double[BOUNDS.length];
   private double[] histElePos = new double[BOUNDS.length];
   private double[] histEleNeg = new double[BOUNDS.length];
@@ -222,17 +217,6 @@ public class CalcDist {
     if (ind != -1) {
       garminName = garminName.substring(0, ind);
     }
-    int dott = fileName.lastIndexOf('.');
-    if (dott != -1) {
-      fileName = fileName.substring(0, dott);
-      String tmp = fileName.length() > 2 ? fileName.substring(fileName.length() - 3) : fileName;
-      try {
-        Integer.parseInt(tmp);
-        suff = '_' + tmp;
-      } catch (Exception ignore) {
-        // silent catch
-      }
-    }
     DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     InputStream is = null;
     try {
@@ -398,8 +382,6 @@ public class CalcDist {
       sb.append("Elevation total: " + String.format("+%dm, -%dm", (long) eleTotalPos, (long) eleTotalNeg) + "\r\n");
       data.put("eleTotalPos", (long) eleTotalPos);
       data.put("eleTotalNeg", (long) eleTotalNeg);
-      userFriendlyName = "Track_" + timeStart;
-      userFriendlyName = userFriendlyName.replaceAll(" ", "") + "_" + distKm + "km";
     } finally {
       try {
         if (is != null) {
@@ -414,89 +396,55 @@ public class CalcDist {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
-    File inputBase = file.getParentFile().getParentFile();
-    File outputBaseTxt = new File(inputBase, "reports");
-    outputBaseTxt.mkdir();
     StringBuffer sb = new StringBuffer();
     CalcDist cd = new CalcDist(file, minSpeed, intR, splitS * 1000.0);
     cd.process(sb, data);
-    if (cd.userFriendlyName != null) {
-      BufferedWriter writer = null;
-      File targetTxt = new File(outputBaseTxt, cd.userFriendlyName.replace(',', '.') + "_report" + cd.suff + ".txt");
-      try {
-        writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetTxt), "UTF-8"));
-        writer.write(sb.toString());
-        writer.newLine();
-        JSONArray arrSpeed = new JSONArray();
-        writer.write("Speed distribution");
-        writer.newLine();
-        for (int i = 0; i < BOUNDS.length; ++i) {
-          JSONObject sp = new JSONObject();
-          String range = String.valueOf(Math.round(BOUNDS[i] / COEF)) +
-              (i < BOUNDS.length - 1 ? "-" + String.valueOf(Math.round(BOUNDS[i + 1] / COEF)) + ""
+    JSONArray arrSpeed = new JSONArray();
+    for (int i = 0; i < BOUNDS.length; ++i) {
+      JSONObject sp = new JSONObject();
+      String range = String.valueOf(Math.round(BOUNDS[i] / COEF)) +
+          (i < BOUNDS.length - 1 ? "-" + String.valueOf(Math.round(BOUNDS[i + 1] / COEF)) + ""
               : "+");
-          sp.put("range", range);
-          writer.write(range + ": ");
-          writer.write(String.format("%.3fkm", cd.histDist[i] / 1000.0) + " for " + formatTime((long) cd.histTime[i]));
-          sp.put("dist", String.format("%.3f", cd.histDist[i] / 1000.0));
-          sp.put("time", formatTime((long) cd.histTime[i]));
-          sp.put("timeRaw", (long) cd.histTime[i]);
-          writer.write(", elevation: " + String.format("+%dm, -%dm", (long) cd.histElePos[i], (long) cd.histEleNeg[i]));
-          writer.newLine();
-          sp.put("elePos", (long) cd.histElePos[i]);
-          sp.put("eleNeg", (long) cd.histEleNeg[i]);
-          arrSpeed.put(sp);
-        }
-        data.put("speedDist", arrSpeed);
-        writer.newLine();
-        JSONArray arrSplits = new JSONArray();
-        writer.write("Splits");
-        writer.newLine();
-        double tot = 0.0;
-        double timeTotalRaw = 0;
-        for (int i = 0; i < cd.splitTimes.size(); ++i) {
-          JSONObject sp = new JSONObject();
-          double currentLen = 0.0;
-          if (i < cd.splitTimes.size() - 1 || cd.splitRem < 1e-6) {
-            currentLen = cd.splitM / 1000.0;
-            tot += currentLen;
-            writer.write(String.format("%.3fkm: ", tot));
-          } else {
-            currentLen = cd.splitRem / 1000.0;
-            tot += currentLen;
-            writer.write(String.format("%.3fkm: ", tot));
-          }
-          sp.put("total", String.format("%.3f", tot));
-          sp.put("totalRaw", tot);
-          sp.put("len", String.format("%.3f", currentLen));
-          String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
-          writer.write(splitTime);
-          sp.put("time", splitTime);
-          sp.put("timeRaw", Math.round(cd.splitTimes.get(i).doubleValue()));
-          timeTotalRaw += cd.splitTimes.get(i).doubleValue();
-          sp.put("timeTotalRaw", Math.round(timeTotalRaw));
-          sp.put("timeTotal", formatTime(Math.round(timeTotalRaw), true));
-          double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
-          sp.put("pace", formatPace(splitPace));
-          sp.put("paceRaw", formatPaceRaw(splitPace));
-          sp.put("speed", String.format("%.3f", 60.0 / splitPace));
-          double ele = cd.splitEle.get(i);
-          writer.write(", elevation: " + (ele > 0 ? "+" : "") + (long) ele + "m");
-          sp.put("ele", (long) ele);
-          writer.newLine();
-          arrSplits.put(sp);
-        }
-        data.put("splits", arrSplits);
-        writer.flush();
-      } finally {
-        try {
-          if (writer != null) {
-            writer.close();
-          }
-        } catch (IOException ignore) {
-        }
-      }
+      sp.put("range", range);
+      sp.put("dist", String.format("%.3f", cd.histDist[i] / 1000.0));
+      sp.put("time", formatTime((long) cd.histTime[i]));
+      sp.put("timeRaw", (long) cd.histTime[i]);
+      sp.put("elePos", (long) cd.histElePos[i]);
+      sp.put("eleNeg", (long) cd.histEleNeg[i]);
+      arrSpeed.put(sp);
     }
+    data.put("speedDist", arrSpeed);
+    JSONArray arrSplits = new JSONArray();
+    double tot = 0.0;
+    double timeTotalRaw = 0;
+    for (int i = 0; i < cd.splitTimes.size(); ++i) {
+      JSONObject sp = new JSONObject();
+      double currentLen = 0.0;
+      if (i < cd.splitTimes.size() - 1 || cd.splitRem < 1e-6) {
+        currentLen = cd.splitM / 1000.0;
+        tot += currentLen;
+      } else {
+        currentLen = cd.splitRem / 1000.0;
+        tot += currentLen;
+      }
+      sp.put("total", String.format("%.3f", tot));
+      sp.put("totalRaw", tot);
+      sp.put("len", String.format("%.3f", currentLen));
+      String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
+      sp.put("time", splitTime);
+      sp.put("timeRaw", Math.round(cd.splitTimes.get(i).doubleValue()));
+      timeTotalRaw += cd.splitTimes.get(i).doubleValue();
+      sp.put("timeTotalRaw", Math.round(timeTotalRaw));
+      sp.put("timeTotal", formatTime(Math.round(timeTotalRaw), true));
+      double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
+      sp.put("pace", formatPace(splitPace));
+      sp.put("paceRaw", formatPaceRaw(splitPace));
+      sp.put("speed", String.format("%.3f", 60.0 / splitPace));
+      double ele = cd.splitEle.get(i);
+      sp.put("ele", (long) ele);
+      arrSplits.put(sp);
+    }
+    data.put("splits", arrSplits);
     return sb.toString();
   }
 
