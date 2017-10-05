@@ -54,7 +54,7 @@ public class RunCalcUtils {
     String[] all = gpxBase.list();
     boolean entriesAdded = false;
     for (String fileName : all) {
-      if (!fileName.endsWith(".gpx") || sqLite.hasRecord(fileName)) {
+      if (!fileName.endsWith(".gpx") || sqLite.hasActivity(fileName)) {
         continue;
       }
       File targ = new File(gpxBase, fileName);
@@ -66,7 +66,7 @@ public class RunCalcUtils {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, 9, 100, 1, current); // default values
         runs.add(current);
-        sqLite.addEntry(current);
+        sqLite.addActivity(current);
         if (drive != null) {
           drive.backupTrack(targ);
         }
@@ -77,17 +77,17 @@ public class RunCalcUtils {
       }
     }
     if (entriesAdded && drive != null) {
-      drive.backupDB(sqLite.getDB());
+      drive.backupDB(sqLite.getDBFile());
     }
   }
   
   private File addActivity0(String name, InputStream is) throws IOException {
-  	if (sqLite.hasRecord(name)) {
+  	if (sqLite.hasActivity(name)) {
   		String sname = null;
   		int i;
   		for (i = 0; i < 1000; ++i) {
   			sname = name + CalcDist.FILE_SUFF + i;
-  			if (!sqLite.hasRecord(sname)) {
+  			if (!sqLite.hasActivity(sname)) {
   				name = sname;
   				break;
   			}
@@ -142,7 +142,7 @@ public class RunCalcUtils {
         current.put("name", activityName);
       }
       current.put("type", activityType);
-      sqLite.addEntry(current);
+      sqLite.addActivity(current);
       if (drive != null) {
         drive.backupTrack(file);
       }
@@ -153,14 +153,14 @@ public class RunCalcUtils {
       return "Processing file error: " + e.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getDB());
+      drive.backupDB(sqLite.getDBFile());
     }
   	return null;
   }
   
   private List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
-    return sqLite.filter(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
+    return sqLite.fetchActivities(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
   }
   
   JSONObject filter(String nameFilter, boolean run, boolean trail, boolean hike, boolean walk, boolean other, int records,
@@ -281,7 +281,7 @@ public class RunCalcUtils {
   }
   
   private JSONObject getBest(String columnName, String suff) {
-    JSONObject best = sqLite.getBest(columnName);
+    JSONObject best = sqLite.getBestActivities(columnName);
     JSONObject result = new JSONObject();
     if (best == null) {
       return result;
@@ -296,7 +296,7 @@ public class RunCalcUtils {
   }
   
   private JSONObject getBest(double distMin, double distMax) {
-    JSONObject best = sqLite.getBest(distMin, distMax);
+    JSONObject best = sqLite.getBestActivities(distMin, distMax);
     if (best == null) {
       return new JSONObject();
     }
@@ -322,7 +322,7 @@ public class RunCalcUtils {
   }
   
   JSONObject getBestSplits() {
-    JSONArray arr = sqLite.getSplits();
+    JSONArray arr = sqLite.getActivitySplits();
     Map<Integer, Long> best = new TreeMap<Integer, Long>();
     Map<Integer, String[]> bestAttrs = new TreeMap<Integer, String[]>();
     for (int i = 0; i < arr.length(); ++i) {
@@ -359,9 +359,9 @@ public class RunCalcUtils {
   }
   
   void editActivity(String fileName, String newName, String newType) {
-    sqLite.updateEntry(fileName, newName, newType);
+    sqLite.updateActivity(fileName, newName, newType);
     if (drive != null) {
-      drive.backupDB(sqLite.getDB());
+      drive.backupDB(sqLite.getDBFile());
     }
   }
   
@@ -370,9 +370,9 @@ public class RunCalcUtils {
     if (file.isFile() && !file.delete()) {
       file.deleteOnExit();
     }
-    sqLite.deleteEntry(fileName);
+    sqLite.deleteActivities(fileName);
     if (drive != null) {
-      drive.backupDB(sqLite.getDB());
+      drive.backupDB(sqLite.getDBFile());
     }
   }
   
