@@ -75,6 +75,7 @@
                     <select id="type">
 						<option id="running" value="Running" selected>Running</option>
 						<option id="trail" value="Trail">Trail</option>
+						<option id="uphill" value="Uphill">Uphill</option>
 						<option id="hiking" value="Hiking">Hiking</option>
 						<option id="walking" value="Walking">Walking</option>
 						<option id="other" value="Other">Other</option>

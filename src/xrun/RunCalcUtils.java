@@ -21,6 +21,7 @@ public class RunCalcUtils {
   
   static final String RUNNING = "Running";
   static final String TRAIL = "Trail";
+  static final String UPHILL = "Uphill";
   static final String HIKING = "Hiking";
   static final String WALKING = "Walking";
   static final String OTHER = "Other";
@@ -158,16 +159,16 @@ public class RunCalcUtils {
   	return null;
   }
   
-  private List<JSONObject> filter(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
+  private List<JSONObject> filter(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
-    return sqLite.fetchActivities(run, trail, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
+    return sqLite.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
   }
   
-  JSONObject filter(String nameFilter, boolean run, boolean trail, boolean hike, boolean walk, boolean other, int records,
+  JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other, int records,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
-    List<JSONObject> matched = filter(run, trail, hike, walk, other, startDate, endDate,
+    List<JSONObject> matched = filter(run, trail, uphill, hike, walk, other, startDate, endDate,
         minDistance, maxDistance, records);
     Iterator<JSONObject> it = matched.iterator();
     JSONObject totals = null;

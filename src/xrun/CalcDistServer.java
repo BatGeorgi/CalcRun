@@ -243,6 +243,7 @@ class CalcDistHandler extends AbstractHandler {
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     boolean run = "true".equals(baseRequest.getHeader("run"));
     boolean trail = "true".equals(baseRequest.getHeader("trail"));
+    boolean uphill = "true".equals(baseRequest.getHeader("uphill"));
     boolean hike = "true".equals(baseRequest.getHeader("hike"));
     boolean walk = "true".equals(baseRequest.getHeader("walk"));
     boolean other = "true".equals(baseRequest.getHeader("other"));
@@ -331,7 +332,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    String result = rcUtils.filter(baseRequest.getHeader("nameFilter"), run, trail, hike, walk, other,
+    String result = rcUtils.filter(baseRequest.getHeader("nameFilter"), run, trail, uphill, hike, walk, other,
         records, startDate, endDate, dmin, dmax).toString();
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();

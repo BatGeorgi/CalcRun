@@ -381,8 +381,9 @@
                 });
                 $('#edit' + i).click(function() {
                     type = $('#type' + i).text();
-                    $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) + getOption("Trail", type) +
-                        getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr><tr><td>Security key </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
+                    $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
+						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) +
+						'</select></td></tr><tr><td>Security key </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
                     $("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                     $("#editable").attr('genby', item['genby']);
                     $("#editable").attr('refname', 'item' + i);
@@ -440,9 +441,10 @@
                     'Content-Type': 'application/json',
                     'run': $("#checkbox-1").prop('checked'),
                     'trail': $("#checkbox-2").prop('checked'),
-                    'hike': $("#checkbox-3").prop('checked'),
-                    'walk': $("#checkbox-4").prop('checked'),
-                    'other': $("#checkbox-5").prop('checked'),
+					'uphill': $("#checkbox-3").prop('checked'),
+                    'hike': $("#checkbox-4").prop('checked'),
+                    'walk': $("#checkbox-5").prop('checked'),
+                    'other': $("#checkbox-6").prop('checked'),
                     'dateOpt': parseInt(period[period.length - 1]) - 1,
                     'dtStart': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
                     'dtEnd': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
@@ -564,6 +566,7 @@
             $("#checkbox-3").checkboxradio();
             $("#checkbox-4").checkboxradio();
             $("#checkbox-5").checkboxradio();
+			$("#checkbox-6").checkboxradio();
 			$("#findNames").click(function() {
 				fetch();
 			});
@@ -574,6 +577,7 @@
                 $("#checkbox-3").prop('checked', true).change();
                 $("#checkbox-4").prop('checked', true).change();
                 $("#checkbox-5").prop('checked', true).change();
+				$("#checkbox-6").prop('checked', true).change();
                 fetchEnabled = true;
                 fetch();
             });
@@ -608,6 +612,7 @@
             $("#checkbox-3").change(fetch);
             $("#checkbox-4").change(fetch);
             $("#checkbox-5").change(fetch);
+			$("#checkbox-6").change(fetch);
             initDialogs();
             $('#dtStart').datepicker({
                 yearRange: '2013:c',
@@ -708,12 +713,14 @@
             <input type="checkbox" name="checkbox-1" id="checkbox-1" checked/>
             <label for="checkbox-2">Trail</label>
             <input type="checkbox" name="checkbox-2" id="checkbox-2" checked/>
-            <label for="checkbox-3">Hiking</label>
+			<label for="checkbox-3">Uphill</label>
             <input type="checkbox" name="checkbox-3" id="checkbox-3" checked/>
-            <label for="checkbox-4">Walking</label>
-            <input type="checkbox" name="checkbox-4" id="checkbox-4"/>
-            <label for="checkbox-5">Other</label>
+            <label for="checkbox-4">Hiking</label>
+            <input type="checkbox" name="checkbox-4" id="checkbox-4" checked/>
+            <label for="checkbox-5">Walking</label>
             <input type="checkbox" name="checkbox-5" id="checkbox-5"/>
+            <label for="checkbox-6">Other</label>
+            <input type="checkbox" name="checkbox-6" id="checkbox-6"/>
             <button id="selectAll">Select All</button>
         </fieldset>
         <p>

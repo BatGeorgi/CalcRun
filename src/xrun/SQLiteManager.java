@@ -188,7 +188,7 @@ public class SQLiteManager {
 	  return activity;
 	}
 	
-	synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean hike, boolean walk, boolean other,
+	synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
 	  List<JSONObject> result = new ArrayList<JSONObject>();
 	  StringBuffer selectClause = new StringBuffer();
@@ -196,7 +196,7 @@ public class SQLiteManager {
 	  selectClause.append("SELECT * FROM " + RUNS_TABLE_NAME);
 	  whereClause.append("WHERE ");
 	  whereClause.append("(distRaw >= " + minDistance + " AND distRaw <= " + maxDistance + ") ");
-	  if (run || trail || hike || walk || other) {
+	  if (run || trail || uphill || hike || walk || other) {
 	    whereClause.append(" AND ");
 	    whereClause.append('(');
 	    List<String> types = new ArrayList<String>();
@@ -205,6 +205,9 @@ public class SQLiteManager {
       }
       if (trail) {
         types.add(RunCalcUtils.TRAIL);
+      }
+      if (uphill) {
+        types.add(RunCalcUtils.UPHILL);
       }
       if (hike) {
         types.add(RunCalcUtils.HIKING);
@@ -222,6 +225,8 @@ public class SQLiteManager {
         }
       }
 	    whereClause.append(')');
+	  } else {
+	    return Collections.emptyList();
 	  }
 	  if (startDate != null) {
 	    int yr = startDate.get(Calendar.YEAR);
