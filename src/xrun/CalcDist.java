@@ -440,6 +440,7 @@ public class CalcDist {
       sp.put("pace", formatPace(splitPace));
       sp.put("paceRaw", formatPaceRaw(splitPace));
       sp.put("speed", String.format("%.3f", 60.0 / splitPace));
+      sp.put("accumSpeed", String.format("%.3f", tot / (timeTotalRaw / 3600.0)));
       double ele = cd.splitEle.get(i);
       sp.put("ele", (long) ele);
       arrSplits.put(sp);

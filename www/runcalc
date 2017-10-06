@@ -333,15 +333,16 @@
                 $('#dataHolder').append('<div style="display: none;" id="data' + i + '"></div>');
 				$('#dataHolder').append('<div style="display: none;" id="ui' + i + '"></div>');
                 distr = item['speedDist'];
-                tableHtml = '<span class="highlight"><table><thead><th>Range(km/h)</th><th>Time</th><th>Distance(km)</th><th>Gain(m)</th><th>Loss(m)</th></thead><tbody>';
+                tableHtml = '<span class="highlight"><table><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
                 $.each(distr, function(i, diap) {
-                    tableHtml += '<tr><td><strong>' + diap['range'] + '</strong></td><td>' + diap['time'] + '</td><td>' + diap['dist'] + '</td><td><span class="green">' + diap['elePos'] + '</span></td><td><span class="red">' + diap['eleNeg'] + '</span></td></tr>';
+                    tableHtml += '<tr><td><strong>' + diap['range'] + ' km/h</strong></td><td>' + diap['time'] + '</td><td>' + diap['dist'] + '</td><td><span class="green">' + diap['elePos'] + '</span></td><td><span class="red">' + diap['eleNeg'] + '</span></td></tr>';
                 });
                 tableHtml += '</tbody></table></span>';
                 splits = item['splits'];
-                splitHtml = '<span class="highlight"><table><thead><th>Point(km)</th><th>Pace(min/km)</th><th>Speed(km/h)</th><th>Diff(m)</th><th>Total time</th></thead><tbody>';
+                splitHtml = '<span class="highlight"><table><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th></thead><tbody>';
                 $.each(splits, function(i, sp) {
-                    splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] + '</td></tr>';
+                    splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] +
+					'</td><td>' + sp['accumSpeed'] + '</td></tr>';
                 });
                 splitHtml += '</tbody></table></span>';
                 linkHtml = '';
