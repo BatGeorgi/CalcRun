@@ -119,24 +119,25 @@
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
-                                    $(this).dialog("close");
+                                    alert("Logged in!");
+									$("#loginButton").button("option", "disabled", true);
                                 },
                                 401: function(xhr) {
                                     alert('DGD BOKLIK!');
-									$(this).dialog("close");
                                 },
                                 500: function(xhr) {
                                     alert('Internal server error!');
-									$(this).dialog("close");
                                 }
                             }
-                    })},
+						});
+						$(this).dialog("close");
+					},
                     "Cancel": function() {
                         $(this).dialog("close");
                     }
                 },
                 width: 450,
-                height: 200
+                height: 250
             });
             $("#editable").dialog({
                 autoOpen: false,
@@ -420,7 +421,7 @@
                     type = $('#type' + i).text();
                     $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
 						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) +
-						'</select></td></tr><tr><td>Security key </td><td><input type="password" id="pass"/></td></tr></tbody></table>');
+						'</select></td></tr></tbody></table>');
                     $("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                     $("#editable").attr('genby', item['genby']);
                     $("#editable").attr('refname', 'item' + i);
@@ -428,7 +429,7 @@
                     $("#editable").dialog('open');
                 });
 				$('#trash' + i).click(function() {
-					$("#removable").html('<table><tbody><tr><td>Security key </td><td><input type="password" id="passRem"/></td></tr></tbody></table>');
+					$("#removable").html('Remove this activity?');
                     $("#removable").dialog('option', 'title', 'Remove ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                     $("#removable").attr('genby', item['genby']);
                     $("#removable").dialog('open');
@@ -772,7 +773,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 1.85</strong></H1>
+        <H1><strong>Run Analyzer 1.9</strong></H1>
     </div>
 	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />

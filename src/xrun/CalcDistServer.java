@@ -114,20 +114,15 @@ class CalcDistHandler extends AbstractHandler {
   }
 
   private RunCalcUtils rcUtils;
-  private TokenHandler tokenHandler;
 
   public CalcDistHandler(File tracksBase, File clientSecret) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase, clientSecret);
-    tokenHandler = new TokenHandler();
     System.out.println("Initialize finished!");
   }
   
   void dispose() {
     if (rcUtils != null) {
       rcUtils.dispose();
-    }
-    if (tokenHandler != null) {
-    	tokenHandler.dispose();
     }
   }
   
@@ -173,16 +168,14 @@ class CalcDistHandler extends AbstractHandler {
 	
 	private void processUpload(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-	  String token = target.substring(7);
-    int ind = token.indexOf('.');
-    String uid = (ind != -1 ? token.substring(0, ind) : token);
+    int ind = target.indexOf('.');
     String name = null;
     String type = null;
     if (ind != -1) {
-      int to = token.lastIndexOf('.');
+      int to = target.lastIndexOf('.');
       if (to != -1 && to > ind) {
-        name = token.substring(ind + 1, to);
-        type = token.substring(to + 1);
+        name = target.substring(ind + 1, to);
+        type = target.substring(to + 1);
       }
     }
     if (type == null || type.length() == 0) {
@@ -191,8 +184,7 @@ class CalcDistHandler extends AbstractHandler {
     PrintWriter pw = response.getWriter();
     try {
       response.setContentType("text/html");
-      if (tokenHandler.isAuthorized(uid)) {
-        tokenHandler.removeToken(uid);
+      if (isLoggedIn(baseRequest)) {
         String result = handleFileUpload(baseRequest, request, response, name, type);
         if (result == null) { // all normal
           pw.println("<h2>Upload finished!</h2>");
@@ -350,8 +342,7 @@ class CalcDistHandler extends AbstractHandler {
     String fileName = baseRequest.getHeader("File");
     String name = baseRequest.getHeader("Name");
     String type = baseRequest.getHeader("Type");
-    String pass = baseRequest.getHeader("Password");
-    if (!isLoggedIn(baseRequest) && !isAuthorized(pass)) {
+    if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
@@ -368,8 +359,7 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processDelete(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     String fileName = baseRequest.getHeader("File");
-    String pass = baseRequest.getHeader("Password");
-    if (!isLoggedIn(baseRequest) && !isAuthorized(pass)) {
+    if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
@@ -405,7 +395,7 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processLogin(Request baseRequest, HttpServletResponse response) {
     if (!isLoggedIn(baseRequest)) {
-      if (isAuthorized(baseRequest.getHeader("Password"))) {
+      if ("BatGeorgi".equals(baseRequest.getHeader("User")) && isAuthorized(baseRequest.getHeader("Password"))) {
         Cookie cookie = rcUtils.generateCookie();
         if (cookie == null) {
           System.out.println("Error - cannot generate cookie");
@@ -450,20 +440,8 @@ class CalcDistHandler extends AbstractHandler {
     if (!"POST".equals(baseRequest.getMethod()) || target.length() < 2) {
       return;
     }
-    if (target.startsWith("/upload") && target.length() > 7) {
+    if (target.startsWith("/upload") && target.length() > 8) {
     	processUpload(target, baseRequest, request, response);
-    } else if ("/authorize".equalsIgnoreCase(target)) { // TODO - will be replaced
-    	response.setContentType("application/json");
-    	if (!isLoggedIn(baseRequest) && !isAuthorized(baseRequest.getHeader("Password"))) {
-    		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    	} else {
-    		JSONObject json = new JSONObject();
-    		json.put("token", tokenHandler.getToken());
-    		response.getWriter().println(json.toString());
-    		response.getWriter().flush();
-    		response.setStatus(HttpServletResponse.SC_OK);
-    	}
-      baseRequest.setHandled(true);
     } else if ("/best".equalsIgnoreCase(target)) {
       processBest(baseRequest, response);
     } else if ("/bestSplits".equalsIgnoreCase(target)) {
