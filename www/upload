@@ -16,36 +16,9 @@
 	
 	<script>
 	
-		function authorization() {
-			$.ajax({
-                url: 'authorize',
-                method: 'POST',
-                dataType: 'json',
-                headers: {
-                    'Content-Type': 'application/json',
-					'Password': $('#pass').val()
-                },
-                statusCode: {
-                    200: function(data) {
-						alert('Authorized, token valid for 5 minutes');
-						$('#upload').attr('action', 'upload' + data['token']);
-						$('#pass').val('');
-						$("#submit").button('option', 'disabled', false);
-						$("#authorize").button('option', 'disabled', true);
-					},
-					401: function(data) {
-						alert('DGD boklik!');
-						$('#pass').val('');
-					}
-				}
-			});
-		}
-	
 		$(document).ready(function() {
-			$('#authorize').button();
 			$('#fileToUpload').button();
 			$('#submit').button();
-			$('#authorize').click(authorization); 
 			$("#upload").submit(function( event ) {
 				suff = "." + encodeURIComponent($('#name').val()) +  "." + $('#type').find(':selected').val();
 				initVal = $('#upload').attr('action');
@@ -59,10 +32,6 @@
     <H1><strong>Upload gpx track</strong></H1>
     <table style="text-align:left; margin:auto;">
         <tbody>
-            <tr>
-                <td>Security key&nbsp;</td>
-                <td><input type="password" id="pass" />&nbsp;<button id="authorize">Authorize</button></td>
-            </tr>
             <tr>
                 <td>
                     <p>Activity name&nbsp;</td>
@@ -88,7 +57,7 @@
                 <td>
                     <form id="upload" action="upload1" method="post" enctype="multipart/form-data">
                         <input type="file" name="fileToUpload" id="fileToUpload" />
-                        <input type="submit" value="Upload" name="submit" id="submit" disabled/>
+                        <input type="submit" value="Upload" name="submit" id="submit"/>
                     </form>
                 </td>
             </tr>
