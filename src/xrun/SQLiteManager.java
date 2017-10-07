@@ -82,11 +82,12 @@ public class SQLiteManager {
 	    Collections.sort(years);
 	    String[] filters = new String[] {"type='" + RunCalcUtils.RUNNING + '\'',
 	        "type='" + RunCalcUtils.TRAIL + '\'',
+	        "type='" + RunCalcUtils.UPHILL + '\'',
 	        "type='" + RunCalcUtils.HIKING + '\'',
 	        "type='" + RunCalcUtils.RUNNING + "' OR type='" + RunCalcUtils.TRAIL + '\''
 	    };
 	    String[] acms = new String[] {
-	        "r", "t", "h", "rt"
+	        "r", "t", "u", "h", "rt"
 	    };
 	    for (int i = years.size() - 1; i >= 0; --i) {
 	      int year = years.get(i);
@@ -94,7 +95,7 @@ public class SQLiteManager {
 	      for (int j = 0; j < 12; ++j) {
 	        months[j] = new JSONObject();
 	        months[j].put("name", CalcDist.MONTHS[j] + ' ' + year);
-	        for (int k = 0; k < 4; ++k) {
+	        for (int k = 0; k < 5; ++k) {
 	          months[j].put(acms[k], "0");
 	        }
 	        months[j].put("emp", true);
