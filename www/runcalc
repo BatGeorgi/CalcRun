@@ -575,7 +575,8 @@
 		}
 		
 		function getMTable(item) {
-			return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h']
+			return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr>'
+				+ '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h']
 				+ '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
 		}
 		

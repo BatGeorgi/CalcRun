@@ -1,7 +1,10 @@
 package xrun;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -55,9 +58,26 @@ public class CalcDistServer {
     resourceHandler.setDirectoriesListed(false);
     resourceHandler.setWelcomeFiles(new String[] {"runcalc"});
     resourceHandler.setResourceBase("www");
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    InputStream is = null;
+    File target = new File(resourceHandler.getBaseResource().getFile(), "activity.html");
+    String activityTemplate = null;
+		if (target.isFile()) {
+			try {
+				is = new FileInputStream(target);
+				byte[] buf = new byte[8192];
+				int rd = 0;
+				while ((rd = is.read(buf)) != -1) {
+					baos.write(buf, 0, rd);
+				}
+			} finally {
+				RunCalcUtils.silentClose(is);
+			}
+			activityTemplate = new String(baos.toByteArray());
+		}
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
-    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret);
+    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret, activityTemplate);
     handlers.setHandlers(new Handler[] { new MultipartConfigInjectionHandler(), resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
@@ -114,9 +134,11 @@ class CalcDistHandler extends AbstractHandler {
   }
 
   private RunCalcUtils rcUtils;
+  private String activityTemplate;
 
-  public CalcDistHandler(File tracksBase, File clientSecret) throws IOException {
+  public CalcDistHandler(File tracksBase, File clientSecret, String activityTemplate) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase, clientSecret);
+    this.activityTemplate = activityTemplate;
     System.out.println("Initialize finished!");
   }
   
