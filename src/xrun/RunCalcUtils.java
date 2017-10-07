@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import javax.servlet.http.Cookie;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,11 +31,13 @@ public class RunCalcUtils {
   private File gpxBase;
   private SQLiteManager sqLite;
   private GoogleDrive drive;
+  private CookieHandler cookieHandler;
   
   RunCalcUtils(File base, File clientSecret) {
     sqLite = new SQLiteManager(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
+    cookieHandler = new CookieHandler(sqLite);
     if (clientSecret != null) {
       drive = new GoogleDrive(clientSecret);
     }
@@ -48,6 +52,14 @@ public class RunCalcUtils {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
     new RunCalcUtils(base, null).rescan();
+  }
+  
+  Cookie generateCookie() {
+    return cookieHandler.generateCookie();
+  }
+  
+  boolean isValidCookie(Cookie cookie) {
+    return cookieHandler.isAuthorized(cookie);
   }
   
   void rescan() {

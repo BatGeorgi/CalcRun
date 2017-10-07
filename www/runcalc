@@ -101,6 +101,43 @@
                 width: 300,
                 height: 200
             });
+			$('#login').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+					"Login": function() {
+                        $.ajax({
+                            url: 'login',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'User': $('#loginUser').val(),
+                                'Password': $('#loginPassword').val()
+                            },
+                            method: 'POST',
+                            dataType: 'json',
+                            statusCode: {
+                                200: function(xhr) {
+                                    $(this).dialog("close");
+                                },
+                                401: function(xhr) {
+                                    alert('DGD BOKLIK!');
+									$(this).dialog("close");
+                                },
+                                500: function(xhr) {
+                                    alert('Internal server error!');
+									$(this).dialog("close");
+                                }
+                            }
+                    })},
+                    "Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 200
+            });
             $("#editable").dialog({
                 autoOpen: false,
                 modal: true,
@@ -550,8 +587,34 @@
 			tableHtml += '</tbody></table>';
 			$("#mTotals").html('<h2>Total distance by month</h2><p>' + tableHtml);
 		}
+		
+		function checkCookieVal(cookieVal) {
+			if (cookieVal == '') {
+				$("#loginButton").button("option", "disabled", true);
+			} else {
+				$.ajax({
+                    url: 'checkCookie',
+                    method: 'POST',
+                    dataType: 'json',
+                    statusCode: {
+                        200: function(xhr) {
+                            $("#loginButton").button("option", "disabled", true);
+                        },
+                        401: function(xhr) {
+                            $("#loginButton").button("option", "disabled", false);
+                        }
+                    }
+				});
+			}
+		}
 
         $(document).ready(function() {
+			var ind = document.cookie.indexOf("xruncalc=");
+			var cookieVal = '';
+			if (ind != -1) {
+				cookieVal=document.cookie.substring(ind + 9);
+			}
+			checkCookieVal();
             $("#selectAll").button();
             $("#search").button();
 			$("#dsearch").button();
@@ -613,7 +676,14 @@
             $("#checkbox-4").change(fetch);
             $("#checkbox-5").change(fetch);
 			$("#checkbox-6").change(fetch);
+			$("#loginButton").button();
             initDialogs();
+			$("#loginButton").click(function() {
+                $('#login').html('<table><tbody><tr><td>User </td><td><input type="text" id="loginUser" value="BatGeorgi"/></td></tr>' +
+				'<tr><td>Password </td><td><input type="password" id="loginPassword"/></td></tr></tbody></table>');
+                $('#login').dialog('option', 'title', 'Login');
+                $('#login').dialog('open');
+            });
             $('#dtStart').datepicker({
                 yearRange: '2013:c',
                 changeYear: true
@@ -706,6 +776,7 @@
     </div>
 	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
+	<button id="loginButton">Login</button>
     <div id="filters">
         <fieldset>
             <legend class="legend-cap">Activity Type</legend>
@@ -823,6 +894,7 @@
         <div id="compareResults" />
     </div>
 	<div id="rsOk"></div>
+	<div id="login" />
 </body>
 
 </html>

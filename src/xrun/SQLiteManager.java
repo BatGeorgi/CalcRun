@@ -365,7 +365,7 @@ public class SQLiteManager {
         sb.append("')");
         executeQuery(sb.toString(), false);
       }
-      return hasCookie;
+      return !hasCookie;
     } catch (SQLException e) {
       System.out.println("Error saving cookie");
       e.printStackTrace();
@@ -377,7 +377,7 @@ public class SQLiteManager {
     if (expires == null) {
       return true;
     }
-    String[] tokens = expires.split(" ");
+    String[] tokens = expires.split("-");
     if (tokens.length != 3) {
       return false;
     }
@@ -405,7 +405,7 @@ public class SQLiteManager {
 	    if (!rs.next()) {
 	      return false;
 	    }
-	    if (!isCookieValid(rs.getString(1))) {
+	    if (isCookieValid(rs.getString(1))) {
 	      return true;
 	    }
 	    deleteCookie(uid);

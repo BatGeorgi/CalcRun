@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -350,7 +351,7 @@ class CalcDistHandler extends AbstractHandler {
     String name = baseRequest.getHeader("Name");
     String type = baseRequest.getHeader("Type");
     String pass = baseRequest.getHeader("Password");
-    if (!isAuthorized(pass)) {
+    if (!isLoggedIn(baseRequest) && !isAuthorized(pass)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
@@ -368,7 +369,7 @@ class CalcDistHandler extends AbstractHandler {
   private void processDelete(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     String fileName = baseRequest.getHeader("File");
     String pass = baseRequest.getHeader("Password");
-    if (!isAuthorized(pass)) {
+    if (!isLoggedIn(baseRequest) && !isAuthorized(pass)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
@@ -401,6 +402,48 @@ class CalcDistHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+  
+  private void processLogin(Request baseRequest, HttpServletResponse response) {
+    if (!isLoggedIn(baseRequest)) {
+      if (isAuthorized(baseRequest.getHeader("Password"))) {
+        Cookie cookie = rcUtils.generateCookie();
+        if (cookie == null) {
+          System.out.println("Error - cannot generate cookie");
+          response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } else {
+          response.addCookie(cookie);
+          response.setStatus(HttpServletResponse.SC_OK);
+        }
+      } else {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      }
+    } else {
+      response.setStatus(HttpServletResponse.SC_OK);
+    }
+    baseRequest.setHandled(true);
+  }
+  
+  private boolean isLoggedIn(Request baseRequest) {
+    Cookie[] cookies = baseRequest.getCookies();
+    if (cookies == null) {
+      return false;
+    }
+    for (Cookie cookie : cookies) {
+      if (rcUtils.isValidCookie(cookie)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  private void checkCookie(Request baseRequest, HttpServletResponse response) {
+    if (isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_OK);
+    } else {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+    baseRequest.setHandled(true);
+  }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
@@ -411,7 +454,7 @@ class CalcDistHandler extends AbstractHandler {
     	processUpload(target, baseRequest, request, response);
     } else if ("/authorize".equalsIgnoreCase(target)) { // TODO - will be replaced
     	response.setContentType("application/json");
-    	if (!isAuthorized(baseRequest.getHeader("Password"))) {
+    	if (!isLoggedIn(baseRequest) && !isAuthorized(baseRequest.getHeader("Password"))) {
     		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     	} else {
     		JSONObject json = new JSONObject();
@@ -435,6 +478,10 @@ class CalcDistHandler extends AbstractHandler {
       processDelete(baseRequest, response);
     } else if ("/compare".equalsIgnoreCase(target)) {
       processCompare(baseRequest, response);
+    } else if ("/login".equals(target)) {
+      processLogin(baseRequest, response);
+    } else if("/checkCookie".equals(target)) {
+      checkCookie(baseRequest, response);
     }
   }
 }
