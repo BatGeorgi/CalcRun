@@ -333,7 +333,7 @@
                 $('#overall').hide();
                 return false;
             }
-            $('#overall').show();
+            $('#overall').show(); 
             $('#runs').show();
             $('#ht').text(all.length + ' matching ' + (all.length != 1 ? 'activities' : 'activity'));
             $('#overall tbody').html('<tr><td>Total distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Total time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
@@ -383,9 +383,10 @@
 					'</td><td>' + sp['accumSpeed'] + '</td></tr>';
                 });
                 splitHtml += '</tbody></table></span>';
-                linkHtml = '';
+                filename = item['genby'].endsWith('.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
+                linkHtml = '</ul><a href="' + filename + '" target="_blank"><h3>External link</h3></a><ul>';
                 if (item['garminLink'] != 'none') {
-                    linkHtml = '</ul><a href="' + item['garminLink'] + '" target="_blank"><h3>Garmin Connect</h3></a><ul>';
+                    linkHtml += '</ul><a href="' + item['garminLink'] + '" target="_blank"><h3>Garmin Connect</h3></a><ul>';
                 }
                 itemsDS.push(function() {
                     $('#ui' + i).dialog(dialog);
