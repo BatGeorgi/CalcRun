@@ -456,32 +456,81 @@ class CalcDistHandler extends AbstractHandler {
     }
     baseRequest.setHandled(true);
   }
+  
+  private void processGetActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+  	if (rcUtils.getActivity(target) == null && rcUtils.getActivity(target + ".gpx") == null) {
+  		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  	} else {
+  		response.setContentType("text/html");
+  		PrintWriter pw = response.getWriter();
+			try {
+				int ind = activityTemplate.indexOf("TBD");
+				if (ind != -1) {
+					pw.print(activityTemplate.substring(0, ind));
+					pw.print("fa/" + target);
+					pw.println(activityTemplate.substring(ind + 3));
+				} else {
+					pw.println("No data :(");
+				}
+			} finally {
+				pw.flush();
+			}
+  		response.setStatus(HttpServletResponse.SC_OK);
+  	}
+  	baseRequest.setHandled(true);
+  }
+  
+  private void processFetchActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+  	String name = target.substring(4);
+  	JSONObject json = rcUtils.getActivity(name);
+  	if (json == null) {
+  		json = rcUtils.getActivity(name + ".gpx");
+  	}
+  	PrintWriter pw = response.getWriter();
+  	response.setContentType("application/json");
+  	try {
+  		if (json == null) {
+    		pw.println("No data :(");
+    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    	} else {
+    		pw.println(json.toString());
+    		response.setStatus(HttpServletResponse.SC_OK);
+    	}
+  	} finally {
+  		pw.flush();
+  	}
+  	baseRequest.setHandled(true);
+  }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-    if (!"POST".equals(baseRequest.getMethod()) || target.length() < 2) {
-      return;
-    }
-    if (target.startsWith("/upload") && target.length() > 8) {
-    	processUpload(target, baseRequest, request, response);
-    } else if ("/best".equalsIgnoreCase(target)) {
-      processBest(baseRequest, response);
-    } else if ("/bestSplits".equalsIgnoreCase(target)) {
-      processBestSplits(baseRequest, response);
-    } else if ("/fetch".equalsIgnoreCase(target)) {
-      processFetch(baseRequest, response);
-    } else if ("/rescanActivities".equalsIgnoreCase(target)) {
-      processRescan(baseRequest, response);
-    } else if ("/editActivity".equalsIgnoreCase(target)) {
-      processEdit(baseRequest, response);
-    } else if ("/deleteActivity".equalsIgnoreCase(target)) {
-      processDelete(baseRequest, response);
-    } else if ("/compare".equalsIgnoreCase(target)) {
-      processCompare(baseRequest, response);
-    } else if ("/login".equals(target)) {
-      processLogin(baseRequest, response);
-    } else if("/checkCookie".equals(target)) {
-      checkCookie(baseRequest, response);
-    }
+  	if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
+  		processGetActivity(target.substring(1), baseRequest, response);
+  	}
+		if ("POST".equals(baseRequest.getMethod())) {
+			if (target.startsWith("/fa/") && target.length() > 4) {
+				processFetchActivity(target, baseRequest, response);
+			} else if (target.startsWith("/upload") && target.length() > 8) {
+				processUpload(target, baseRequest, request, response);
+			} else if ("/best".equalsIgnoreCase(target)) {
+				processBest(baseRequest, response);
+			} else if ("/bestSplits".equalsIgnoreCase(target)) {
+				processBestSplits(baseRequest, response);
+			} else if ("/fetch".equalsIgnoreCase(target)) {
+				processFetch(baseRequest, response);
+			} else if ("/rescanActivities".equalsIgnoreCase(target)) {
+				processRescan(baseRequest, response);
+			} else if ("/editActivity".equalsIgnoreCase(target)) {
+				processEdit(baseRequest, response);
+			} else if ("/deleteActivity".equalsIgnoreCase(target)) {
+				processDelete(baseRequest, response);
+			} else if ("/compare".equalsIgnoreCase(target)) {
+				processCompare(baseRequest, response);
+			} else if ("/login".equals(target)) {
+				processLogin(baseRequest, response);
+			} else if ("/checkCookie".equals(target)) {
+				checkCookie(baseRequest, response);
+			}
+		}
   }
 }

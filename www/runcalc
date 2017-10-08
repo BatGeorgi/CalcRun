@@ -335,7 +335,7 @@
             }
             $('#overall').show();
             $('#runs').show();
-            $('#ht').text('Activities(' + all.length + ' record' + (all.length > 1 ? 's' : '') + ')');
+            $('#ht').text(all.length + ' matching ' + (all.length != 1 ? 'activities' : 'activity'));
             $('#overall tbody').html('<tr><td>Total distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Total time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Est. elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Est. elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Est. running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
@@ -601,6 +601,7 @@
                     statusCode: {
                         200: function(xhr) {
                             $("#loginButton").button("option", "disabled", true);
+							$("#loginButton").button("option", "label", "Authorized");
                         },
                         401: function(xhr) {
                             $("#loginButton").button("option", "disabled", false);
