@@ -476,8 +476,8 @@ class CalcDistHandler extends AbstractHandler {
 				pw.flush();
 			}
   		response.setStatus(HttpServletResponse.SC_OK);
+  		baseRequest.setHandled(true);
   	}
-  	baseRequest.setHandled(true);
   }
   
   private void processFetchActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {

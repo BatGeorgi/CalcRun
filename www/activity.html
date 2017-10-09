@@ -70,6 +70,7 @@
                 },
                 statusCode: {
                     200: function(data) {
+							document.title = decodeURIComponent(data['name']);
 							init(data);
                         }
                 }
