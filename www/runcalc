@@ -88,7 +88,7 @@
         }
 
         function initDialogs() {
-			$('#rsOk').dialog({
+			$('#infoDialog').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -119,14 +119,20 @@
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
-                                    alert("Logged in!");
+                                    $('#infoDialog').html('Logged in!');
+									$('#infoDialog').dialog('option', 'title', 'Status');
+									$('#infoDialog').dialog('open');
 									$("#loginButton").button("option", "disabled", true);
                                 },
                                 401: function(xhr) {
-                                    alert('DGD BOKLIK!');
+									$('#infoDialog').html('Please sign in!');
+									$('#infoDialog').dialog('option', 'title', 'Not authorized');
+									$('#infoDialog').dialog('open');
                                 },
                                 500: function(xhr) {
-                                    alert('Internal server error!');
+                                    $('#infoDialog').html('Internal server error :(');
+									$('#infoDialog').dialog('option', 'title', 'Error');
+									$('#infoDialog').dialog('open');
                                 }
                             }
 						});
@@ -163,10 +169,14 @@
                                     $('#' + $("#editable").attr('reftype')).text($('#chooseType').val());
                                 },
                                 401: function(xhr) {
-                                    alert('DGD BOKLIK!');
+                                    $('#infoDialog').html('Please sign in!');
+									$('#infoDialog').dialog('option', 'title', 'Not authorized');
+									$('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
-                                    alert('Empty name!');
+									$('#infoDialog').html('Name must not be empty!');
+									$('#infoDialog').dialog('option', 'title', 'Error');
+									$('#infoDialog').dialog('open');
                                 }
                             }
                         });
@@ -205,10 +215,14 @@
 									fetch();
                                 },
                                 401: function(xhr) {
-                                    alert('DGD BOKLIK!');
+                                    $('#infoDialog').html('Please sign in!');
+									$('#infoDialog').dialog('option', 'title', 'Not authorized');
+									$('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
-                                    alert('Empty name!');
+                                    $('#infoDialog').html('Name must not be empty!');
+									$('#infoDialog').dialog('option', 'title', 'Error');
+									$('#infoDialog').dialog('open');
                                 }
                             }
                         });
@@ -259,7 +273,9 @@
                                     $('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>Point(km)</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
                                 },
                                 400: function(xhr) {
-                                    alert('Activities may be removed :(');
+                                    $('#infoDialog').html('Activities may be removed :(');
+									$('#infoDialog').dialog('option', 'title', 'Error');
+									$('#infoDialog').dialog('open');
                                 }
                             }
                         });
@@ -448,9 +464,9 @@
 						200: function(data) {
 							getBest();
 							fetch();
-							$('#rsOk').html('Rescan completed!');
-							$('#rsOk').dialog('option', 'title', 'Action finished');
-							$('#rsOk').dialog('open');
+							$('#infoDialog').html('Rescan completed!');
+							$('#infoDialog').dialog('option', 'title', 'Action finished');
+							$('#infoDialog').dialog('open');
 						}
 					}
 				});  
@@ -497,7 +513,9 @@
                         initContent(data);
                     },
 					400: function(data) {
-                        alert('Invalid distance arguments');
+						$('#infoDialog').html('Invalid distance arguments!');
+						$('#infoDialog').dialog('option', 'title', 'Bad data');
+						$('#infoDialog').dialog('open');
                     }
                 }
             });
@@ -897,7 +915,7 @@
     <div id="comparable">
         <div id="compareResults" />
     </div>
-	<div id="rsOk"></div>
+	<div id="infoDialog"></div>
 	<div id="login" />
 </body>
 
