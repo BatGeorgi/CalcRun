@@ -151,7 +151,7 @@
                 show: "blind",
                 hide: "blind",
                 buttons: {
-					"Reset to original": function() {
+					"Revert modifications": function() {
 						$.ajax({
                             url: 'revert',
                             headers: {
