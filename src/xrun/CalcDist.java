@@ -109,6 +109,22 @@ public class CalcDist {
     return sb.toString();
   }
   
+  static long getRealTime(String formattedTime) {
+    StringTokenizer st = new StringTokenizer(formattedTime, ":", false);
+    long total = 0;
+    long[] mults = new long[] {
+        3600, 60, 1
+    };
+    int it = 0;
+    if (st.countTokens() < 3) {
+      ++it;
+    }
+    while (st.hasMoreTokens()) {
+      total += mults[it++] * (long) Integer.parseInt(st.nextToken());
+    }
+    return total;
+  }
+  
   private static String formatPace(double pace) {
     int minutes = (int) pace;
     int seconds = (int) ((pace - minutes) * 60.0);
@@ -141,7 +157,7 @@ public class CalcDist {
     return sb.toString().trim();
   }
   
-  private static String speedToPace(double speed/*km/h*/) {
+  static String speedToPace(double speed/*km/h*/) {
     double pace = 60.0 / speed;
     int mins = (int) pace;
     double seconds = (pace - mins) * 60.0;

@@ -123,6 +123,7 @@
 									$('#infoDialog').dialog('option', 'title', 'Status');
 									$('#infoDialog').dialog('open');
 									$("#loginButton").button("option", "disabled", true);
+									$("#loginButton").button("option", "label", "Authorized");
                                 },
                                 401: function(xhr) {
 									$('#infoDialog').html('Please sign in!');
@@ -644,24 +645,20 @@
 		}
 		
 		function checkCookieVal(cookieVal) {
-			if (cookieVal == '') {
-				$("#loginButton").button("option", "disabled", true);
-			} else {
-				$.ajax({
-                    url: 'checkCookie',
-                    method: 'POST',
-                    dataType: 'json',
-                    statusCode: {
-                        200: function(xhr) {
-                            $("#loginButton").button("option", "disabled", true);
-							$("#loginButton").button("option", "label", "Authorized");
-                        },
-                        401: function(xhr) {
-                            $("#loginButton").button("option", "disabled", false);
-                        }
+			$.ajax({
+                url: 'checkCookie',
+                method: 'POST',
+                dataType: 'json',
+                statusCode: {
+                    200: function(xhr) {
+                        $("#loginButton").button("option", "disabled", true);
+						$("#loginButton").button("option", "label", "Authorized");
+                    },
+                    401: function(xhr) {
+                        $("#loginButton").button("option", "disabled", false);
                     }
-				});
-			}
+                 }
+			});
 		}
 
         $(document).ready(function() {

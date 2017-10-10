@@ -371,8 +371,24 @@ public class RunCalcUtils {
     return result;
   }
   
-  void editActivity(String fileName, String newName, String newType) {
-    sqLite.updateActivity(fileName, newName, newType);
+  void editActivity(String fileName, String newName, String newType, JSONObject mods) {
+    JSONObject activity = sqLite.getActivity(fileName);
+    if (activity == null) {
+      return;
+    }
+    if (mods != null) { 
+      if (modifyActivity(activity, mods)) {
+        activity.put("name", newName);
+        activity.put("type", newType);
+        sqLite.deleteActivity(fileName);
+        sqLite.addActivity(activity);
+      } else {
+        sqLite.updateActivity(fileName, newName, newType);
+      }
+    } else if (revertActivityChanges(activity)) {
+      sqLite.deleteActivity(fileName);
+      sqLite.addActivity(activity);
+    }
     if (drive != null) {
       drive.backupDB(sqLite.getDBFile());
     }
@@ -383,7 +399,7 @@ public class RunCalcUtils {
     if (file.isFile() && !file.delete()) {
       file.deleteOnExit();
     }
-    sqLite.deleteActivities(fileName);
+    sqLite.deleteActivity(fileName);
     if (drive != null) {
       drive.backupDB(sqLite.getDBFile());
     }
@@ -393,6 +409,66 @@ public class RunCalcUtils {
     if (sqLite != null) {
       sqLite.close();
     }
+  }
+  
+  private static String[] ORIG_DATA_KEYS = new String[] {
+      "dist", "distRaw", "timeTotal", "timeTotalRaw", "avgSpeed", "avgSpeedRaw", "avgPace",
+      "eleTotalPos", "eleTotalNeg"
+  };
+  
+  private static boolean modifyActivity(JSONObject activity, JSONObject mods) {
+    if (activity == null || !mods.keys().hasNext()) {
+      return false;
+    }
+    JSONObject initData = activity.optJSONObject("origData");
+    JSONObject origData = null;
+    if (initData == null || !initData.keys().hasNext()) {
+      origData = new JSONObject();
+      for (String key : ORIG_DATA_KEYS) {
+        origData.put(key, activity.get(key));
+      }
+    }
+    boolean result = false;
+    if (mods.has("dist") || mods.has("time")) {
+      double dist = mods.has("dist") ? mods.getDouble("dist") : activity.getDouble("distRaw");
+      double time = mods.has("time") ? mods.getLong("time") : activity.getDouble("timeTotalRaw");
+      activity.put("dist", String.format("%.3f", dist));
+      activity.put("distRaw", dist);
+      activity.put("timeTotal", CalcDist.formatTime((long) time, true));
+      activity.put("timeTotalRaw", time);
+      double speed = dist / (time / 3600.0);
+      activity.put("avgSpeed", String.format("%.3f", speed));
+      activity.put("avgSpeedRaw", speed);
+      activity.put("avgPace", CalcDist.speedToPace(speed));
+      result = true;
+    }
+    if (mods.has("gain")) {
+      activity.put("eleTotalPos", mods.getLong("gain"));
+      result = true;
+    }
+    if (mods.has("loss")) {
+      activity.put("eleTotalNeg", mods.getLong("loss"));
+      result = true;
+    }
+    if (origData != null) {
+      activity.put("origData", origData);
+    }
+    return result;
+  }
+  
+  private static boolean revertActivityChanges(JSONObject activity) {
+    JSONObject origData = activity.optJSONObject("origData");
+    if (origData == null || !origData.keys().hasNext()) {
+      return false;
+    }
+    for (String key : ORIG_DATA_KEYS) {
+      Object val = origData.opt(key);
+      if (val != null) {
+        activity.put(key, val);
+      }
+    }
+    activity.put("origData", new JSONObject());
+    return true;
   }
 
 }

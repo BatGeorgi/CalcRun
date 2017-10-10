@@ -27,7 +27,8 @@ public class SQLiteManager {
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "garminLink",
-      "speedDist", "splits"
+      "speedDist", "splits",
+      "origData"
   };
   private static final String[] TYPES = new String[] {
       "text", "text", "text", "text", "integer", "integer", "integer", "text", "real",
@@ -35,7 +36,8 @@ public class SQLiteManager {
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
       "text",
-      "text", "text"
+      "text", "text",
+      "text"
   };
   private static final String DB_FILE_PREF = "activities";
   
@@ -159,6 +161,9 @@ public class SQLiteManager {
 	synchronized void addActivity(JSONObject entry) {
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
+	  if (!entry.has("origData")) {
+	    entry.put("origData", new JSONObject());
+	  }
 	  for (int i = 0; i < KEYS.length; ++i) {
 	    String str = entry.get(KEYS[i]).toString();
 	    if ("real".equals(TYPES[i])) {
@@ -181,11 +186,13 @@ public class SQLiteManager {
 	  }
 	  JSONObject activity = new JSONObject();
 	  int len = KEYS.length;
-	  for (int i = 0; i < len - 2; ++i) {
+	  for (int i = 0; i < len - 3; ++i) {
 	    activity.put(KEYS[i], rs.getObject(i + 1));
 	  }
+	  activity.put(KEYS[len - 3], new JSONArray(rs.getString(len - 2)));
 	  activity.put(KEYS[len - 2], new JSONArray(rs.getString(len - 1)));
-	  activity.put(KEYS[len - 1], new JSONArray(rs.getString(len)));
+	  String origData = rs.getString(len);
+	  activity.put(KEYS[len - 1], (origData != null ? new JSONObject(origData) : new JSONObject()));
 	  return activity;
 	}
 	
@@ -288,7 +295,7 @@ public class SQLiteManager {
 	  executeQuery(sb.toString(), false);
 	}
 	
-	synchronized void deleteActivities(String fileName) {
+	synchronized void deleteActivity(String fileName) {
 	  executeQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
 	}
 	

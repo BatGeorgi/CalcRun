@@ -361,17 +361,84 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void processEdit(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-    String fileName = baseRequest.getHeader("File");
-    String name = baseRequest.getHeader("Name");
-    String type = baseRequest.getHeader("Type");
     if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
     }
+    String fileName = baseRequest.getHeader("File");
+    String name = baseRequest.getHeader("Name");
+    String type = baseRequest.getHeader("Type");
+    String actDist = baseRequest.getHeader("actDist");
+    String actTime = baseRequest.getHeader("actTime");
+    String actGain = baseRequest.getHeader("actGain");
+    String actLoss = baseRequest.getHeader("actLoss");
+    Number newDist = null;
+    Number newTime = null;
+    Number newGain = null;
+    Number newLoss = null;
+    try {
+      if (actDist != null && actDist.trim().length() > 0) {
+        newDist = new Double(actDist.replace(',', '.').trim());
+        if (newDist.doubleValue() <= 1e-6) {
+          throw new IllegalArgumentException("Bad data");
+        }
+      }
+      if (actTime != null && actTime.trim().length() > 0) {
+        newTime = new Long(CalcDist.getRealTime(actTime.trim()));
+        if (newTime.intValue() <= 0) {
+          throw new IllegalArgumentException("Bad data");
+        }
+      }
+      if (actGain != null && actGain.trim().length() > 0) {
+        newGain = new Integer(actGain.replace(',', '.').trim());
+        if (newGain.intValue() <= 0) {
+          throw new IllegalArgumentException("Bad data");
+        }
+      }
+      if (actLoss != null && actLoss.trim().length() > 0) {
+        newLoss = new Integer(actLoss.replace(',', '.').trim());
+        if (newLoss.intValue() <= 0) {
+          throw new IllegalArgumentException("Bad data");
+        }
+      }
+    } catch (Exception e) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      baseRequest.setHandled(true);
+      return;
+    }
     if (fileName != null && fileName.length() > 0 && name != null && name.length() > 0 && type != null
         && type.length() > 0) {
-      rcUtils.editActivity(fileName, name, type);
+      JSONObject mods = new JSONObject();
+      if (newDist != null) {
+        mods.put("dist", newDist);
+      }
+      if (newTime != null) {
+        mods.put("time", newTime);
+      }
+      if (newGain != null) {
+        mods.put("gain", newGain);
+      }
+      if (newLoss != null) {
+        mods.put("loss", newLoss);
+      }
+      rcUtils.editActivity(fileName, name, type, mods);
+      response.setStatus(HttpServletResponse.SC_OK);
+    } else {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    }
+    baseRequest.setHandled(true);
+  }
+  
+  private void processRevert(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
+    String fileName = baseRequest.getHeader("File");
+    if (fileName != null && fileName.length() > 0) {
+      rcUtils.editActivity(fileName, null, null, null);
       response.setStatus(HttpServletResponse.SC_OK);
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -526,10 +593,12 @@ class CalcDistHandler extends AbstractHandler {
 				processDelete(baseRequest, response);
 			} else if ("/compare".equalsIgnoreCase(target)) {
 				processCompare(baseRequest, response);
-			} else if ("/login".equals(target)) {
+			} else if ("/login".equalsIgnoreCase(target)) {
 				processLogin(baseRequest, response);
-			} else if ("/checkCookie".equals(target)) {
+			} else if ("/checkCookie".equalsIgnoreCase(target)) {
 				checkCookie(baseRequest, response);
+			} else if ("/revert".equalsIgnoreCase(target)) {
+			  processRevert(baseRequest, response);
 			}
 		}
   }
