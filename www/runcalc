@@ -151,22 +151,19 @@
                 show: "blind",
                 hide: "blind",
                 buttons: {
-                    "Save": function() {
-                        $.ajax({
-                            url: 'editActivity',
+					"Reset to original": function() {
+						$.ajax({
+                            url: 'revert',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'File': $("#editable").attr('genby'),
-                                'Name': encodeURIComponent($('#chooseName').val()),
-                                'Type': $('#chooseType').val(),
-                                'Password': $('#pass').val()
+                                'File': $("#editable").attr('genby')
                             },
                             method: 'POST',
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
-                                    $('#' + $("#editable").attr('refname')).text($('#chooseName').val());
-                                    $('#' + $("#editable").attr('reftype')).text($('#chooseType').val());
+                                    getBest();
+									fetch();
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
@@ -174,7 +171,40 @@
 									$('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
-									$('#infoDialog').html('Name must not be empty!');
+									$('#infoDialog').html('Wrong data!');
+									$('#infoDialog').dialog('option', 'title', 'Error');
+									$('#infoDialog').dialog('open');
+                                }
+                            }
+                        });
+					},
+                    "Modify": function() {
+                        $.ajax({
+                            url: 'editActivity',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'File': $("#editable").attr('genby'),
+                                'Name': encodeURIComponent($('#chooseName').val()),
+                                'Type': $('#chooseType').val(),
+								'actDist': $('#actDist').val(),
+								'actTime': $('#actTime').val(),
+								'actGain': $('#actGain').val(),
+								'actLoss': $('#actLoss').val()
+                            },
+                            method: 'POST',
+                            dataType: 'json',
+                            statusCode: {
+                                200: function(xhr) {
+                                    getBest();
+									fetch();
+                                },
+                                401: function(xhr) {
+                                    $('#infoDialog').html('Please sign in!');
+									$('#infoDialog').dialog('option', 'title', 'Not authorized');
+									$('#infoDialog').dialog('open');
+                                },
+                                400: function(xhr) {
+									$('#infoDialog').html('Wrong data!');
 									$('#infoDialog').dialog('option', 'title', 'Error');
 									$('#infoDialog').dialog('open');
                                 }
@@ -183,8 +213,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min($(window).width() * 0.4, 400),
-                height: Math.min($(window).height() * 0.4, 300),
+                width: Math.min($(window).width() * 0.45, 450),
+                height: Math.min($(window).height() * 0.65, 500),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -204,8 +234,7 @@
                             url: 'deleteActivity',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'File': $("#removable").attr('genby'),
-                                'Password': $('#passRem').val()
+                                'File': $("#removable").attr('genby')
                             },
                             method: 'POST',
                             dataType: 'json',
@@ -437,8 +466,12 @@
                 $('#edit' + i).click(function() {
                     type = $('#type' + i).text();
                     $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
-						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) +
-						'</select></td></tr></tbody></table>');
+						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr></tbody></table>' +
+						'<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
+						'<table><tbody><tr><td>Actual distance</td><td><input type="text" id="actDist" /></td></tr>' +
+						'<tr><td>Actual time(hh:mm:ss)</td><td><input type="text" id="actTime" /></td></tr>' +
+						'<tr><td>Actual elevation gain</td><td><input type="text" id="actGain" /></td></tr>' +
+						'<tr><td>Actual elevation loss</td><td><input type="text" id="actLoss" /></td></tr>' + '</tbody></table>');
                     $("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
                     $("#editable").attr('genby', item['genby']);
                     $("#editable").attr('refname', 'item' + i);
