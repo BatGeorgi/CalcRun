@@ -193,6 +193,10 @@ public class SQLiteManager {
 	  activity.put(KEYS[len - 2], new JSONArray(rs.getString(len - 1)));
 	  String origData = rs.getString(len);
 	  activity.put(KEYS[len - 1], (origData != null ? new JSONObject(origData) : new JSONObject()));
+	  JSONObject data = activity.getJSONObject(KEYS[len - 1]);
+	  if (data != null && data.keys().hasNext()) {
+	    activity.put("isModified", "y");
+	  }
 	  return activity;
 	}
 	
