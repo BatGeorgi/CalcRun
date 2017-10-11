@@ -409,7 +409,9 @@
                 }
             };
             $.each(all, function(i, item) {
-                runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + decodeURIComponent(item['name']) + '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
+				var isMod = item['isModified'] == 'y';
+                runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + decodeURIComponent(item['name']) + (isMod ? '*' : '')
+					+ '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
                     item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + item['avgSpeed'] + '</td>' +
                     '<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>' +
                     '<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>' +
@@ -441,10 +443,18 @@
                     $('#ui' + i).dialog('option', 'title', 'Details ' + $('#item' + i).text());
                     $('#ui' + i).dialog('open');
                 });
-                $('#data' + i).append('<ul><li><h3>General</h3></li><table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance(km)</td><td>' + item['dist'] + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + '</td></tr><tr><td>Elevation gain(m)</td><td>' +
-                    '<span class="green">' + item['eleTotalPos'] + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' + item['eleTotalNeg'] + '</span></td></tr><tr><td>' +
-                    'Running time(>9km/h)</td><td>' + item['timeRunning'] + '</td></tr><tr><td>Running distance(km)</td><td>' + item['distRunning'] + '</td></tr><tr><td>Running elevation gain(m)</td><td>' + '<span class="green">' + item['eleRunningPos'] + '</span></td></tr><tr><td>Running elevation loss(m)</td><td>' +
-                    '<span class="red">' + item['eleRunningNeg'] + '</span></td></tr><tr><td>Rest time</td><td>' + item['timeRest'] + '</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + '</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + '</td></tr></tbody></table>' + linkHtml + '<li><h3>Speed distribution</h3>' +
+				var origData = item['origData'];
+                $('#data' + i).append('<ul><li><h3>General</h3></li>' + (isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
+					+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
+					'</td></tr><tr><td>Elevation gain(m)</td><td>' +
+                    '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' +
+					item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
+                    'Running time(>9km/h)</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running distance</td><td>' + (isMod ? '<em>' : '') +
+					item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running elevation gain(m)</td><td>' +
+					'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running elevation loss(m)</td><td>' +
+                    '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
+					'</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
+					'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>' + linkHtml + '<li><h3>Speed distribution</h3>' +
                     '</li>' + tableHtml + '</li><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
             $('#runs tbody').html(runsHtml);
