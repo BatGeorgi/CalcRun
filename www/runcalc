@@ -626,14 +626,14 @@
                 },
                 statusCode: {
                     200: function(data) {
-						$("#bestSplits").dialog('option', 'title', 'Best split times');
+						$("#bestSplits").dialog('option', 'title', 'Best split times dy distance');
 						totals = data['totals'];
 						splits = '';
 						$.each(totals, function(i, item) {
 							splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td>' +
 							'<td>' + item['pace'] + '</td><td>' + item['speed'] + '</td></tr>';
 						});
-						$("#bestSplits").html('<h2>Best split times by distance</h2><span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th>' +
+						$("#bestSplits").html('<span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th>' +
 						'<th>Pace</th><th>Speed</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
                     }
                 }
@@ -647,13 +647,13 @@
 		}
 		
 		function initMonthlyTotals(data) {
-			$("#mTotals").dialog('option', 'title', 'Monthly total distances');
+			$("#mTotals").dialog('option', 'title', 'Total distance by month');
 			tableHtml = '<table id="mtt" align="center"><tbody>';
 			$.each(data, function(i, item) {
 				tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getMTable(item) + '</td></tr>';
 			});
 			tableHtml += '</tbody></table>';
-			$("#mTotals").html('<h2>Total distance by month</h2><p>' + tableHtml);
+			$("#mTotals").html(tableHtml);
 		}
 		
 		function checkCookieVal(cookieVal) {
