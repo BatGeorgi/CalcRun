@@ -364,7 +364,10 @@ public class RunCalcUtils {
       ach.put("point", entry.getKey());
       ach.put("name", ba[0]);
       ach.put("date", ba[1]);
-      ach.put("ach", CalcDist.formatTime(entry.getValue(), true));
+      long seconds = entry.getValue();
+      ach.put("ach", CalcDist.formatTime(seconds, true));
+      ach.put("speed", String.format("%.3f", entry.getKey() / (seconds / 3600.0)));
+      ach.put("pace", CalcDist.formatPace((seconds / 60.0) / entry.getKey()));
       arr.put(ach);
     }
     result.put("totals", arr);

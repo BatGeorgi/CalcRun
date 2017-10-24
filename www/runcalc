@@ -335,7 +335,7 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min($(window).width() * 0.7, 700),
+                width: Math.min($(window).width() * 0.85, 850),
                 height: Math.min($(window).height() * 0.85, 800),
                 create: function(event) {
                     $(event.target).parent().css({
@@ -383,8 +383,8 @@
             $('#overall').show(); 
             $('#runs').show();
             $('#ht').text(all.length + ' matching ' + (all.length != 1 ? 'activities' : 'activity'));
-            $('#overall tbody').html('<tr><td>Total distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Total time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
-                '<tr><td>Est. elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Est. elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Est. running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
+            $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
+                '<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
 			runsHtml = '';
             optsAll = '';
@@ -630,9 +630,11 @@
 						totals = data['totals'];
 						splits = '';
 						$.each(totals, function(i, item) {
-							splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td></tr>';
+							splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td>' +
+							'<td>' + item['pace'] + '</td><td>' + item['speed'] + '</td></tr>';
 						});
-						$("#bestSplits").html('<h2>Best split times by distance</h2><span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
+						$("#bestSplits").html('<h2>Best split times by distance</h2><span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th>' +
+						'<th>Pace</th><th>Speed</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
                     }
                 }
             });
@@ -835,7 +837,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 2.0</strong></H1>
+        <H1><strong>Run Analyzer 2.1</strong></H1>
     </div>
 	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
@@ -898,7 +900,7 @@
 			 </fieldset>
             <p>
             <fieldset>
-                <legend class="legend-cap">Most recent activities</legend>
+                <legend class="legend-cap">Most recent activities(in period)</legend>
                 <label for="l-10">Last 10</label>
                 <input type="radio" name="selectLast" id="l-10" cap="10">
                 <label for="l-20">Last 20</label>
@@ -913,14 +915,14 @@
     </div>
     <div id="activities">
 		<div id="overallWrap">
-			<button id="mTotalsBtn">View monthly totals</button>
+			<button id="mTotalsBtn">Monthly totals</button>
 			<h2>Totals</h2>
 			<table id="overall">
 				<tbody></tbody>
 			</table>
 		</div>
 		<div id="bestOfWrap">
-			<button id="bestTotalsBtn">View best split times</button>
+			<button id="bestTotalsBtn">Best split times</button>
 			<h2>Best</h2>
 			<table id="bestOf">
 				<tbody></tbody>
