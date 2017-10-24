@@ -17,13 +17,8 @@ h2 {
     -webkit-margin-end: 0px;
     font-weight: bold;
 }
-tr td:first-child {
-	border-top-left-radius: 10px;
-	border-bottom-left-radius: 10px;
-}
-tr td:last-child {
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px;
+tr.spaceUnder> td {
+  padding-bottom: 1em;
 }
 td {
 	padding: 6px 6px 6px 12px;
@@ -101,10 +96,21 @@ th {
 	margin: auto;
 	text-align: left;
 	width: 65%;
+	border-collapse:separate; 
+	border-spacing: 0px 3px;
 }
 #runs td {
 	padding-top: .5em;
     padding-bottom: .5em;
+	
+}
+#runs tr td:first-child {
+	border-top-left-radius: 10px;
+	border-bottom-left-radius: 10px;
+}
+#runs tr td:last-child {
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
 }
 #overallWrap {
 	float: left;
@@ -123,6 +129,15 @@ th {
 .runitem {
 	font-weight: bold;
 	cursor:pointer;
+	color: #218435;
+}
+#bestTotalsBtn {
+	font-weight: bold;
+	color: #1f1f21;
+}
+#mTotalsBtn {
+	font-weight: bold;
+	color: #1f1f21;
 }
 ul {
   list-style-type: none;

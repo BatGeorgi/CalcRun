@@ -123,7 +123,7 @@ public class CalcDist {
     return total;
   }
   
-  private static String formatPace(double pace) {
+  static String formatPace(double pace) {
     int minutes = (int) pace;
     int seconds = (int) ((pace - minutes) * 60.0);
     StringBuffer sb = new StringBuffer();
