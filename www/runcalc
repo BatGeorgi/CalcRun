@@ -8,6 +8,7 @@
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
+    <link rel="icon" href="tab_icon.png">
     <script src="jquery-3.2.1.js"></script>
     <script src="jquery-ui.min.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
