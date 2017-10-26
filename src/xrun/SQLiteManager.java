@@ -26,7 +26,7 @@ public class SQLiteManager {
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
-      "garminLink",
+      "garminLink", "ccLink", "photosLink",
       "speedDist", "splits",
       "origData"
   };
@@ -35,7 +35,7 @@ public class SQLiteManager {
       "text", "text", "real", "integer", "text", "text",
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
-      "text",
+      "text", "text", "text",
       "text", "text",
       "text"
   };
@@ -292,9 +292,19 @@ public class SQLiteManager {
 	  return result;
   }
 	
-	synchronized void updateActivity(String fileName, String newName, String newType) {
+	synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos) {
 	  StringBuffer sb = new StringBuffer();
-	  sb.append("UPDATE " + RUNS_TABLE_NAME + " SET name ='" + newName + "', type ='" + newType);
+	  if (newGarmin == null || newGarmin.length() == 0) {
+      newGarmin = "none";
+    }
+	  if (newCC == null || newCC.length() == 0) {
+	    newCC = "none";
+	  }
+	  if (newPhotos == null || newPhotos.length() == 0) {
+      newPhotos = "none";
+    }
+	  sb.append("UPDATE " + RUNS_TABLE_NAME + " SET name ='" + newName + "', type ='" + newType +
+	      "', garminLink='" + newGarmin + "', ccLink='" + newCC + "', photosLink='" + newPhotos);
 	  sb.append("' WHERE genby='" + fileName + '\'');
 	  executeQuery(sb.toString(), false);
 	}

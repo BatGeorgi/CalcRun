@@ -192,7 +192,10 @@
 								'actDist': $('#actDist').val(),
 								'actTime': $('#actTime').val(),
 								'actGain': $('#actGain').val(),
-								'actLoss': $('#actLoss').val()
+								'actLoss': $('#actLoss').val(),
+								'garminLink': $('#chooseGarmin').val(),
+								'ccLink': $('#chooseCC').val(),
+								'photosLink': $('#choosePhotos').val()
                             },
                             method: 'POST',
                             dataType: 'json',
@@ -216,8 +219,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min($(window).width() * 0.45, 450),
-                height: Math.min($(window).height() * 0.65, 500),
+                width: Math.min($(window).width() * 0.62, 560),
+                height: Math.min($(window).height() * 0.75, 600),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -434,10 +437,6 @@
                 });
                 splitHtml += '</tbody></table></span>';
                 filename = item['genby'].endsWith('.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
-                linkHtml = '</ul><a href="' + filename + '" target="_blank"><h3>External link</h3></a><ul>';
-                if (item['garminLink'] != 'none') {
-                    linkHtml += '</ul><a href="' + item['garminLink'] + '" target="_blank"><h3>Garmin Connect</h3></a><ul>';
-                }
                 itemsDS.push(function() {
                     $('#ui' + i).dialog(dialog);
                     $('#ui' + i).html($('#data' + i).html());
@@ -445,7 +444,17 @@
                     $('#ui' + i).dialog('open');
                 });
 				var origData = item['origData'];
-                $('#data' + i).append('<ul><li><h3>General</h3></li>' + (isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
+				var extLinks = '<a href="' + filename + '" target="_blank"><input type="image" src="extview-icon.png" width="60" height="60" /></a>';
+				if (item['garminLink'] != 'none') {
+					extLinks += '<a href="' + item['garminLink'] + '" target="_blank"><input type="image" src="garmin-icon.png" width="60" height="60" /></a>';
+				}
+				if (item['ccLink'] != 'none') {
+					extLinks += '<a href="' + decodeURIComponent(item['ccLink']) + '" target="_blank"><input type="image" src="relivecc-icon.png" width="60" height="60" /></a>';
+				}
+				if (item['photosLink'] != 'none') {
+					extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input type="image" src="photos-icon.png" width="60" height="60" /></a>';
+				}
+                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + (isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table class="highlightOnly"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
 					+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
 					'</td></tr><tr><td>Elevation gain(m)</td><td>' +
                     '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' +
@@ -455,8 +464,8 @@
 					'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running elevation loss(m)</td><td>' +
                     '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
 					'</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-					'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>' + linkHtml + '<li><h3>Speed distribution</h3>' +
-                    '</li>' + tableHtml + '</li><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
+					'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
+                    '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
@@ -479,7 +488,10 @@
                 $('#edit' + i).click(function() {
                     type = $('#type' + i).text();
                     $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
-						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td></tr></tbody></table>' +
+						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td>' +
+						'<tr><td>Garmin </td><td><input size="50" type="text" id="chooseGarmin" value="' + (item['garminLink'] != 'none' ?  item['garminLink'] : "")  + '"/></td></tr>' +
+						'<tr><td>Relive CC </td><td><input size="50" type="text" id="chooseCC" value="' + (item['ccLink'] != 'none' ? decodeURIComponent(item['ccLink']) : "")  + '"/></td></tr>' +
+						'<tr><td>Photos </td><td><input size="50" type="text" id="choosePhotos" value="' + (item['photosLink'] != 'none' ? decodeURIComponent(item['photosLink']) : "")  + '"/></td></tr></tbody></table>' +
 						'<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
 						'<table><tbody><tr><td>Actual distance</td><td><input type="text" id="actDist" /></td></tr>' +
 						'<tr><td>Actual time(hh:mm:ss)</td><td><input type="text" id="actTime" /></td></tr>' +
@@ -917,6 +929,7 @@
     <div id="activities">
 		<div id="overallWrap">
 			<button id="mTotalsBtn">Monthly totals</button>
+			<hr>
 			<h2>Totals</h2>
 			<table id="overall">
 				<tbody></tbody>
@@ -924,6 +937,7 @@
 		</div>
 		<div id="bestOfWrap">
 			<button id="bestTotalsBtn">Best split times</button>
+			<hr>
 			<h2>Best</h2>
 			<table id="bestOf">
 				<tbody></tbody>

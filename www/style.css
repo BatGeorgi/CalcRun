@@ -17,9 +17,6 @@ h2 {
     -webkit-margin-end: 0px;
     font-weight: bold;
 }
-tr.spaceUnder> td {
-  padding-bottom: 1em;
-}
 td {
 	padding: 6px 6px 6px 12px;
 	color: #6D929B;
@@ -129,7 +126,7 @@ th {
 .runitem {
 	font-weight: bold;
 	cursor:pointer;
-	color: #218435;
+	color: #255096;
 }
 #bestTotalsBtn {
 	font-weight: bold;
