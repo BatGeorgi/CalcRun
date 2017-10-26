@@ -79,6 +79,9 @@ public class RunCalcUtils {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, 9, 100, 1, current); // default values
         runs.add(current);
+        current.put("type", RUNNING);
+        current.put("ccLink", "none");
+        current.put("photosLink", "none");
         sqLite.addActivity(current);
         if (drive != null) {
           drive.backupTrack(targ);
@@ -138,7 +141,7 @@ public class RunCalcUtils {
     return sqLite.getMonthlyTotals();
   }
   
-  String addActivity(String name, InputStream is, String activityName, String activityType) {
+  String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos) {
   	File file = null;
   	try {
   	  file = addActivity0(name, is);
@@ -155,6 +158,8 @@ public class RunCalcUtils {
         current.put("name", activityName);
       }
       current.put("type", activityType);
+      current.put("ccLink", reliveCC);
+      current.put("photosLink", photos);
       sqLite.addActivity(current);
       if (drive != null) {
         drive.backupTrack(file);
@@ -374,7 +379,7 @@ public class RunCalcUtils {
     return result;
   }
   
-  void editActivity(String fileName, String newName, String newType, JSONObject mods) {
+  void editActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, JSONObject mods) {
     JSONObject activity = sqLite.getActivity(fileName);
     if (activity == null) {
       return;
@@ -383,10 +388,13 @@ public class RunCalcUtils {
       if (modifyActivity(activity, mods)) {
         activity.put("name", newName);
         activity.put("type", newType);
+        activity.put("garminLink", newGarmin.length() > 0 ? newGarmin : "none");
+        activity.put("ccLink", newCC.length() > 0 ? newCC : "none");
+        activity.put("photosLink", newPhotos.length() > 0 ? newPhotos : "none");
         sqLite.deleteActivity(fileName);
         sqLite.addActivity(activity);
       } else {
-        sqLite.updateActivity(fileName, newName, newType);
+        sqLite.updateActivity(fileName, newName, newType, newGarmin, newCC, newPhotos);
       }
     } else if (revertActivityChanges(activity)) {
       sqLite.deleteActivity(fileName);

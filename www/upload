@@ -20,7 +20,8 @@
 			$('#fileToUpload').button();
 			$('#submit').button();
 			$("#upload").submit(function( event ) {
-				suff = "." + encodeURIComponent($('#name').val()) +  "." + $('#type').find(':selected').val();
+				var sep = "#$^";
+				suff = "." + encodeURIComponent($('#name').val()) +  sep + $('#type').find(':selected').val() + sep + encodeURIComponent($('#relivecc').val()) + sep + encodeURIComponent($('#photos').val());
 				initVal = $('#upload').attr('action');
 				$('#upload').attr('action', encodeURIComponent(initVal + suff));
 			});
@@ -51,6 +52,16 @@
 					</select>
                 </td>
             </tr>
+			<tr>
+				<td>
+					<p>Relive CC&nbsp;</td>
+				<td><input type="text" id="relivecc"></td>
+			</tr>
+			<tr>
+				<td>
+					<p>Photos&nbsp;</td>
+				<td><input type="text" id="photos"></td>
+			</tr>
             <tr>
                 <td>
                     <p>Select file&nbsp;</td>

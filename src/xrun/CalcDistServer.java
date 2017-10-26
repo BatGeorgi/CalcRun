@@ -110,6 +110,8 @@ class CalcDistHandler extends AbstractHandler {
   
   private static final byte[] CODE = new byte[] {-55, -85, 122, -120, -106, -44, 81, -78, 90, 79, -73, -54, 34, -42,
       -110, -67, 6, 56, -102, -7};
+  
+  private static final String SEP = "#$^";
 
   static boolean isAuthorized(String password) {
     if (password == null) {
@@ -169,7 +171,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
 	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-	    String activityName, String activityType) {
+	    String activityName, String activityType, String reliveCC, String photos) {
 	  if (activityName != null && activityName.length() == 0) {
 	    activityName = null;
 	  }
@@ -179,7 +181,7 @@ class CalcDistHandler extends AbstractHandler {
 			while (iter.hasNext()) {
 				FileItemStream item = iter.next();
 				if (!item.isFormField()) {
-					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType);
+					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos);
 				}
 			}
 		} catch (Exception e) {
@@ -190,24 +192,38 @@ class CalcDistHandler extends AbstractHandler {
 	
 	private void processUpload(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-    int ind = target.indexOf('.');
     String name = null;
     String type = null;
-    if (ind != -1) {
-      int to = target.lastIndexOf('.');
-      if (to != -1 && to > ind) {
-        name = target.substring(ind + 1, to);
-        type = target.substring(to + 1);
-      }
-    }
-    if (type == null || type.length() == 0) {
+    String reliveCC = null;
+    String photos = null;
+    int ind = target.indexOf('.');
+    target = target.substring(ind + 1);
+    ind = target.indexOf(SEP);
+    name = target.substring(0, ind);
+    
+    int to = target.indexOf(SEP, ind + SEP.length());
+    type = target.substring(ind + SEP.length(), to);
+    ind = to;
+    
+    to = target.indexOf(SEP, ind + SEP.length());
+    reliveCC = target.substring(ind + SEP.length(), to);
+    ind = to;
+    
+    photos = target.substring(ind + SEP.length());
+    if (type.length() == 0) {
       type = RunCalcUtils.RUNNING;
+    }
+    if (reliveCC.length() == 0) {
+      reliveCC = "none";
+    }
+    if (photos.length() == 0) {
+      photos = "none";
     }
     PrintWriter pw = response.getWriter();
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
-        String result = handleFileUpload(baseRequest, request, response, name, type);
+        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos);
         if (result == null) { // all normal
           pw.println("<h2>Upload finished!</h2>");
           pw.println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
@@ -369,6 +385,9 @@ class CalcDistHandler extends AbstractHandler {
     String fileName = baseRequest.getHeader("File");
     String name = baseRequest.getHeader("Name");
     String type = baseRequest.getHeader("Type");
+    String garminLink = baseRequest.getHeader("garminLink");
+    String ccLink = baseRequest.getHeader("ccLink");
+    String photosLink = baseRequest.getHeader("photosLink");
     String actDist = baseRequest.getHeader("actDist");
     String actTime = baseRequest.getHeader("actTime");
     String actGain = baseRequest.getHeader("actGain");
@@ -422,7 +441,7 @@ class CalcDistHandler extends AbstractHandler {
       if (newLoss != null) {
         mods.put("loss", newLoss);
       }
-      rcUtils.editActivity(fileName, name, type, mods);
+      rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, mods);
       response.setStatus(HttpServletResponse.SC_OK);
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -438,7 +457,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     String fileName = baseRequest.getHeader("File");
     if (fileName != null && fileName.length() > 0) {
-      rcUtils.editActivity(fileName, null, null, null);
+      rcUtils.editActivity(fileName, null, null, null, null, null, null);
       response.setStatus(HttpServletResponse.SC_OK);
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
