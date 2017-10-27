@@ -95,10 +95,10 @@ public class GoogleDrive {
     }
   }
   
-  void backupDB(final java.io.File db) {
+  void backupDB(final java.io.File db, String pref) {
     final File fileMetadata = new File();
     Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("EET"));
-    fileMetadata.setName("activities_" + cal.get(Calendar.YEAR) + '_' + (cal.get(Calendar.MONTH) + 1) + '_' +
+    fileMetadata.setName(pref + '_' + cal.get(Calendar.YEAR) + '_' + (cal.get(Calendar.MONTH) + 1) + '_' +
         cal.get(Calendar.DATE) + '_' + cal.getTimeInMillis() + ".db");
     fileMetadata.setParents(Collections.singletonList(BACKUP_FOLDER_ID));
     final FileContent mediaContent = new FileContent("app/db", db);

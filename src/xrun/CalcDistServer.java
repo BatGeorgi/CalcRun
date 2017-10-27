@@ -142,7 +142,7 @@ class CalcDistHandler extends AbstractHandler {
         }
         activityTemplate = new String(baos.toByteArray());
         actTempLastMod = activityTemplateFile.lastModified();
-      } catch (Exception ignore){
+      } catch (Exception ignore) {
         // silent catch
       } finally {
         RunCalcUtils.silentClose(is);
@@ -563,9 +563,14 @@ class CalcDistHandler extends AbstractHandler {
 				if (ind != -1) {
 					pw.print(template.substring(0, ind));
 					pw.print("fa/" + target);
-					pw.println(template.substring(ind + 3));
-				} else {
-					pw.println("No data :(");
+					int to = template.indexOf("TBD", ind + 3);
+					if (to != -1) {
+					  pw.print(template.substring(ind + 3, to));
+					  pw.print(target.endsWith(".gpx") ? target : (target + ".gpx"));
+					  pw.print(template.substring(to + 3));
+					} else {
+					  pw.println(template.substring(ind + 3));
+					}
 				}
 			} finally {
 				pw.flush();
@@ -595,6 +600,23 @@ class CalcDistHandler extends AbstractHandler {
   		pw.flush();
   	}
   	baseRequest.setHandled(true);
+  }
+  
+  private void processGetGoords(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    JSONObject data = rcUtils.retrieveCoords(baseRequest.getHeader("activity"));
+    response.setContentType("application/json");
+    if (data == null) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    } else {
+      PrintWriter pw = response.getWriter();
+      try {
+        pw.println(data.toString());
+        response.setStatus(HttpServletResponse.SC_OK);
+      } finally {
+        pw.flush();
+      }
+    }
+    baseRequest.setHandled(true);
   }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
@@ -627,6 +649,8 @@ class CalcDistHandler extends AbstractHandler {
 				checkCookie(baseRequest, response);
 			} else if ("/revert".equalsIgnoreCase(target)) {
 			  processRevert(baseRequest, response);
+			} else if ("/coords".equalsIgnoreCase(target)) {
+			  processGetGoords(baseRequest, response);
 			}
 		}
   }

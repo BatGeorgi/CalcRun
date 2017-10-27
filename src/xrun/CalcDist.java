@@ -51,6 +51,9 @@ public class CalcDist {
   private double splitRem;
   private boolean isGarminTrack = false;
   
+  private JSONArray lats = new JSONArray();
+  private JSONArray lons = new JSONArray();
+  
   private CalcDist(File file, double minRunningSpeed, double interval, double splitM) {
     this.file = file;
     this.minRunningSpeed = (minRunningSpeed * 5.0) / 18.0; // convert to m/s
@@ -261,6 +264,8 @@ public class CalcDist {
         String eleS = getDirectChild(node, "ele").getTextContent();
         double lat = Double.parseDouble(latS);
         double lon = Double.parseDouble(lonS);
+        lats.put(lat);
+        lons.put(lon);
         double ele = Double.parseDouble(eleS);
         String timeS = getDirectChild(node, "time").getTextContent();
         if (i == 0) {
@@ -386,6 +391,8 @@ public class CalcDist {
     }
     CalcDist cd = new CalcDist(file, minSpeed, intR, splitS * 1000.0);
     cd.process(data);
+    data.put("lats", cd.lats);
+    data.put("lons", cd.lons);
     JSONArray arrSpeed = new JSONArray();
     for (int i = 0; i < BOUNDS.length; ++i) {
       JSONObject sp = new JSONObject();
