@@ -36,6 +36,7 @@
         }
 		
 		function init(item) {
+			$('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['date'] + '</strong></h1>');
 			distr = item['speedDist'];
             tableHtml = '<span class="highlight"><table style="margin: auto;"><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
             $.each(distr, function(i, diap) {
@@ -55,7 +56,7 @@
             }
             var origData = item['origData'];
 			var isMod = item['isModified'] == 'y';
-            $('#data').html('<h3>General</h3>' + (isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table class="highlightOnly" style="margin: auto;"><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
+            $('#mainstats').html((isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table class="highlightOnly" style="margin: auto;"><tbody><tr><td>Distance</td><td>'
 				+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
 				'</td></tr><tr><td>Elevation gain(m)</td><td>' +
                 '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' +
@@ -65,8 +66,8 @@
 				'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running elevation loss(m)</td><td>' +
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
 				'</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-				'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>' + linkHtml + '<h3>Speed distribution</h3>'
-                + tableHtml + '<h3>Splits</h3>' + splitHtml);
+				'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr>' + tableHtml);
+			$('#splits').html(splitHtml);
 		}
 		
 		$(document).ready(function() {
@@ -86,11 +87,48 @@
 			});
 		});
 	</script>
+
 </head>
 
 <body>
-	<div id="data" style="text-align:center;font-size: 120%">
+	<div id="heading" style="color: #1c9e45;"></div>
+	<div id="mainstats" style="float: left;text-align:center;font-size: 120%">
 	</div>
+	<div id="map" style="float: left;width:50%;height:800px;">
+	</div>
+	<div id="splits" style="float: right;text-align:center;font-size: 120%">
+	</div>
+	
+	<script>
+		function initMap() {
+			var mapOptions = {
+				center: {lat: 42.7, lng: 25},
+				zoom:7,
+				mapTypeControl: true,
+				mapTypeControlOptions: {
+					style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+					mapTypeId: ['roadmap', 'terrain']
+				},
+				mapTypeId: google.maps.MapTypeId.HYBRID
+			};
+			var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+			var flightPlanCoordinates = [
+				{lat: 42.772, lng: 23.444},
+				{lat: 42.800, lng: 23.876},
+				{lat: 42.840, lng: 24.500},
+				{lat: 43.500, lng: 25.000}
+			];
+			var flightPath = new google.maps.Polyline({
+				path: flightPlanCoordinates,
+				geodesic: true,
+				strokeColor: '#FF0000',
+				strokeOpacity: 1.0,
+				strokeWeight: 2
+			});
+			flightPath.setMap(map);
+		}
+	</script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCC4nPG5F3bF4gXe9yc4-0cOQH4oGKqWI&callback=initMap"></script>
 </body>
 
 </html>
