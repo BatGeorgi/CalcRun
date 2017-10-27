@@ -112,20 +112,49 @@
 				mapTypeId: google.maps.MapTypeId.HYBRID
 			};
 			var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-			var flightPlanCoordinates = [
-				{lat: 42.772, lng: 23.444},
-				{lat: 42.800, lng: 23.876},
-				{lat: 42.840, lng: 24.500},
-				{lat: 43.500, lng: 25.000}
-			];
-			var flightPath = new google.maps.Polyline({
-				path: flightPlanCoordinates,
-				geodesic: true,
-				strokeColor: '#FF0000',
-				strokeOpacity: 1.0,
-				strokeWeight: 2
+			$.ajax({
+                url: 'coords',
+                method: 'POST',
+                dataType: 'json',
+				headers: {
+                    'Content-Type': 'application/json',
+					'activity': 'TBD'
+                },
+                statusCode: {
+                    200: function(data) {
+						coords = [];
+						lats = data['lats'];
+						lons = data['lons'];
+						$.each(lats, function(i, item) {
+							coords.push({lat: item, lng: lons[i]});
+						});
+						var runPath = new google.maps.Polyline({
+							path: coords,
+							geodesic: true,
+							strokeColor: '#FF0000',
+							strokeOpacity: 1.0,
+							strokeWeight: 2
+						});
+						map.setCenter({lat: lats[0], lng: lons[0]});
+						map.setZoom(11);
+						var mStart = new google.maps.Marker({
+							position: {lat: lats[0], lng: lons[0]},
+							map: map,
+							title: 'Start',
+							icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
+						});
+						var mEnd = new google.maps.Marker({
+							position: {lat: lats[lats.length - 1], lng: lons[lons.length - 1]},
+							map: map,
+							title: 'End',
+							icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
+						});
+						mStart.setMap(map);
+						mEnd.setMap(map);
+						runPath.setMap(map);
+                    }
+                }
 			});
-			flightPath.setMap(map);
 		}
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCC4nPG5F3bF4gXe9yc4-0cOQH4oGKqWI&callback=initMap"></script>

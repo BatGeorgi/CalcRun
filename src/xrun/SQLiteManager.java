@@ -20,6 +20,7 @@ public class SQLiteManager {
   
   private static final String RUNS_TABLE_NAME = "runs";
   private static final String COOKIES_TABLE_NAME = "cookies";
+  private static final String COORDS_TABLE_NAME = "coords";
   
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -44,19 +45,22 @@ public class SQLiteManager {
   private static final String CREATE_STATEMENT_COOKIES_TABLE = "CREATE TABLE IF NOT EXISTS " + COOKIES_TABLE_NAME + 
       "(uid PRIMARY KEY NOT NULL, expires NOT NULL)";
 
-	private File db;
+	private File dbActivities;
+	private File dbCoords;
 	private String createStatementRunsTable;
 	private Connection conn = null;
+	private Connection connDB2 = null;
 
 	SQLiteManager(File base) {
-		db = new File(base, "activities.db");
-		if (!db.isFile()) {
+		dbActivities = new File(base, "activities.db");
+		dbCoords = new File(base, "coords.db");
+		if (!dbActivities.isFile()) {
 		  File[] children = base.listFiles();
 		  if (children != null) {
 		    for (File child : children) {
 		      String name = child.getName();
 		      if (name.startsWith(DB_FILE_PREF) && name.endsWith(".db")) {
-		        db = child;
+		        dbActivities = child;
 		        break;
 		      }
 		    }
@@ -72,6 +76,62 @@ public class SQLiteManager {
 		cr.append(KEYS[len - 1] + ' ' + TYPES[len - 1] + " NOT NULL)");
 		createStatementRunsTable = cr.toString();
 	}
+	
+  private void ensureCoordsInit() throws SQLException {
+    if (connDB2 != null) {
+      return;
+    }
+    connDB2 = DriverManager.getConnection("jdbc:sqlite:" + dbCoords.getAbsolutePath().replace('\\', '/'));
+    connDB2.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS " + COORDS_TABLE_NAME +
+        " (id text PRIMARY KEY NOT NULL, data text NOT NULL)");
+  }
+	
+  private void addCoordsData(String id, JSONArray lats, JSONArray lons) {
+    try {
+      synchronized (dbCoords) {
+        ensureCoordsInit();
+        JSONObject json = new JSONObject();
+        json.put("lats", lats);
+        json.put("lons", lons);
+        String str = json.toString();
+        ResultSet rs = connDB2.createStatement().executeQuery("SELECT * FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
+        if (!rs.next()) {
+          connDB2.createStatement().executeUpdate("INSERT INTO " + COORDS_TABLE_NAME + " VALUES ('" + id + "', '" + str + "')");
+        } else {
+          connDB2.createStatement().executeUpdate("UPDATE " + COORDS_TABLE_NAME + " SET data='" + str + "' WHERE id='" + id + "'");
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  JSONObject getCoordsData(String id) {
+    JSONObject json = null;
+    try {
+      synchronized (dbCoords) {
+        ensureCoordsInit();
+        ResultSet rs = connDB2.createStatement().executeQuery("SELECT data FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
+        if (rs.next()) {
+          json = new JSONObject((String) rs.getString(1));
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return json;
+  }
+
+  private void removeCoordsData(String id) {
+    try {
+      synchronized (dbCoords) {
+        ensureCoordsInit();
+        connDB2.createStatement().executeUpdate("DELETE FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 	
 	synchronized JSONArray getMonthlyTotals() {
 	  JSONArray result = new JSONArray();
@@ -126,7 +186,7 @@ public class SQLiteManager {
 	  if (conn != null) {
 	    return;
 	  }
-	  conn = DriverManager.getConnection("jdbc:sqlite:" + db.getAbsolutePath().replace('\\', '/'));
+	  conn = DriverManager.getConnection("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
 	  createTablesIfNotExists();
 	}
 	
@@ -178,6 +238,9 @@ public class SQLiteManager {
 	  }
 	  sb.append(')');
     executeQuery(sb.toString(), false);
+    if (entry.has("lons") && entry.has("lats")) {
+      addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"));
+    }
 	}
 	
 	private JSONObject readActivity(ResultSet rs) throws JSONException, SQLException {
@@ -311,10 +374,15 @@ public class SQLiteManager {
 	
 	synchronized void deleteActivity(String fileName) {
 	  executeQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
+	  removeCoordsData(fileName);
 	}
 	
-	File getDBFile() {
-	  return db;
+	File getActivitiesDBFile() {
+	  return dbActivities;
+	}
+	
+	File getCoordsDBFile() {
+	  return dbCoords;
 	}
 	
 	synchronized JSONObject getActivity(String fileName) {
@@ -464,7 +532,15 @@ public class SQLiteManager {
     } catch (SQLException ignore) {
       // silent catch
     }
+	  try {
+      if (connDB2 != null) {
+        connDB2.close();
+      }
+    } catch (SQLException ignore) {
+      // silent catch
+    }
 	  conn = null;
+	  connDB2 = null;
 	}
 
 }

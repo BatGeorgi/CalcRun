@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -63,7 +62,6 @@ public class RunCalcUtils {
   }
   
   void rescan() {
-    List<JSONObject> runs = new ArrayList<JSONObject>();
     String[] all = gpxBase.list();
     boolean entriesAdded = false;
     for (String fileName : all) {
@@ -78,7 +76,6 @@ public class RunCalcUtils {
       try {
         JSONObject current = new JSONObject();
         CalcDist.run(targ, 9, 100, 1, current); // default values
-        runs.add(current);
         current.put("type", RUNNING);
         current.put("ccLink", "none");
         current.put("photosLink", "none");
@@ -93,8 +90,13 @@ public class RunCalcUtils {
       }
     }
     if (entriesAdded && drive != null) {
-      drive.backupDB(sqLite.getDBFile());
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(sqLite.getCoordsDBFile(), "coords");
     }
+  }
+  
+  JSONObject retrieveCoords(String activity) {
+    return sqLite.getCoordsData(activity);
   }
   
   private File addActivity0(String name, InputStream is) throws IOException {
@@ -171,7 +173,8 @@ public class RunCalcUtils {
       return "Processing file error: " + e.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getDBFile());
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(sqLite.getCoordsDBFile(), "coords");
     }
   	return null;
   }
@@ -401,7 +404,7 @@ public class RunCalcUtils {
       sqLite.addActivity(activity);
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getDBFile());
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
     }
   }
   
@@ -412,7 +415,8 @@ public class RunCalcUtils {
     }
     sqLite.deleteActivity(fileName);
     if (drive != null) {
-      drive.backupDB(sqLite.getDBFile());
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(sqLite.getCoordsDBFile(), "coords");
     }
   }
   
