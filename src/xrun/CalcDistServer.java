@@ -58,26 +58,9 @@ public class CalcDistServer {
     resourceHandler.setDirectoriesListed(false);
     resourceHandler.setWelcomeFiles(new String[] {"runcalc"});
     resourceHandler.setResourceBase("www");
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    InputStream is = null;
-    File target = new File(resourceHandler.getBaseResource().getFile(), "activity.html");
-    String activityTemplate = null;
-		if (target.isFile()) {
-			try {
-				is = new FileInputStream(target);
-				byte[] buf = new byte[8192];
-				int rd = 0;
-				while ((rd = is.read(buf)) != -1) {
-					baos.write(buf, 0, rd);
-				}
-			} finally {
-				RunCalcUtils.silentClose(is);
-			}
-			activityTemplate = new String(baos.toByteArray());
-		}
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
-    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret, activityTemplate);
+    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret, new File(resourceHandler.getBaseResource().getFile(), "activity.html"));
     handlers.setHandlers(new Handler[] { new MultipartConfigInjectionHandler(), resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
@@ -136,12 +119,37 @@ class CalcDistHandler extends AbstractHandler {
   }
 
   private RunCalcUtils rcUtils;
-  private String activityTemplate;
+  private File activityTemplateFile;
+  private long actTempLastMod = Long.MIN_VALUE;
+  private String activityTemplate = "Not loaded :(";
 
-  public CalcDistHandler(File tracksBase, File clientSecret, String activityTemplate) throws IOException {
+  public CalcDistHandler(File tracksBase, File clientSecret, File activityTemplateFile) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase, clientSecret);
-    this.activityTemplate = activityTemplate;
+    this.activityTemplateFile = activityTemplateFile;
     System.out.println("Initialize finished!");
+  }
+  
+  private String getActivityTemplate() {
+    if (activityTemplateFile.isFile() && activityTemplateFile.lastModified() != actTempLastMod) {
+      InputStream is = null;
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try {
+        is = new FileInputStream(activityTemplateFile);
+        byte[] buf = new byte[8192];
+        int rd = 0;
+        while ((rd = is.read(buf)) != -1) {
+          baos.write(buf, 0, rd);
+        }
+        activityTemplate = new String(baos.toByteArray());
+        actTempLastMod = activityTemplateFile.lastModified();
+      } catch (Exception ignore){
+        // silent catch
+      } finally {
+        RunCalcUtils.silentClose(is);
+      }
+      
+    }
+    return activityTemplate;
   }
   
   void dispose() {
@@ -550,11 +558,12 @@ class CalcDistHandler extends AbstractHandler {
   		response.setContentType("text/html");
   		PrintWriter pw = response.getWriter();
 			try {
-				int ind = activityTemplate.indexOf("TBD");
+			  String template = getActivityTemplate();
+				int ind = template.indexOf("TBD");
 				if (ind != -1) {
-					pw.print(activityTemplate.substring(0, ind));
+					pw.print(template.substring(0, ind));
 					pw.print("fa/" + target);
-					pw.println(activityTemplate.substring(ind + 3));
+					pw.println(template.substring(ind + 3));
 				} else {
 					pw.println("No data :(");
 				}
