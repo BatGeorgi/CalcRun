@@ -267,6 +267,9 @@ public class SQLiteManager {
 	  	JSONObject split = splits.getJSONObject(i);
 	  	accEle += split.getDouble("eleD");
 	  	split.put("accEle", (long) accEle);
+	  	split.put("total", split.getString("total").replace(',', '.'));
+	  	split.put("speed", split.getString("speed").replace(',', '.'));
+	  	split.put("accumSpeed", split.getString("accumSpeed").replace(',', '.'));
 	  }
 	  return activity;
 	}
