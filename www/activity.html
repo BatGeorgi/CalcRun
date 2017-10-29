@@ -64,8 +64,8 @@
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
 				'</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 				'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr>' +
-				'<span style="color:#1c9e45"><h2>Speed distribution</h2></span>' + tableHtml);
-			$('#splits').html(splitHtml);
+				 splitHtml);
+			$('#splits').html('<span style="color:#1c9e45"><h2>Speed distribution</h2></span>' + tableHtml);
 			if (item['type'] != 'Running') {
 				$("#toggle").prop('checked', true).change();
 			}
@@ -95,15 +95,15 @@
 
 <body>
 	<div id="heading" style="color: #1c9e45;"></div>
-	<div id="mainstats" style="width: 25%; float: left;text-align:center;font-size: 120%">
+	<div id="mainstats" style="float: left;text-align:center;font-size: 120%;width: $(window).width() * 0.4">
 	</div>
-	<div id="splits" style="width: 25%; float: right;text-align:center;font-size: 120%"></div>
 	<div id="mapHolder">
-		<div id="map" style="margin:auto;width:45%;height:750px;">
+		<div id="map" style="margin:auto;height:750px;width: $(window).width() * 0.6">
 		</div>
-		<label for="toggle" style="margin-left: 18%; margin-top: 10px">Toggle km markers</label>
+		<label for="toggle" style="margin-left: 28%; margin-top: 10px">Toggle km markers</label>
 		<input type="checkbox" id="toggle" />
 	</div>
+	<div id="splits" style="margin:auto;text-align:center;font-size: 120%"></div>
 	</div>
 	
 	<script>
@@ -151,13 +151,21 @@
 						var mStart = new google.maps.Marker({
 							position: {lat: lats[0], lng: lons[0]},
 							map: map,
-							title: 'Start',
+							label: {
+								text: 'Start',
+								fontSize: "18px",
+								fontWeight: 'bold'
+							},
 							icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
 						});
 						var mEnd = new google.maps.Marker({
 							position: {lat: lats[lats.length - 1], lng: lons[lons.length - 1]},
 							map: map,
-							title: 'End',
+							label: {
+								text: 'End',
+								fontSize: "18px",
+								fontWeight: 'bold'
+							},
 							icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
 						});
 						mStart.setMap(map);
@@ -165,7 +173,11 @@
 						for (i = 0; i < markers.length; ++i) {
 							var mark = new google.maps.Marker({
 								position: {lat: lats[markers[i]], lng: lons[markers[i]]},
-								title: (i + 1) + ' km',
+								label: {
+									text: (i + 1) + ' km',
+									fontSize: "18px",
+									fontWeight: 'bold'
+								},
 								icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
 							});
 							marks.push(mark);
