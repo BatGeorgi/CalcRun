@@ -86,13 +86,14 @@ public class SQLiteManager {
         " (id text PRIMARY KEY NOT NULL, data text NOT NULL)");
   }
 	
-  private void addCoordsData(String id, JSONArray lats, JSONArray lons) {
+  private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray markers) {
     try {
       synchronized (dbCoords) {
         ensureCoordsInit();
         JSONObject json = new JSONObject();
         json.put("lats", lats);
         json.put("lons", lons);
+        json.put("markers", markers);
         String str = json.toString();
         ResultSet rs = connDB2.createStatement().executeQuery("SELECT * FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
         if (!rs.next()) {
@@ -238,8 +239,8 @@ public class SQLiteManager {
 	  }
 	  sb.append(')');
     executeQuery(sb.toString(), false);
-    if (entry.has("lons") && entry.has("lats")) {
-      addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"));
+    if (entry.has("lons") && entry.has("lats") && entry.has("markers")) {
+      addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"), entry.getJSONArray("markers"));
     }
 	}
 	
@@ -259,6 +260,13 @@ public class SQLiteManager {
 	  JSONObject data = activity.getJSONObject(KEYS[len - 1]);
 	  if (data != null && data.keys().hasNext()) {
 	    activity.put("isModified", "y");
+	  }
+	  JSONArray splits = activity.getJSONArray("splits");
+	  double accEle = 0.0;
+	  for (int i = 0; i < splits.length(); ++i) {
+	  	JSONObject split = splits.getJSONObject(i);
+	  	accEle += split.getDouble("eleD");
+	  	split.put("accEle", (long) accEle);
 	  }
 	  return activity;
 	}

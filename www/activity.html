@@ -45,10 +45,10 @@
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
             splitHtml = '<span style="color:#1c9e45"><h2>Splits</h2></span>' +
-				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th></thead><tbody>';
+				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Acc diff</th></thead><tbody>';
             $.each(splits, function(i, sp) {
                 splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] +
-				'</td><td>' + sp['accumSpeed'] + '</td></tr>';
+				'</td><td>' + sp['accumSpeed'] + '</td><td>' + formatEleDiff(sp['accEle']) + '</td></tr>';
             });
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
@@ -66,9 +66,14 @@
 				'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr>' +
 				'<span style="color:#1c9e45"><h2>Speed distribution</h2></span>' + tableHtml);
 			$('#splits').html(splitHtml);
+			if (item['type'] != 'Running') {
+				$("#toggle").prop('checked', true).change();
+			}
 		}
 		
 		$(document).ready(function() {
+			$("#trace").button();
+			$("#toggle").checkboxradio();
 			$.ajax({
                 url: 'TBD',
                 method: 'POST',
@@ -93,11 +98,18 @@
 	<div id="mainstats" style="float: left;text-align:center;font-size: 120%">
 	</div>
 	<div id="splits" style="float: right;text-align:center;font-size: 120%"></div>
-	<div id="map" style="margin:auto;width:50%;height:800px;">
+	<div id="mapHolder">
+		<div id="map" style="margin:auto;width:45%;height:750px;">
+		</div>
+		<label for="toggle" style="margin-left: 18%; margin-top: 10px">Toggle km markers</label>
+		<input type="checkbox" id="toggle" />
 	</div>
 	</div>
 	
 	<script>
+
+		var marks = [];
+
 		function initMap() {
 			var mapOptions = {
 				center: {lat: 42.7, lng: 25},
@@ -123,6 +135,7 @@
 						coords = [];
 						lats = data['lats'];
 						lons = data['lons'];
+						markers = data['markers'];
 						$.each(lats, function(i, item) {
 							coords.push({lat: item, lng: lons[i]});
 						});
@@ -149,6 +162,25 @@
 						});
 						mStart.setMap(map);
 						mEnd.setMap(map);
+						for (i = 0; i < markers.length; ++i) {
+							var mark = new google.maps.Marker({
+								position: {lat: lats[markers[i]], lng: lons[markers[i]]},
+								title: (i + 1) + ' km',
+								icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
+							});
+							marks.push(mark);
+						}
+						$("#toggle").change(function() {
+							if ($("#toggle").prop('checked')) {
+								for (i = 0; i < marks.length; ++i) {
+									marks[i].setMap(map);
+								}
+							} else {
+								for (i = 0; i < marks.length; ++i) {
+									marks[i].setMap(null);
+								}
+							}
+						});
 						runPath.setMap(map);
                     }
                 }

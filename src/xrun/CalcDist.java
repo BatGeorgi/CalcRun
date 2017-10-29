@@ -53,6 +53,7 @@ public class CalcDist {
   
   private JSONArray lats = new JSONArray();
   private JSONArray lons = new JSONArray();
+  private JSONArray markers = new JSONArray();
   
   private CalcDist(File file, double minRunningSpeed, double interval, double splitM) {
     this.file = file;
@@ -70,7 +71,7 @@ public class CalcDist {
       return null;
   }
   
-  private double distance(double lat1, double lat2, double lon1,
+  static double distance(double lat1, double lat2, double lon1,
       double lon2) {
     final int R = 6371; // Radius of the earth
     double latDistance = Math.toRadians(lat2 - lat1);
@@ -304,6 +305,9 @@ public class CalcDist {
             timeRest += timeDiff;
           }
           boolean lastOne = i == list.getLength() - 1;
+          if (currentDist >= interval) {
+          	markers.put(i);
+          }
           if (currentDist >= interval || lastOne) {
             double speed = currentDist / currentTime;
             hist(speed, currentDist, currentTime, currentEle);
@@ -393,6 +397,7 @@ public class CalcDist {
     cd.process(data);
     data.put("lats", cd.lats);
     data.put("lons", cd.lons);
+    data.put("markers", cd.markers);
     JSONArray arrSpeed = new JSONArray();
     for (int i = 0; i < BOUNDS.length; ++i) {
       JSONObject sp = new JSONObject();
@@ -437,6 +442,7 @@ public class CalcDist {
       sp.put("accumSpeed", String.format("%.3f", tot / (timeTotalRaw / 3600.0)));
       double ele = cd.splitEle.get(i);
       sp.put("ele", (long) ele);
+      sp.put("eleD", ele);
       arrSplits.put(sp);
     }
     data.put("splits", arrSplits);
