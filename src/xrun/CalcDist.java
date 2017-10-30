@@ -48,6 +48,8 @@ public class CalcDist {
   private double[] histTime = new double[BOUNDS.length];
   private List<Double> splitTimes = new ArrayList<Double> ();
   private List<Double> splitEle = new ArrayList<Double>();
+  private List<Double> splitAccElePos = new ArrayList<Double>();
+  private List<Double> splitAccEleNeg = new ArrayList<Double>();
   private double splitRem;
   private boolean isGarminTrack = false;
   
@@ -305,9 +307,6 @@ public class CalcDist {
             timeRest += timeDiff;
           }
           boolean lastOne = i == list.getLength() - 1;
-          if (currentDist >= interval) {
-          	markers.put(i);
-          }
           if (currentDist >= interval || lastOne) {
             double speed = currentDist / currentTime;
             hist(speed, currentDist, currentTime, currentEle);
@@ -332,6 +331,9 @@ public class CalcDist {
             currentEle = 0.0;
           }
           if (currentDistSplits >= splitM) {
+          	markers.put(i);
+          	splitAccElePos.add(eleTotalPos);
+          	splitAccEleNeg.add(eleTotalNeg);
             double coef = splitM / currentDistSplits;
             double speed = currentDistSplits / currentTimeSplits;
             double ctime = splitM / speed;
@@ -341,6 +343,8 @@ public class CalcDist {
             currentTimeSplits -= ctime;
             currentEleSplits -= currentEleSplits * coef;
           } else if (lastOne) {
+          	splitAccElePos.add(eleTotalPos);
+          	splitAccEleNeg.add(eleTotalNeg);
             splitRem = currentDistSplits;
             splitTimes.add(currentTimeSplits);
             splitEle.add(currentEleSplits);
@@ -426,6 +430,8 @@ public class CalcDist {
         currentLen = cd.splitRem / 1000.0;
         tot += currentLen;
       }
+      sp.put("accElePos", (long) cd.splitAccElePos.get(i).doubleValue());
+      sp.put("accEleNeg", (long) cd.splitAccEleNeg.get(i).doubleValue());
       sp.put("total", String.format("%.3f", tot));
       sp.put("totalRaw", tot);
       sp.put("len", String.format("%.3f", currentLen));
