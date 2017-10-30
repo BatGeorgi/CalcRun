@@ -44,12 +44,16 @@
             });
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
-            splitHtml = '<span style="color:#1c9e45"><h2>Splits</h2></span>' +
+            splitHtml = '<span style="color:#2a6cd6;"><h2>Splits</h2></span>' +
 				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Acc diff</th></thead><tbody>';
+			collectHtml = "";
             $.each(splits, function(i, sp) {
-                splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] +
-				'</td><td>' + sp['accumSpeed'] + '</td><td>' + formatEleDiff(sp['accEle']) + '</td></tr>';
+                splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td><div id="spPace' + i + '">' + sp['pace'] + '</div></td><td>' + sp['speed'] + '</td><td><div id="spDiff' + i + '">' + formatEleDiff(sp['ele']) +
+				'</div></td><td><div id="spTotal' + i + '">' + sp['timeTotal'] +
+				'</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
+				collectHtml += '<div id="extsp' + i + '">' + formatEleDiff(sp['accElePos']) + '/' + formatEleDiff(-sp['accEleNeg']) + '</div>';
             });
+			$('#collect').html(collectHtml);
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
 			var isMod = item['isModified'] == 'y';
@@ -63,8 +67,8 @@
 				'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running elevation loss(m)</td><td>' +
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
 				'</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-				'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr>');
-			$('#splits').html('<span style="color:#1c9e45"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
+				'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
+			$('#splits').html('<span style="color:#2a6cd6;"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
 			if (item['type'] != 'Running') {
 				$("#toggle").prop('checked', true).change();
 			}
@@ -100,9 +104,10 @@
 	<div id="mapHolder">
 		<div id="map" style="margin:auto;height:750px;width: $(window).width() * 0.5">
 		</div>
-		<label for="toggle" style="margin-left: 35%; margin-top: 10px">Toggle km markers</label>
+		<label for="toggle" style="margin-left: 40%; margin-top: 10px">Toggle km markers</label>
 		<input type="checkbox" id="toggle" />
 	</div>
+	<div style="display: none" id="collect"></div>
 	</div>
 	
 	<script>
@@ -154,7 +159,6 @@
 							strokeWeight: 2
 						});
 						var md = Math.max(north - south, east - west);
-						console.log(md);
 						if (md < 0.006) {
 							map.setZoom(17);
 						} else if (md < 0.012) {
@@ -193,6 +197,9 @@
 						});
 						mStart.setMap(map);
 						mEnd.setMap(map);
+						var infowindow = new google.maps.InfoWindow({
+									content: ''
+						});
 						for (i = 0; i < markers.length; ++i) {
 							var mark = new google.maps.Marker({
 								position: {lat: lats[markers[i]], lng: lons[markers[i]]},
@@ -208,7 +215,21 @@
 							if ($("#toggle").prop('checked')) {
 								mark.setMap(map);
 							}
+							google.maps.event.addListener(mark,'click', (function(mark,content,infowindow){ 
+								return function() {
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Split diff " + $('#spDiff' + content).html() +
+									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + "<p>Total elev " + $("#extsp" + content).html());
+									infowindow.open(map,mark);
+								};
+							})(mark,i,infowindow));
 						}
+						google.maps.event.addListener(mEnd,'click', (function(mark,content,infowindow){ 
+								return function() {
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Split diff " + $('#spDiff' + content).html() +
+									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + "<p>Total elev " + $("#extsp" + content).html());
+									infowindow.open(map,mark);
+								};
+							})(mark,markers.length,infowindow));
 						$("#toggle").change(function() {
 							if ($("#toggle").prop('checked')) {
 								for (i = 0; i < marks.length; ++i) {
