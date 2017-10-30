@@ -53,7 +53,7 @@
 				'</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
 				collectHtml += '<div id="extsp' + i + '">' + formatEleDiff(sp['accElePos']) + '/' + formatEleDiff(-sp['accEleNeg']) + '</div>';
             });
-			$('#collect').html(collectHtml);
+			$('#collect').html(collectHtml + '<div id="countSP">' + splits.length + '</div>');
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
 			var isMod = item['isModified'] == 'y';
@@ -225,11 +225,14 @@
 						}
 						google.maps.event.addListener(mEnd,'click', (function(mark,content,infowindow){ 
 								return function() {
+									if (content == marks.length) {
+										content = parseInt($('#countSP').text()) - 1;
+									}
 									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Split diff " + $('#spDiff' + content).html() +
 									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + "<p>Total elev " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
 								};
-							})(mark,markers.length,infowindow));
+							})(mEnd,marks.length,infowindow));
 						$("#toggle").change(function() {
 							if ($("#toggle").prop('checked')) {
 								for (i = 0; i < marks.length; ++i) {
