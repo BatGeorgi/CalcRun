@@ -225,10 +225,11 @@
 						}
 						google.maps.event.addListener(mEnd,'click', (function(mark,content,infowindow){ 
 								return function() {
+									var v = marks.length;
 									if (content == marks.length) {
 										content = parseInt($('#countSP').text()) - 1;
 									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Split diff " + $('#spDiff' + content).html() +
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Split diff " + $('#spDiff' + v).html() +
 									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + "<p>Total elev " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
 								};
