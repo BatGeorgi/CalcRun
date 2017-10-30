@@ -97,13 +97,13 @@
 	<div id="heading" style="color: #1c9e45;"></div>
 	<div id="mainstats" style="float: left;text-align:center;font-size: 120%;width: $(window).width() * 0.4">
 	</div>
+	<div id="splits" style="float: right;text-align:center;"></div>
 	<div id="mapHolder">
 		<div id="map" style="margin:auto;height:750px;width: $(window).width() * 0.6">
 		</div>
-		<label for="toggle" style="margin-left: 28%; margin-top: 10px">Toggle km markers</label>
+		<label for="toggle" style="margin-left: 20%; margin-top: 10px">Toggle km markers</label>
 		<input type="checkbox" id="toggle" />
 	</div>
-	<div id="splits" style="margin:auto;text-align:center;font-size: 120%"></div>
 	</div>
 	
 	<script>
@@ -113,7 +113,7 @@
 		function initMap() {
 			var mapOptions = {
 				center: {lat: 42.7, lng: 25},
-				zoom:7,
+				zoom:9,
 				mapTypeControl: true,
 				mapTypeControlOptions: {
 					style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
@@ -147,7 +147,7 @@
 							strokeWeight: 2
 						});
 						map.setCenter({lat: lats[0], lng: lons[0]});
-						map.setZoom(11);
+						map.setZoom(13);
 						var mStart = new google.maps.Marker({
 							position: {lat: lats[0], lng: lons[0]},
 							map: map,
@@ -176,11 +176,15 @@
 								label: {
 									text: (i + 1) + ' km',
 									fontSize: "18px",
-									fontWeight: 'bold'
+									fontWeight: 'bold',
+									color: 'red'
 								},
 								icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
 							});
 							marks.push(mark);
+							if ($("#toggle").prop('checked')) {
+								mark.setMap(map);
+							}
 						}
 						$("#toggle").change(function() {
 							if ($("#toggle").prop('checked')) {
