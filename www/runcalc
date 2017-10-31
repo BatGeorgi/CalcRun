@@ -300,8 +300,8 @@
                                         tt += '<tr><td><strong>' + round(sp['point']) + '</strong></td><td>' + colorDiff1(sp['time1'], sp['time2']) + '</td><td>' + colorDiff1(sp['time2'], sp['time1']) + '</td><td>' + colorDiff(sp['currentDiff']) + '</td><td>' + colorDiff(sp['totalDiff']) + '</td></tr>';
                                     });
                                     $('#selectComp :nth-child(' + index + ')').prop('selected', true);
-                                    $('#compareResults').html('<h2>General</h2><table class="highlightOnly"><thead><th></th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
-                                        '<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance(km)</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
+                                    $('#compareResults').html('<h2>General</h2><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
+                                        '<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
                                         '<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
                                         '<tr><td>Speed(km/h)</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain(m)</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
                                         '<tr><td>Elev loss(m)</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr></tbody></table>');
@@ -454,7 +454,7 @@
 				if (item['photosLink'] != 'none') {
 					extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input type="image" src="photos-icon.png" width="60" height="60" /></a>';
 				}
-                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + (isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
+                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
 					+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
 					'</td></tr><tr><td>Elevation gain(m)</td><td>' +
                     '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' +
