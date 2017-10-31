@@ -4,6 +4,8 @@
 #heading {
 	text-align: center;
 	margin-bottom: 3em;
+	text-shadow: 2px 2px black;
+	color: #2a6cd6;
 }
 body {
 	background-image: url("img_250451.jpg");
