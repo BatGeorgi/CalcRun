@@ -44,7 +44,7 @@
             });
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
-            splitHtml = '<span style="color:#2a6cd6;"><h2>Splits</h2></span>' +
+            splitHtml = '<span style="color:#2a6cd6;text-shadow: 1px 1px black;"><h2>Splits</h2></span>' +
 				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Acc diff</th></thead><tbody>';
 			collectHtml = "";
             $.each(splits, function(i, sp) {
@@ -69,7 +69,7 @@
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
 				'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 				'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
-			$('#splits').html('<span style="color:#2a6cd6;"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
+			$('#splits').html('<span style="color:#2a6cd6;text-shadow: 1px 1px black;"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
 			if (item['type'] != 'Running') {
 				$("#toggle").prop('checked', true).change();
 			}
@@ -98,7 +98,7 @@
 </head>
 
 <body>
-	<div id="heading" style="color: #1c9e45;"></div>
+	<div id="heading" style="color: #1c9e45;text-shadow: 2px 2px black;"></div>
 	<div id="mainstats" style="float: left;text-align:left;font-size: 120%;">
 	</div>
 	<div id="splits" style="float: right;text-align:center;"></div>
