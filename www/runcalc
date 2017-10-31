@@ -470,15 +470,15 @@
 				}
                 $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
 					+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
-					'</td></tr><tr><td>Elevation gain(m)</td><td>' +
-                    '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' +
+					'</td></tr><tr><td>Elevation gain</td><td>' +
+                    '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
 					item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
-                    'Running time(>9km/h)</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running distance</td><td>' + (isMod ? '<em>' : '') +
-					item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running elevation gain(m)</td><td>' +
-					'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running elevation loss(m)</td><td>' +
+                    'Running|>9km/h| time</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| distance</td><td>' + (isMod ? '<em>' : '') +
+					item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| elevation gain</td><td>' +
+					'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
                     '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
-					'</td></tr><tr><td>Average speed(km/h)</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-					'</td></tr><tr><td>Average pace(min/km)</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
+					'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
+					'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
                     '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
             $('#runs tbody').html(runsHtml);
