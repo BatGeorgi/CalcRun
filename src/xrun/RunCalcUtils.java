@@ -275,6 +275,14 @@ public class RunCalcUtils {
     general.put("eleNeg2", run2.get("eleTotalNeg"));
     general.put("time1", run1.get("timeTotal"));
     general.put("time2", run2.get("timeTotal"));
+    general.put("distRunning1", run1.get("distRunning"));
+    general.put("distRunning2", run2.get("distRunning"));
+    general.put("eleRunningPos1", run1.get("eleRunningPos"));
+    general.put("eleRunningPos2", run2.get("eleRunningPos"));
+    general.put("eleRunningNeg1", run1.get("eleRunningNeg"));
+    general.put("eleRunningNeg2", run2.get("eleRunningNeg"));
+    general.put("timeRunning1", run1.get("timeRunning"));
+    general.put("timeRunning2", run2.get("timeRunning"));
     JSONArray splits1 = run1.getJSONArray("splits");
     JSONArray splits2 = run2.getJSONArray("splits");
     JSONArray diffsByTime = new JSONArray();
