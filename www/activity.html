@@ -52,12 +52,13 @@
 				'</div></td><td><div id="spTotal' + i + '">' + sp['timeTotal'] +
 				'</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
 				collectHtml += '<div id="extsp' + i + '">' + formatEleDiff(sp['accElePos']) + '/' + formatEleDiff(-sp['accEleNeg']) + '</div>';
+				collectHtml += '<div id="spElePos' + i + '">' + sp['accElePos'] + '</div><div id="spEleNeg' + i + '">' + sp['accEleNeg'] + '</div>'; 
             });
 			$('#collect').html(collectHtml + '<div id="countSP">' + splits.length + '</div>');
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
 			var isMod = item['isModified'] == 'y';
-            $('#mainstats').html((isMod ? '<em><h4>*This activity has been modified</h4></em>' : '' ) + '<table style="margin: auto;"><tbody><tr><td>Distance</td><td>'
+            $('#mainstats').html('<table style="margin: auto;"><tbody><tr><td>Distance</td><td>'
 				+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
 				'</td></tr><tr><td>Elevation gain(m)</td><td>' +
                 '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss(m)</td><td>' + '<span class="red">' +
@@ -217,8 +218,17 @@
 							}
 							google.maps.event.addListener(mark,'click', (function(mark,content,infowindow){ 
 								return function() {
+									var diffPos = 0;
+									var diffNeg = 0;
+									var diffS = '';
+									if (content > 0) {
+										var prev = content - 1;
+										diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
+										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
+										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
+									}
 									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Split diff " + $('#spDiff' + content).html() +
-									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + "<p>Total elev " + $("#extsp" + content).html());
+									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + diffS + "<p>Total elev " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
 								};
 							})(mark,i,infowindow));
@@ -229,8 +239,17 @@
 									if (content == marks.length) {
 										content = parseInt($('#countSP').text()) - 1;
 									}
+									var diffPos = 0;
+									var diffNeg = 0;
+									var diffS = '';
+									if (marks.length > 0) {
+										var prev = marks.length - 1;
+										diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
+										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
+										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
+									}
 									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Split diff " + $('#spDiff' + v).html() +
-									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + "<p>Total elev " + $("#extsp" + content).html());
+									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + diffS + "<p>Total elev " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
 								};
 							})(mEnd,marks.length,infowindow));
