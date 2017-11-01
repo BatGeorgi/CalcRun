@@ -45,7 +45,7 @@
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
             splitHtml = '<span style="color:#2a6cd6;text-shadow: 1px 1px black;"><h2>Splits</h2></span>' +
-				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Acc diff</th></thead><tbody>';
+				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
 			collectHtml = "";
             $.each(splits, function(i, sp) {
                 splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td><div id="spPace' + i + '">' + sp['pace'] + '</div></td><td>' + sp['speed'] + '</td><td><div id="spDiff' + i + '">' + formatEleDiff(sp['ele']) +
@@ -227,8 +227,9 @@
 										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
 										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
 									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Split diff " + $('#spDiff' + content).html() +
-									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + diffS + "<p>Total elev " + $("#extsp" + content).html());
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Acc speed " + $('#spAS' + content).text()
+									+ "<p>Split elevation diff  " + $('#spDiff' + content).html() +
+									"<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
 								};
 							})(mark,i,infowindow));
@@ -248,8 +249,9 @@
 										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
 										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
 									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Split diff " + $('#spDiff' + v).html() +
-									"<p>Acc diff " + $('#spAcc' + content).html() + "<p>Acc speed " + $('#spAS' + content).text() + diffS + "<p>Total elev " + $("#extsp" + content).html());
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Acc speed " + $('#spAS' + content).text()
+									+ "<p>Split elevation diff " + $('#spDiff' + v).html() +
+									"<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
 								};
 							})(mEnd,marks.length,infowindow));
