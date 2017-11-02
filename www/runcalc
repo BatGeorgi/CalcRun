@@ -385,6 +385,49 @@
                 }
             });
         }
+		
+		function initSecondaryDialogs() {
+			$("#overall").dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min(400),
+                height: Math.min(450),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 50,
+                        "top": 150
+                    });
+                }
+            });
+			$("#bestOf").dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min(400),
+                height: Math.min(600),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 50,
+                        "top": 150
+                    });
+                }
+            });
+		}
 
         function initContent(data) {
             itemsDS = [];
@@ -742,8 +785,29 @@
                  }
 			});
 		}
+		
+		function checkWidth() {
+			if ($(window).width() < 1340) {
+				initSecondaryDialogs();
+				$('#bestOfWrap').append('<button id="bestOfBtn">Best achievements</button>');
+				$('#bestOfBtn').button();
+				$('#overallWrap').append('<button id="overallBtn">Selection totals</button>');
+				$('#overallBtn').button();
+				$('#bestOf').dialog('option', 'title', 'Best achievements');
+				$('#overall').dialog('option', 'title', 'Selection totals');
+				$('#bestOfBtn').click(function() {
+					$("#bestOf").dialog('open');
+				});
+				$('#overallBtn').click(function() {
+					$("#overall").dialog('open');
+				});
+				$('#titleTotals').remove();
+				$('#titleBest').remove();
+			}
+		}
 
         $(document).ready(function() {
+			checkWidth();
 			var ind = document.cookie.indexOf("xruncalc=");
 			var cookieVal = '';
 			if (ind != -1) {
@@ -1001,7 +1065,7 @@
 		<div id="overallWrap">
 			<button id="mTotalsBtn">Monthly totals</button>
 			<hr>
-			<h2>Totals</h2>
+			<div id="titleTotals"><h2>Totals</h2></div>
 			<table id="overall">
 				<tbody></tbody>
 			</table>
@@ -1009,7 +1073,7 @@
 		<div id="bestOfWrap">
 			<button id="bestTotalsBtn">Best split times</button>
 			<hr>
-			<h2>Best</h2>
+			<div id="titleBest"><h2>Best</h2></div>
 			<table id="bestOf">
 				<tbody></tbody>
 			</table>
