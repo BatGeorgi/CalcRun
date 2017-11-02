@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity details</title>
-    <link href="style.css" type="text/css" rel="stylesheet" />
+    <link href="styleActivity.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
@@ -15,6 +15,9 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	
 	<script>
 	
@@ -38,14 +41,14 @@
 		function init(item) {
 			$('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['date'] + '</strong></h1><hr>');
 			distr = item['speedDist'];
-            tableHtml = '<span class="highlight"><table style="margin: auto;"><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
+            tableHtml = '<span class="highlight"><table id="distTable"><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
             $.each(distr, function(i, diap) {
                 tableHtml += '<tr><td><strong>' + diap['range'] + ' km/h</strong></td><td>' + diap['time'] + '</td><td>' + diap['dist'] + '</td><td><span class="green">' + diap['elePos'] + '</span></td><td><span class="red">' + diap['eleNeg'] + '</span></td></tr>';
             });
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
-            splitHtml = '<span style="color:#2a6cd6;text-shadow: 1px 1px black;"><h2>Splits</h2></span>' +
-				'<span class="highlight"><table style="margin: auto;"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
+            splitHtml = '<span class="heading-data"><h2>Splits</h2></span>' +
+				'<span class="highlight"><table id="splitTable"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
 			collectHtml = "";
             $.each(splits, function(i, sp) {
                 splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td><div id="spPace' + i + '">' + sp['pace'] + '</div></td><td>' + sp['speed'] + '</td><td><div id="spDiff' + i + '">' + formatEleDiff(sp['ele']) +
@@ -58,7 +61,7 @@
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
 			var isMod = item['isModified'] == 'y';
-            $('#mainstats').html('<table style="margin: auto;"><tbody><tr><td>Distance</td><td>'
+            $('#mainstats').html('<table><tbody><tr><td>Distance</td><td>'
 				+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
 				'</td></tr><tr><td>Elevation gain</td><td>' +
                 '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
@@ -69,7 +72,7 @@
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
 				'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 				'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
-			$('#splits').html('<span style="color:#2a6cd6;text-shadow: 1px 1px black;"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
+			$('#splits').html('<span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
 			if (item['type'] != 'Running') {
 				$("#toggle").prop('checked', true).change();
 			}
@@ -98,18 +101,29 @@
 </head>
 
 <body>
-	<div id="heading" style="color: #1c9e45;text-shadow: 2px 2px black;"></div>
-	<div id="mainstats" style="float: left;text-align:left;font-size: 120%;">
-	</div>
-	<div id="splits" style="float: right;text-align:center;"></div>
-	<div id="mapHolder">
-		<div id="map" style="margin:auto;height:750px;width: $(window).width() * 0.5">
+	<div id="heading"></div>
+	<div class="container-fluid">
+		<div class="row-fluid">
+			
+			<div class="col-sm-3">
+				<div id="mainstats"></div>
+			</div>
+			
+			<div class="col-sm-6">
+				<div id="mapHolder">
+					<div id="map"></div>
+					<label for="toggle" style="margin-left: 40%;margin-top: 10px">Toggle km markers</label>
+					<input type="checkbox" id="toggle" />
+				</div>
+			</div>
+		
+			<div class="col-sm-3">
+				<div id="splits"></div>
+			</div>
+			
 		</div>
-		<label for="toggle" style="margin-left: 40%; margin-top: 10px">Toggle km markers</label>
-		<input type="checkbox" id="toggle" />
 	</div>
 	<div style="display: none" id="collect"></div>
-	</div>
 	
 	<script>
 
@@ -227,7 +241,7 @@
 										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
 										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
 									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Acc speed " + $('#spAS' + content).text()
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Average speed " + $('#spAS' + content).text()
 									+ "<p>Split elevation diff  " + $('#spDiff' + content).html() +
 									"<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
@@ -249,7 +263,7 @@
 										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
 										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
 									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Acc speed " + $('#spAS' + content).text()
+									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Average speed " + $('#spAS' + content).text()
 									+ "<p>Split elevation diff " + $('#spDiff' + v).html() +
 									"<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $("#extsp" + content).html());
 									infowindow.open(map,mark);
