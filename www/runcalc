@@ -787,7 +787,7 @@
 		}
 		
 		function checkWidth() {
-			if ($(window).width() < 1340) {
+			if ($(window).width() < 1375) {
 				initSecondaryDialogs();
 				$('#bestOfWrap').append('<button id="bestOfBtn">Best achievements</button>');
 				$('#bestOfBtn').button();
