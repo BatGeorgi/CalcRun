@@ -15,6 +15,7 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
+	
     <script>
         function getOption(val, current) {
             return '<option value="' + val + '"' + (current == val ? ' selected>' : '>') + val + '</option>';
@@ -426,7 +427,26 @@
                     });
                 }
             };
+			var crun = 0;
+			var ctrail = 0;
+			var cup = 0;
+			var chike = 0;
+			var cwalk = 0;
+			var coth = 0;
             $.each(all, function(i, item) {
+				if (item['type'] == 'Running') {
+					++crun;
+				} else if (item['type'] == 'Trail') {
+					++ctrail;
+				} else if (item['type'] == 'Uphill') {
+					++cup;
+				} else if (item['type'] == 'Hiking') {
+					++chike;
+				} else if (item['type'] == 'Walking') {
+					++cwalk;
+				} else if (item['type'] == 'Other') {
+					++coth;
+				}
 				var isMod = item['isModified'] == 'y';
                 runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + decodeURIComponent(item['name']) + (isMod ? '*' : '')
 					+ '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
@@ -481,6 +501,29 @@
 					'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
                     '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
+			var appc = '';
+			if (crun > 0) {
+				appc += 'Running: ' + crun;
+			}
+			if (crun > 0) {
+				appc += (appc.length > 0 ? ', ' : '') + 'Trail: ' + ctrail;
+			}
+			if (cup > 0) {
+				appc += (appc.length > 0 ? ', ' : '') + 'Uphill: ' + cup;
+			}
+			if (chike > 0) {
+				appc += (appc.length > 0 ? ', ' : '') + 'Hiking: ' + chike;
+			}
+			if (cwalk > 0) {
+				appc += (appc.length > 0 ? ', ' : '') + 'Walking: ' + cwalk;
+			}
+			if (coth > 0) {
+				appc += (appc.length > 0 ? ', ' : '') + 'Other: ' + coth;
+			}
+			if (appc.length > 0) {
+				appc = ' |' + appc + '|';
+			}
+			$('#ht').append(appc);
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
             $('#runs').trigger("sorton", [ [[1, 'dates']] ]);
@@ -835,6 +878,20 @@
                 },
                 type: 'numeric'
             });
+			$.tablesorter.addParser({
+                id: 'elevs',
+                is: function(s) {
+                    return false;
+                },
+                format: function(s) {
+					if (s.charAt(0) != '+') {
+						return 0;
+					}
+					var ind = s.indexOf('/');
+                    return parseInt(ind != -1 ? s.substring(1, ind) : s.substring(1, s.length));
+                },
+                type: 'numeric'
+            });
             $('#runs').tablesorter({
                 headers: {
                     0: {
@@ -850,7 +907,7 @@
                         sorter: 'paces'
                     },
                     8: {
-                        sorter: false
+                        sorter: 'elevs'
                     },
                     9: {
                         sorter: false
