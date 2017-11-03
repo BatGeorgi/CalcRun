@@ -15,7 +15,7 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
-	
+
     <script>
         function getOption(val, current) {
             return '<option value="' + val + '"' + (current == val ? ' selected>' : '>') + val + '</option>';
@@ -49,8 +49,8 @@
             }
             return '<span class="red">' + tt + '</span>';
         }
-		
-		function compGr(t1, t2) {
+
+        function compGr(t1, t2) {
             if (t1 > t2) {
                 return '<span class="green">' + t1 + '</span>';
             }
@@ -100,7 +100,7 @@
         }
 
         function initDialogs() {
-			$('#infoDialog').dialog({
+            $('#infoDialog').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -113,13 +113,13 @@
                 width: 300,
                 height: 200
             });
-			$('#login').dialog({
+            $('#login').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
                 hide: "blind",
                 buttons: {
-					"Login": function() {
+                    "Login": function() {
                         $.ajax({
                             url: 'login',
                             headers: {
@@ -132,25 +132,25 @@
                             statusCode: {
                                 200: function(xhr) {
                                     $('#infoDialog').html('Logged in!');
-									$('#infoDialog').dialog('option', 'title', 'Status');
-									$('#infoDialog').dialog('open');
-									$("#loginButton").button("option", "disabled", true);
-									$("#loginButton").button("option", "label", "Authorized");
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+                                    $('#loginButton').button("option", "disabled", true);
+                                    $('#loginButton').button("option", "label", "Authorized");
                                 },
                                 401: function(xhr) {
-									$('#infoDialog').html('Please sign in!');
-									$('#infoDialog').dialog('option', 'title', 'Not authorized');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
                                 },
                                 500: function(xhr) {
                                     $('#infoDialog').html('Internal server error :(');
-									$('#infoDialog').dialog('option', 'title', 'Error');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').dialog('option', 'title', 'Error');
+                                    $('#infoDialog').dialog('open');
                                 }
                             }
-						});
-						$(this).dialog("close");
-					},
+                        });
+                        $(this).dialog("close");
+                    },
                     "Cancel": function() {
                         $(this).dialog("close");
                     }
@@ -158,72 +158,72 @@
                 width: 450,
                 height: 250
             });
-            $("#editable").dialog({
+            $('#editable').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
                 hide: "blind",
                 buttons: {
-					"Revert modifications": function() {
-						$.ajax({
+                    "Revert modifications": function() {
+                        $.ajax({
                             url: 'revert',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'File': $("#editable").attr('genby')
+                                'File': $('#editable').attr('genby')
                             },
                             method: 'POST',
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
                                     getBest();
-									fetch();
+                                    fetch();
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
-									$('#infoDialog').dialog('option', 'title', 'Not authorized');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
-									$('#infoDialog').html('Wrong data!');
-									$('#infoDialog').dialog('option', 'title', 'Error');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').html('Wrong data!');
+                                    $('#infoDialog').dialog('option', 'title', 'Error');
+                                    $('#infoDialog').dialog('open');
                                 }
                             }
                         });
-						$(this).dialog("close");
-					},
+                        $(this).dialog("close");
+                    },
                     "Modify": function() {
                         $.ajax({
                             url: 'editActivity',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'File': $("#editable").attr('genby'),
+                                'File': $('#editable').attr('genby'),
                                 'Name': encodeURIComponent($('#chooseName').val()),
                                 'Type': $('#chooseType').val(),
-								'actDist': $('#actDist').val(),
-								'actTime': $('#actTime').val(),
-								'actGain': $('#actGain').val(),
-								'actLoss': $('#actLoss').val(),
-								'garminLink': $('#chooseGarmin').val(),
-								'ccLink': $('#chooseCC').val(),
-								'photosLink': $('#choosePhotos').val()
+                                'actDist': $('#actDist').val(),
+                                'actTime': $('#actTime').val(),
+                                'actGain': $('#actGain').val(),
+                                'actLoss': $('#actLoss').val(),
+                                'garminLink': $('#chooseGarmin').val(),
+                                'ccLink': $('#chooseCC').val(),
+                                'photosLink': $('#choosePhotos').val()
                             },
                             method: 'POST',
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
                                     getBest();
-									fetch();
+                                    fetch();
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
-									$('#infoDialog').dialog('option', 'title', 'Not authorized');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
-									$('#infoDialog').html('Wrong data!');
-									$('#infoDialog').dialog('option', 'title', 'Error');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').html('Wrong data!');
+                                    $('#infoDialog').dialog('option', 'title', 'Error');
+                                    $('#infoDialog').dialog('open');
                                 }
                             }
                         });
@@ -240,7 +240,7 @@
                     });
                 }
             });
-			$("#removable").dialog({
+            $('#removable').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -251,24 +251,24 @@
                             url: 'deleteActivity',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'File': $("#removable").attr('genby')
+                                'File': $('#removable').attr('genby')
                             },
                             method: 'POST',
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
                                     getBest();
-									fetch();
+                                    fetch();
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
-									$('#infoDialog').dialog('option', 'title', 'Not authorized');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
                                     $('#infoDialog').html('Name must not be empty!');
-									$('#infoDialog').dialog('option', 'title', 'Error');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').dialog('option', 'title', 'Error');
+                                    $('#infoDialog').dialog('open');
                                 }
                             }
                         });
@@ -303,7 +303,7 @@
                             },
                             statusCode: {
                                 200: function(data) {
-                                    index = $("#selectComp option:selected").index() + 1;
+                                    index = $('#selectComp option:selected').index() + 1;
                                     general = data['general'];
                                     times = data['times'];
                                     tt = '';
@@ -316,16 +316,16 @@
                                         '<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
                                         '<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
                                         '<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr>' +
-										'<tr><td>Running|>9km/h| time</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
-										'<tr><td>Running|>9km/h| distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
-										'<tr><td>Running|>9km/h| elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
-										'<tr><td>Running|>9km/h| elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
+                                        '<tr><td>Running|>9km/h| time</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
+                                        '<tr><td>Running|>9km/h| distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
+                                        '<tr><td>Running|>9km/h| elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
+                                        '<tr><td>Running|>9km/h| elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
                                     $('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>Point(km)</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
                                 },
                                 400: function(xhr) {
                                     $('#infoDialog').html('Activities may be removed :(');
-									$('#infoDialog').dialog('option', 'title', 'Error');
-									$('#infoDialog').dialog('open');
+                                    $('#infoDialog').dialog('option', 'title', 'Error');
+                                    $('#infoDialog').dialog('open');
                                 }
                             }
                         });
@@ -344,7 +344,7 @@
                     });
                 }
             });
-			$("#bestSplits").dialog({
+            $('#bestSplits').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -364,7 +364,7 @@
                     });
                 }
             });
-			$("#mTotals").dialog({
+            $('#mTotals').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -385,9 +385,9 @@
                 }
             });
         }
-		
-		function initSecondaryDialogs() {
-			$("#overall").dialog({
+
+        function initSecondaryDialogs() {
+            $('#overall').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -407,7 +407,7 @@
                     });
                 }
             });
-			$("#bestOf").dialog({
+            $('#bestOf').dialog({
                 autoOpen: false,
                 modal: true,
                 show: "blind",
@@ -427,7 +427,7 @@
                     });
                 }
             });
-		}
+        }
 
         function initContent(data) {
             itemsDS = [];
@@ -442,13 +442,13 @@
                 $('#overall').hide();
                 return false;
             }
-            $('#overall').show(); 
+            $('#overall').show();
             $('#runs').show();
             $('#ht').text(all.length + ' matching ' + (all.length != 1 ? 'activities' : 'activity'));
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
-			runsHtml = '';
+            runsHtml = '';
             optsAll = '';
             var dialog = {
                 autoOpen: false,
@@ -470,36 +470,36 @@
                     });
                 }
             };
-			var crun = 0;
-			var ctrail = 0;
-			var cup = 0;
-			var chike = 0;
-			var cwalk = 0;
-			var coth = 0;
+            var crun = 0;
+            var ctrail = 0;
+            var cup = 0;
+            var chike = 0;
+            var cwalk = 0;
+            var coth = 0;
             $.each(all, function(i, item) {
-				if (item['type'] == 'Running') {
-					++crun;
-				} else if (item['type'] == 'Trail') {
-					++ctrail;
-				} else if (item['type'] == 'Uphill') {
-					++cup;
-				} else if (item['type'] == 'Hiking') {
-					++chike;
-				} else if (item['type'] == 'Walking') {
-					++cwalk;
-				} else if (item['type'] == 'Other') {
-					++coth;
-				}
-				var isMod = item['isModified'] == 'y';
-                runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + decodeURIComponent(item['name']) + (isMod ? '*' : '')
-					+ '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
+                if (item['type'] == 'Running') {
+                    ++crun;
+                } else if (item['type'] == 'Trail') {
+                    ++ctrail;
+                } else if (item['type'] == 'Uphill') {
+                    ++cup;
+                } else if (item['type'] == 'Hiking') {
+                    ++chike;
+                } else if (item['type'] == 'Walking') {
+                    ++cwalk;
+                } else if (item['type'] == 'Other') {
+                    ++coth;
+                }
+                var isMod = item['isModified'] == 'y';
+                runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + item['date'] + '</div></td><td><div class="runitem" id="item' + i + '">' + decodeURIComponent(item['name']) + (isMod ? '*' : '') +
+                    '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
                     item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + item['avgSpeed'] + '</td>' +
                     '<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>' +
                     '<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>' +
                     '<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem"></div>' +
-					'<div id="trash' + i + '" class="ui-icon ui-icon-trash ui-state-hover runitem"></div></td></tr>';
+                    '<div id="trash' + i + '" class="ui-icon ui-icon-trash ui-state-hover runitem"></div></td></tr>';
                 $('#dataHolder').append('<div style="display: none;" id="data' + i + '"></div>');
-				$('#dataHolder').append('<div style="display: none;" id="ui' + i + '"></div>');
+                $('#dataHolder').append('<div style="display: none;" id="ui' + i + '"></div>');
                 distr = item['speedDist'];
                 tableHtml = '<span class="highlight"><table><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
                 $.each(distr, function(i, diap) {
@@ -510,7 +510,7 @@
                 splitHtml = '<span class="highlight"><table><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th></thead><tbody>';
                 $.each(splits, function(i, sp) {
                     splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] +
-					'</td><td>' + sp['accumSpeed'] + '</td></tr>';
+                        '</td><td>' + sp['accumSpeed'] + '</td></tr>';
                 });
                 splitHtml += '</tbody></table></span>';
                 filename = item['genby'].endsWith('.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
@@ -520,61 +520,65 @@
                     $('#ui' + i).dialog('option', 'title', 'Details ' + $('#item' + i).text());
                     $('#ui' + i).dialog('open');
                 });
-				var origData = item['origData'];
-				var extLinks = '<a href="' + filename + '" target="_blank"><input type="image" src="extview-icon.png" width="60" height="60" /></a>';
-				if (item['garminLink'] != 'none') {
-					extLinks += '<a href="' + item['garminLink'] + '" target="_blank"><input type="image" src="garmin-icon.png" width="60" height="60" /></a>';
-				}
-				if (item['ccLink'] != 'none') {
-					extLinks += '<a href="' + decodeURIComponent(item['ccLink']) + '" target="_blank"><input type="image" src="relivecc-icon.png" width="60" height="60" /></a>';
-				}
-				if (item['photosLink'] != 'none') {
-					extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input type="image" src="photos-icon.png" width="60" height="60" /></a>';
-				}
-                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>'
-					+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
-					'</td></tr><tr><td>Elevation gain</td><td>' +
+                var origData = item['origData'];
+                var extLinks = '<a href="' + filename + '" target="_blank"><input type="image" src="extview-icon.png" width="60" height="60" /></a>';
+                if (item['garminLink'] != 'none') {
+                    extLinks += '<a href="' + item['garminLink'] + '" target="_blank"><input type="image" src="garmin-icon.png" width="60" height="60" /></a>';
+                }
+                if (item['ccLink'] != 'none') {
+                    extLinks += '<a href="' + decodeURIComponent(item['ccLink']) + '" target="_blank"><input type="image" src="relivecc-icon.png" width="60" height="60" /></a>';
+                }
+                if (item['photosLink'] != 'none') {
+                    extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input type="image" src="photos-icon.png" width="60" height="60" /></a>';
+                }
+                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>' +
+                    item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
+                    '</td></tr><tr><td>Elevation gain</td><td>' +
                     '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
-					item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
+                    item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
                     'Running|>9km/h| time</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| distance</td><td>' + (isMod ? '<em>' : '') +
-					item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| elevation gain</td><td>' +
-					'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
-                    '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
-					'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-					'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
+                    item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| elevation gain</td><td>' +
+                    '<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
+                    '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
+                    '</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
+                    '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
                     '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
-			var appc = '';
-			if (crun > 0) {
-				appc += 'Running: ' + crun;
-			}
-			if (crun > 0) {
-				appc += (appc.length > 0 ? ', ' : '') + 'Trail: ' + ctrail;
-			}
-			if (cup > 0) {
-				appc += (appc.length > 0 ? ', ' : '') + 'Uphill: ' + cup;
-			}
-			if (chike > 0) {
-				appc += (appc.length > 0 ? ', ' : '') + 'Hiking: ' + chike;
-			}
-			if (cwalk > 0) {
-				appc += (appc.length > 0 ? ', ' : '') + 'Walking: ' + cwalk;
-			}
-			if (coth > 0) {
-				appc += (appc.length > 0 ? ', ' : '') + 'Other: ' + coth;
-			}
-			if (appc.length > 0) {
-				appc = ' |' + appc + '|';
-			}
-			$('#ht').append(appc);
+            var appc = '';
+            if (crun > 0) {
+                appc += 'Running: ' + crun;
+            }
+            if (crun > 0) {
+                appc += (appc.length > 0 ? ', ' : '') + 'Trail: ' + ctrail;
+            }
+            if (cup > 0) {
+                appc += (appc.length > 0 ? ', ' : '') + 'Uphill: ' + cup;
+            }
+            if (chike > 0) {
+                appc += (appc.length > 0 ? ', ' : '') + 'Hiking: ' + chike;
+            }
+            if (cwalk > 0) {
+                appc += (appc.length > 0 ? ', ' : '') + 'Walking: ' + cwalk;
+            }
+            if (coth > 0) {
+                appc += (appc.length > 0 ? ', ' : '') + 'Other: ' + coth;
+            }
+            if (appc.length > 0) {
+                appc = ' |' + appc + '|';
+            }
+            $('#ht').append(appc);
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
-            $('#runs').trigger("sorton", [ [[1, 'dates']] ]);
-			var table = document.getElementById('runs');
-			var rowLength = table.rows.length;
-			for(var i=1; i<rowLength; i++) {
-				table.rows[i].cells[0].innerHTML=(i).toString();
-			}
+            $('#runs').trigger("sorton", [
+                [
+                    [1, 'dates']
+                ]
+            ]);
+            var table = document.getElementById('runs');
+            var rowLength = table.rows.length;
+            for (var i = 1; i < rowLength; i++) {
+                table.rows[i].cells[0].innerHTML = (i).toString();
+            }
             $.each(all, function(i, item) {
                 optsAll += '<option genby="' + item['genby'] + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">' + $('#item' + i).text() + ' ' + $('#date' + i).text() + '</option>';
             });
@@ -587,52 +591,52 @@
                 });
                 $('#edit' + i).click(function() {
                     type = $('#type' + i).text();
-                    $("#editable").html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
-						getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td>' +
-						'<tr><td>Garmin </td><td><input size="50" type="text" id="chooseGarmin" value="' + (item['garminLink'] != 'none' ?  item['garminLink'] : "")  + '"/></td></tr>' +
-						'<tr><td>Relive CC </td><td><input size="50" type="text" id="chooseCC" value="' + (item['ccLink'] != 'none' ? decodeURIComponent(item['ccLink']) : "")  + '"/></td></tr>' +
-						'<tr><td>Photos </td><td><input size="50" type="text" id="choosePhotos" value="' + (item['photosLink'] != 'none' ? decodeURIComponent(item['photosLink']) : "")  + '"/></td></tr></tbody></table>' +
-						'<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
-						'<table><tbody><tr><td>Actual distance</td><td><input type="text" id="actDist" /></td></tr>' +
-						'<tr><td>Actual time(hh:mm:ss)</td><td><input type="text" id="actTime" /></td></tr>' +
-						'<tr><td>Actual elevation gain</td><td><input type="text" id="actGain" /></td></tr>' +
-						'<tr><td>Actual elevation loss</td><td><input type="text" id="actLoss" /></td></tr>' + '</tbody></table>');
-                    $("#editable").dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
-                    $("#editable").attr('genby', item['genby']);
-                    $("#editable").attr('refname', 'item' + i);
-                    $("#editable").attr('reftype', 'type' + i);
-                    $("#editable").dialog('open');
+                    $('#editable').html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
+                        getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td>' +
+                        '<tr><td>Garmin </td><td><input size="50" type="text" id="chooseGarmin" value="' + (item['garminLink'] != 'none' ? item['garminLink'] : "") + '"/></td></tr>' +
+                        '<tr><td>Relive CC </td><td><input size="50" type="text" id="chooseCC" value="' + (item['ccLink'] != 'none' ? decodeURIComponent(item['ccLink']) : "") + '"/></td></tr>' +
+                        '<tr><td>Photos </td><td><input size="50" type="text" id="choosePhotos" value="' + (item['photosLink'] != 'none' ? decodeURIComponent(item['photosLink']) : "") + '"/></td></tr></tbody></table>' +
+                        '<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
+                        '<table><tbody><tr><td>Actual distance</td><td><input type="text" id="actDist" /></td></tr>' +
+                        '<tr><td>Actual time(hh:mm:ss)</td><td><input type="text" id="actTime" /></td></tr>' +
+                        '<tr><td>Actual elevation gain</td><td><input type="text" id="actGain" /></td></tr>' +
+                        '<tr><td>Actual elevation loss</td><td><input type="text" id="actLoss" /></td></tr>' + '</tbody></table>');
+                    $('#editable').dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
+                    $('#editable').attr('genby', item['genby']);
+                    $('#editable').attr('refname', 'item' + i);
+                    $('#editable').attr('reftype', 'type' + i);
+                    $('#editable').dialog('open');
                 });
-				$('#trash' + i).click(function() {
-					$("#removable").html('Remove this activity?');
-                    $("#removable").dialog('option', 'title', 'Remove ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
-                    $("#removable").attr('genby', item['genby']);
-                    $("#removable").dialog('open');
-				});
+                $('#trash' + i).click(function() {
+                    $('#removable').html('Remove this activity?');
+                    $('#removable').dialog('option', 'title', 'Remove ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
+                    $('#removable').attr('genby', item['genby']);
+                    $('#removable').dialog('open');
+                });
             });
             for (i = 0; i < itemsDS.length; ++i) {
                 $('#runs tr:eq(' + (i + 1) + ') td:not(:last-child)').click(itemsDS[i]);
             }
             $('#rescanButton').click(function() {
-				$.ajax({
-					url: 'rescanActivities',
-					method: 'POST',
-					dataType: 'json',
-					statusCode: {
-						200: function(data) {
-							getBest();
-							fetch();
-							$('#infoDialog').html('Rescan completed!');
-							$('#infoDialog').dialog('option', 'title', 'Action finished');
-							$('#infoDialog').dialog('open');
-						}
-					}
-				});  
+                $.ajax({
+                    url: 'rescanActivities',
+                    method: 'POST',
+                    dataType: 'json',
+                    statusCode: {
+                        200: function(data) {
+                            getBest();
+                            fetch();
+                            $('#infoDialog').html('Rescan completed!');
+                            $('#infoDialog').dialog('option', 'title', 'Action finished');
+                            $('#infoDialog').dialog('open');
+                        }
+                    }
+                });
             });
         }
 
         function disableSearch() {
-            $("#search").button("option", "disabled", true);
+            $('#search').button("option", "disabled", true);
         }
 
         var fetchEnabled = true;
@@ -645,35 +649,35 @@
             var records = parseInt($('input[name=selectLast]:checked').attr('cap'));
             var ds = $('#dtStart').datepicker('getDate');
             var de = $('#dtEnd').datepicker('getDate');
-			var nf = encodeURIComponent($("#searchName").val());
+            var nf = encodeURIComponent($('#searchName').val());
             $.ajax({
                 url: 'fetch',
                 method: 'POST',
                 dataType: 'json',
                 headers: {
                     'Content-Type': 'application/json',
-                    'run': $("#checkbox-1").prop('checked'),
-                    'trail': $("#checkbox-2").prop('checked'),
-					'uphill': $("#checkbox-3").prop('checked'),
-                    'hike': $("#checkbox-4").prop('checked'),
-                    'walk': $("#checkbox-5").prop('checked'),
-                    'other': $("#checkbox-6").prop('checked'),
+                    'run': $('#checkbox-1').prop('checked'),
+                    'trail': $('#checkbox-2').prop('checked'),
+                    'uphill': $('#checkbox-3').prop('checked'),
+                    'hike': $('#checkbox-4').prop('checked'),
+                    'walk': $('#checkbox-5').prop('checked'),
+                    'other': $('#checkbox-6').prop('checked'),
                     'dateOpt': parseInt(period[period.length - 1]) - 1,
                     'dtStart': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
                     'dtEnd': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
                     'records': records,
-					'nameFilter': nf,
-					'dmin': $('#spinnerMin').val(),
-					'dmax': $('#spinnerMax').val()
+                    'nameFilter': nf,
+                    'dmin': $('#spinnerMin').val(),
+                    'dmax': $('#spinnerMax').val()
                 },
                 statusCode: {
                     200: function(data) {
                         initContent(data);
                     },
-					400: function(data) {
-						$('#infoDialog').html('Invalid distance arguments!');
-						$('#infoDialog').dialog('option', 'title', 'Bad data');
-						$('#infoDialog').dialog('open');
+                    400: function(data) {
+                        $('#infoDialog').html('Invalid distance arguments!');
+                        $('#infoDialog').dialog('option', 'title', 'Bad data');
+                        $('#infoDialog').dialog('open');
                     }
                 }
             });
@@ -685,17 +689,17 @@
             $('#dtEnd').datepicker('disable');
             fetch();
         }
-		
-		function getStat(data, opt) {
-			if (data[opt]) {
-				return data[opt];
-			}
-			return opt == 'ach' ? 'Locked' : '---';
-		}
-		
-		function getBest() {
-			initSplitsBest();
-			$.ajax({
+
+        function getStat(data, opt) {
+            if (data[opt]) {
+                return data[opt];
+            }
+            return opt == 'ach' ? 'Locked' : '---';
+        }
+
+        function getBest() {
+            initSplitsBest();
+            $.ajax({
                 url: 'best',
                 method: 'POST',
                 dataType: 'json',
@@ -704,33 +708,33 @@
                 },
                 statusCode: {
                     200: function(data) {
-						var farthest = data['longest'];
-						var fastest = data['fastest'];
-						var maxAsc = data['maxAsc'];
-						var k1 = data['1K'];
-						var k25 = data['2K5'];
-						var k5 = data['5K'];
-						var k10 = data['10K'];
-						var semi = data['21K'];
-						var k30 = data['30K'];
-						var marathon = data['42K'];
-						$('#bestOf tbody').html('<tr><td>Farthest</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
-						'<tr><td>Fastest</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
-						'<tr><td>Max ascent</td><td>' + getStat(maxAsc, 'ach') + '</td><td>' + getStat(maxAsc, 'when') + '</td></tr>' +
-						'<tr><td>1K</td><td>' + getStat(k1, 'ach') + '</td><td>' + getStat(k1, 'when') + '</td></tr>' +
-						'<tr><td>2.5K</td><td>' + getStat(k25, 'ach') + '</td><td>' + getStat(k25, 'when') + '</td></tr>' +
-						'<tr><td>5K</td><td>' + getStat(k5, 'ach') + '</td><td>' + getStat(k5, 'when') + '</td></tr>' +
-						'<tr><td>10K</td><td>' + getStat(k10, 'ach') + '</td><td>' + getStat(k10, 'when') + '</td></tr>' +
-						'<tr><td>Half-marathon</td><td>' + getStat(semi, 'ach') + '</td><td>' + getStat(semi, 'when') + '</td></tr>' +
-						'<tr><td>30K</td><td>' + getStat(k30, 'ach') + '</td><td>' + getStat(k30, 'when') + '</td></tr>' +
-						'<tr><td>Marathon</td><td>' + getStat(marathon, 'ach') + '</td><td>' + getStat(marathon, 'when') + '</td></tr>');
+                        var farthest = data['longest'];
+                        var fastest = data['fastest'];
+                        var maxAsc = data['maxAsc'];
+                        var k1 = data['1K'];
+                        var k25 = data['2K5'];
+                        var k5 = data['5K'];
+                        var k10 = data['10K'];
+                        var semi = data['21K'];
+                        var k30 = data['30K'];
+                        var marathon = data['42K'];
+                        $('#bestOf tbody').html('<tr><td>Farthest</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
+                            '<tr><td>Fastest</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
+                            '<tr><td>Max ascent</td><td>' + getStat(maxAsc, 'ach') + '</td><td>' + getStat(maxAsc, 'when') + '</td></tr>' +
+                            '<tr><td>1K</td><td>' + getStat(k1, 'ach') + '</td><td>' + getStat(k1, 'when') + '</td></tr>' +
+                            '<tr><td>2.5K</td><td>' + getStat(k25, 'ach') + '</td><td>' + getStat(k25, 'when') + '</td></tr>' +
+                            '<tr><td>5K</td><td>' + getStat(k5, 'ach') + '</td><td>' + getStat(k5, 'when') + '</td></tr>' +
+                            '<tr><td>10K</td><td>' + getStat(k10, 'ach') + '</td><td>' + getStat(k10, 'when') + '</td></tr>' +
+                            '<tr><td>Half-marathon</td><td>' + getStat(semi, 'ach') + '</td><td>' + getStat(semi, 'when') + '</td></tr>' +
+                            '<tr><td>30K</td><td>' + getStat(k30, 'ach') + '</td><td>' + getStat(k30, 'when') + '</td></tr>' +
+                            '<tr><td>Marathon</td><td>' + getStat(marathon, 'ach') + '</td><td>' + getStat(marathon, 'when') + '</td></tr>');
                     }
                 }
             });
-		}
-		
-		function initSplitsBest() {
-			$.ajax({
+        }
+
+        function initSplitsBest() {
+            $.ajax({
                 url: 'bestSplits',
                 method: 'POST',
                 dataType: 'json',
@@ -739,121 +743,121 @@
                 },
                 statusCode: {
                     200: function(data) {
-						$("#bestSplits").dialog('option', 'title', 'Best split times dy distance');
-						totals = data['totals'];
-						splits = '';
-						$.each(totals, function(i, item) {
-							splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td>' +
-							'<td>' + item['pace'] + '</td><td>' + item['speed'] + '</td></tr>';
-						});
-						$("#bestSplits").html('<span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th>' +
-						'<th>Pace</th><th>Speed</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
+                        $('#bestSplits').dialog('option', 'title', 'Best split times dy distance');
+                        totals = data['totals'];
+                        splits = '';
+                        $.each(totals, function(i, item) {
+                            splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td>' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td>' +
+                                '<td>' + item['pace'] + '</td><td>' + item['speed'] + '</td></tr>';
+                        });
+                        $('#bestSplits').html('<span class="highlight"><table><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th>' +
+                            '<th>Pace</th><th>Speed</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
                     }
                 }
             });
-		}
-		
-		function getMTable(item) {
-			return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr>'
-				+ '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h']
-				+ '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
-		}
-		
-		function initMonthlyTotals(data) {
-			$("#mTotals").dialog('option', 'title', 'Total distance by month');
-			tableHtml = '<table id="mtt" align="center"><tbody>';
-			$.each(data, function(i, item) {
-				tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getMTable(item) + '</td></tr>';
-			});
-			tableHtml += '</tbody></table>';
-			$("#mTotals").html(tableHtml);
-		}
-		
-		function checkCookieVal(cookieVal) {
-			$.ajax({
+        }
+
+        function getMTable(item) {
+            return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr>' +
+                '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] +
+                '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
+        }
+
+        function initMonthlyTotals(data) {
+            $('#mTotals').dialog('option', 'title', 'Total distance by month');
+            tableHtml = '<table id="mtt" align="center"><tbody>';
+            $.each(data, function(i, item) {
+                tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getMTable(item) + '</td></tr>';
+            });
+            tableHtml += '</tbody></table>';
+            $('#mTotals').html(tableHtml);
+        }
+
+        function checkCookieVal(cookieVal) {
+            $.ajax({
                 url: 'checkCookie',
                 method: 'POST',
                 dataType: 'json',
                 statusCode: {
                     200: function(xhr) {
-                        $("#loginButton").button("option", "disabled", true);
-						$("#loginButton").button("option", "label", "Authorized");
+                        $('#loginButton').button("option", "disabled", true);
+                        $('#loginButton').button("option", "label", "Authorized");
                     },
                     401: function(xhr) {
-                        $("#loginButton").button("option", "disabled", false);
+                        $('#loginButton').button("option", "disabled", false);
                     }
-                 }
-			});
-		}
-		
-		function checkWidth() {
-			if ($(window).width() < 1375) {
-				initSecondaryDialogs();
-				$('#bestOfWrap').append('<button id="bestOfBtn">Best achievements</button>');
-				$('#bestOfBtn').button();
-				$('#overallWrap').append('<button id="overallBtn">Selection totals</button>');
-				$('#overallBtn').button();
-				$('#bestOf').dialog('option', 'title', 'Best achievements');
-				$('#overall').dialog('option', 'title', 'Selection totals');
-				$('#bestOfBtn').click(function() {
-					$("#bestOf").dialog('open');
-				});
-				$('#overallBtn').click(function() {
-					$("#overall").dialog('open');
-				});
-				$('#titleTotals').remove();
-				$('#titleBest').remove();
-			}
-		}
+                }
+            });
+        }
+
+        function checkWidth() {
+            if ($(window).width() < 1375) {
+                initSecondaryDialogs();
+                $('#bestOfWrap').append('<button id="bestOfBtn">Best achievements</button>');
+                $('#bestOfBtn').button();
+                $('#overallWrap').append('<button id="overallBtn">Selection totals</button>');
+                $('#overallBtn').button();
+                $('#bestOf').dialog('option', 'title', 'Best achievements');
+                $('#overall').dialog('option', 'title', 'Selection totals');
+                $('#bestOfBtn').click(function() {
+                    $('#bestOf').dialog('open');
+                });
+                $('#overallBtn').click(function() {
+                    $('#overall').dialog('open');
+                });
+                $('#titleTotals').remove();
+                $('#titleBest').remove();
+            }
+        }
 
         $(document).ready(function() {
-			checkWidth();
-			var ind = document.cookie.indexOf("xruncalc=");
-			var cookieVal = '';
-			if (ind != -1) {
-				cookieVal=document.cookie.substring(ind + 9);
-			}
-			checkCookieVal();
-            $("#selectAll").button();
-            $("#search").button();
-			$("#dsearch").button();
-			$("#findNames").button();
-			$("#bestTotalsBtn").button();
-			$("#mTotalsBtn").button();
-            $("#search").button("option", "disabled", true);
-            $("input[name=selectPeriod]").checkboxradio();
-            $("input[name=selectLast]").checkboxradio();
-            $("#checkbox-1").checkboxradio();
-            $("#checkbox-2").checkboxradio();
-            $("#checkbox-3").checkboxradio();
-            $("#checkbox-4").checkboxradio();
-            $("#checkbox-5").checkboxradio();
-			$("#checkbox-6").checkboxradio();
-			$("#findNames").click(function() {
-				fetch();
-			});
-            $("#selectAll").click(function() {
+            checkWidth();
+            var ind = document.cookie.indexOf("xruncalc=");
+            var cookieVal = '';
+            if (ind != -1) {
+                cookieVal = document.cookie.substring(ind + 9);
+            }
+            checkCookieVal();
+            $('#selectAll').button();
+            $('#search').button();
+            $('#dsearch').button();
+            $('#findNames').button();
+            $('#bestTotalsBtn').button();
+            $('#mTotalsBtn').button();
+            $('#search').button("option", "disabled", true);
+            $('input[name=selectPeriod]').checkboxradio();
+            $('input[name=selectLast]').checkboxradio();
+            $('#checkbox-1').checkboxradio();
+            $('#checkbox-2').checkboxradio();
+            $('#checkbox-3').checkboxradio();
+            $('#checkbox-4').checkboxradio();
+            $('#checkbox-5').checkboxradio();
+            $('#checkbox-6').checkboxradio();
+            $('#findNames').click(function() {
+                fetch();
+            });
+            $('#selectAll').click(function() {
                 fetchEnabled = false;
                 $("#checkbox-1").prop('checked', true).change();
                 $("#checkbox-2").prop('checked', true).change();
                 $("#checkbox-3").prop('checked', true).change();
                 $("#checkbox-4").prop('checked', true).change();
                 $("#checkbox-5").prop('checked', true).change();
-				$("#checkbox-6").prop('checked', true).change();
+                $("#checkbox-6").prop('checked', true).change();
                 fetchEnabled = true;
                 fetch();
             });
-            $("#search").click(function() {
+            $('#search').click(function() {
                 fetch();
             });
-			$("#dsearch").click(function() {
+            $('#dsearch').click(function() {
                 fetch();
             });
-			$("#bestTotalsBtn").click(function() {
-				$("#bestSplits").dialog('open');
+            $("#bestTotalsBtn").click(function() {
+                $("#bestSplits").dialog('open');
             });
-			$("#mTotalsBtn").click(function() {
-				$("#mTotals").dialog('open');
+            $("#mTotalsBtn").click(function() {
+                $("#mTotals").dialog('open');
             });
             $("#radio-1").change(disableAndFetch);
             $("#radio-2").change(disableAndFetch);
@@ -874,12 +878,12 @@
             $("#checkbox-3").change(fetch);
             $("#checkbox-4").change(fetch);
             $("#checkbox-5").change(fetch);
-			$("#checkbox-6").change(fetch);
-			$("#loginButton").button();
+            $("#checkbox-6").change(fetch);
+            $("#loginButton").button();
             initDialogs();
-			$("#loginButton").click(function() {
+            $("#loginButton").click(function() {
                 $('#login').html('<table><tbody><tr><td>User </td><td><input type="text" id="loginUser" value="BatGeorgi"/></td></tr>' +
-				'<tr><td>Password </td><td><input type="password" id="loginPassword"/></td></tr></tbody></table>');
+                    '<tr><td>Password </td><td><input type="password" id="loginPassword"/></td></tr></tbody></table>');
                 $('#login').dialog('option', 'title', 'Login');
                 $('#login').dialog('open');
             });
@@ -903,11 +907,15 @@
                     });
                 }
             });
-			$("#spinnerMin").spinner();
-			$("#spinnerMax").spinner();
-			$("#spinnerMin").spinner({min: 0});
-			$("#spinnerMax").spinner({min: 0});
-			getBest();
+            $("#spinnerMin").spinner();
+            $("#spinnerMax").spinner();
+            $("#spinnerMin").spinner({
+                min: 0
+            });
+            $("#spinnerMax").spinner({
+                min: 0
+            });
+            getBest();
             var months = {
                 'Jan': 0,
                 'Feb': 1,
@@ -942,16 +950,16 @@
                 },
                 type: 'numeric'
             });
-			$.tablesorter.addParser({
+            $.tablesorter.addParser({
                 id: 'elevs',
                 is: function(s) {
                     return false;
                 },
                 format: function(s) {
-					if (s.charAt(0) != '+') {
-						return 0;
-					}
-					var ind = s.indexOf('/');
+                    if (s.charAt(0) != '+') {
+                        return 0;
+                    }
+                    var ind = s.indexOf('/');
                     return parseInt(ind != -1 ? s.substring(1, ind) : s.substring(1, s.length));
                 },
                 type: 'numeric'
@@ -987,9 +995,9 @@
     <div id="heading">
         <H1><strong>Run Analyzer 2.4</strong></H1>
     </div>
-	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
+    <a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
-	<button id="loginButton">Login</button>
+    <button id="loginButton">Login</button>
     <div id="filters">
         <fieldset>
             <legend class="legend-cap">Activity Type</legend>
@@ -997,87 +1005,91 @@
             <input type="checkbox" name="checkbox-1" id="checkbox-1" checked/>
             <label for="checkbox-2">Trail</label>
             <input type="checkbox" name="checkbox-2" id="checkbox-2" checked/>
-			<label for="checkbox-3">Uphill</label>
+            <label for="checkbox-3">Uphill</label>
             <input type="checkbox" name="checkbox-3" id="checkbox-3" checked/>
             <label for="checkbox-4">Hiking</label>
             <input type="checkbox" name="checkbox-4" id="checkbox-4" checked/>
             <label for="checkbox-5">Walking</label>
-            <input type="checkbox" name="checkbox-5" id="checkbox-5"/>
+            <input type="checkbox" name="checkbox-5" id="checkbox-5" />
             <label for="checkbox-6">Other</label>
-            <input type="checkbox" name="checkbox-6" id="checkbox-6"/>
+            <input type="checkbox" name="checkbox-6" id="checkbox-6" />
             <button id="selectAll">Select All</button>
         </fieldset>
         <p>
-		<fieldset>
-            <legend class="legend-cap">Activity name</legend>
-			<input type="text" name="searchName" id="searchName"/>
-			<button id="findNames">Search</button>
-		</fieldset>
-		<p>
             <fieldset>
-                <legend class="legend-cap">Period</legend>
-                <label for="radio-1">This month</label>
-                <input type="radio" name="selectPeriod" id="radio-1">
-                <label for="radio-2">This year</label>
-                <input type="radio" name="selectPeriod" id="radio-2" checked>
-                <label for="radio-3">Last 30 days</label>
-                <input type="radio" name="selectPeriod" id="radio-3">
-                <label for="radio-4">Last 3 months</label>
-                <input type="radio" name="selectPeriod" id="radio-4">
-                <label for="radio-5">Last 365 days</label>
-                <input type="radio" name="selectPeriod" id="radio-5">
-                <label for="radio-6">From begining</label>
-                <input type="radio" name="selectPeriod" id="radio-6">
-                <label for="radio-7">Custom</label>
-                <input type="radio" name="selectPeriod" id="radio-7">
+                <legend class="legend-cap">Activity name</legend>
+                <input type="text" name="searchName" id="searchName" />
+                <button id="findNames">Search</button>
             </fieldset>
             <p>
-            <div id="customDates">
-                <p>Start date: <input type="text" id="dtStart" />
-                <p>End date: <input type="text" id="dtEnd" />
-            </div>
-            <button id="search">Search</button>
-			<p>
-            <fieldset>
-                <legend class="legend-cap">Distance</legend>
-				<label for="spinnerMin">Min km</label>
-				<input id="spinnerMin" name="dmin"/>
-				<label for="spinnerMax">Max km</label>
-				<input id="spinnerMax" name="dmax"/>
-				<button id="dsearch">Search</button>
-			 </fieldset>
-            <p>
-            <fieldset>
-                <legend class="legend-cap">Most recent activities(in period)</legend>
-                <label for="l-10">Last 10</label>
-                <input type="radio" name="selectLast" id="l-10" cap="10">
-                <label for="l-20">Last 20</label>
-                <input type="radio" name="selectLast" id="l-20" cap="20">
-                <label for="l-50">Last 50</label>
-                <input type="radio" name="selectLast" id="l-50" cap="50">
-                <label for="l-100">Last 100</label>
-                <input type="radio" name="selectLast" id="l-100" cap="100">
-                <label for="l-inf">All</label>
-                <input type="radio" name="selectLast" id="l-inf" cap="1234567" checked>
-            </fieldset>
+                <fieldset>
+                    <legend class="legend-cap">Period</legend>
+                    <label for="radio-1">This month</label>
+                    <input type="radio" name="selectPeriod" id="radio-1">
+                    <label for="radio-2">This year</label>
+                    <input type="radio" name="selectPeriod" id="radio-2" checked>
+                    <label for="radio-3">Last 30 days</label>
+                    <input type="radio" name="selectPeriod" id="radio-3">
+                    <label for="radio-4">Last 3 months</label>
+                    <input type="radio" name="selectPeriod" id="radio-4">
+                    <label for="radio-5">Last 365 days</label>
+                    <input type="radio" name="selectPeriod" id="radio-5">
+                    <label for="radio-6">From begining</label>
+                    <input type="radio" name="selectPeriod" id="radio-6">
+                    <label for="radio-7">Custom</label>
+                    <input type="radio" name="selectPeriod" id="radio-7">
+                </fieldset>
+                <p>
+                    <div id="customDates">
+                        <p>Start date: <input type="text" id="dtStart" />
+                            <p>End date: <input type="text" id="dtEnd" />
+                    </div>
+                    <button id="search">Search</button>
+                    <p>
+                        <fieldset>
+                            <legend class="legend-cap">Distance</legend>
+                            <label for="spinnerMin">Min km</label>
+                            <input id="spinnerMin" name="dmin" />
+                            <label for="spinnerMax">Max km</label>
+                            <input id="spinnerMax" name="dmax" />
+                            <button id="dsearch">Search</button>
+                        </fieldset>
+                        <p>
+                            <fieldset>
+                                <legend class="legend-cap">Most recent activities(in period)</legend>
+                                <label for="l-10">Last 10</label>
+                                <input type="radio" name="selectLast" id="l-10" cap="10">
+                                <label for="l-20">Last 20</label>
+                                <input type="radio" name="selectLast" id="l-20" cap="20">
+                                <label for="l-50">Last 50</label>
+                                <input type="radio" name="selectLast" id="l-50" cap="50">
+                                <label for="l-100">Last 100</label>
+                                <input type="radio" name="selectLast" id="l-100" cap="100">
+                                <label for="l-inf">All</label>
+                                <input type="radio" name="selectLast" id="l-inf" cap="1234567" checked>
+                            </fieldset>
     </div>
     <div id="activities">
-		<div id="overallWrap">
-			<button id="mTotalsBtn">Monthly totals</button>
-			<hr>
-			<div id="titleTotals"><h2>Totals</h2></div>
-			<table id="overall">
-				<tbody></tbody>
-			</table>
-		</div>
-		<div id="bestOfWrap">
-			<button id="bestTotalsBtn">Best split times</button>
-			<hr>
-			<div id="titleBest"><h2>Best</h2></div>
-			<table id="bestOf">
-				<tbody></tbody>
-			</table>
-		</div>
+        <div id="overallWrap">
+            <button id="mTotalsBtn">Monthly totals</button>
+            <hr>
+            <div id="titleTotals">
+                <h2>Totals</h2>
+            </div>
+            <table id="overall">
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="bestOfWrap">
+            <button id="bestTotalsBtn">Best split times</button>
+            <hr>
+            <div id="titleBest">
+                <h2>Best</h2>
+            </div>
+            <table id="bestOf">
+                <tbody></tbody>
+            </table>
+        </div>
         <h2>
             <div id="ht">Activities</div>
         </h2>
@@ -1100,16 +1112,16 @@
         </table>
     </div>
     <div id="editable"></div>
-	<div id="removable"></div>
+    <div id="removable"></div>
     <div id="details"></div>
-	<div id="bestSplits"></div>
-	<div id="mTotals"></div>
+    <div id="bestSplits"></div>
+    <div id="mTotals"></div>
     <div id="dataHolder" />
     <div id="comparable">
         <div id="compareResults" />
     </div>
-	<div id="infoDialog"></div>
-	<div id="login" />
+    <div id="infoDialog"></div>
+    <div id="login" />
 </body>
 
 </html>
