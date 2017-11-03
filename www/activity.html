@@ -5,8 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity details</title>
 	
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="bootstrap.min.css">
+	<script src="bootstrap.min.js"></script>
 	
     <link href="styleActivity.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
@@ -83,6 +83,7 @@
 		
 		$(document).ready(function() {
 			$("#trace").button();
+			$('#tres').button();
 			$("#toggle").checkboxradio();
 			$.ajax({
                 url: 'TBD',
@@ -115,7 +116,11 @@
 			<div class="col-sm-6">
 				<div id="mapHolder">
 					<div id="map"></div>
-					<label for="toggle" style="margin-left: 40%;margin-top: 10px">Toggle km markers</label>
+					<button id="trace">Trace</button>
+					<button id="tres">Reset</button>
+					<label for="tSpeed">Speed</label>
+					<input id="tSpeed" type="number" min="1" max="20" step="1" value="10"></input>
+					<label for="toggle">Toggle km markers</label>
 					<input type="checkbox" id="toggle" />
 				</div>
 			</div>
@@ -131,6 +136,8 @@
 	<script>
 
 		var marks = [];
+		timerId = null;
+		count = 0;
 
 		function initMap() {
 			var mapOptions = {
@@ -169,12 +176,21 @@
 							east = Math.max(east, lons[i]);
 							west = Math.min(west, lons[i]);
 						});
+						var lineSymbol = {
+							path: google.maps.SymbolPath.CIRCLE,
+							scale: 6,
+							strokeColor: '#393'
+						};
 						var runPath = new google.maps.Polyline({
 							path: coords,
 							geodesic: true,
 							strokeColor: '#FF0000',
 							strokeOpacity: 1.0,
-							strokeWeight: 2
+							strokeWeight: 2,
+							icons: [{
+								icon: lineSymbol,
+								offset: '0%'
+							}]
 						});
 						var md = Math.max(north - south, east - west);
 						if (md < 0.006) {
@@ -284,9 +300,62 @@
 							}
 						});
 						runPath.setMap(map);
+						$('#trace').click(function() {
+							if (timerId == null) {
+								animateCircle(runPath);
+							} else {
+								clearInterval(timerId);
+								timerId = null;
+								$('#trace').button("option", "label", "Trace");
+							}
+						});
+						$('#tres').click(function() {
+							if (timerId != null) {
+								clearInterval(timerId);
+							}
+							var icons = runPath.get('icons');
+							icons[0].offset = '0%';
+							runPath.set('icons', icons);
+							$('#trace').button("option", "label", "Trace");
+							timerId = null;
+							count = 0;
+						});
                     }
                 }
 			});
+		}
+		
+		function animateCircle(line) {
+			var speed = $('#tSpeed').val();
+			if (speed == null || speed == '' || speed == 'undefined') {
+				speed = 10;
+			} else {
+				speed = parseInt(speed);
+			}
+			var limit = marks.length * 80;
+			var d = limit / 100;
+			var firstCall = true;
+			var f = function() {
+				if (count == limit) {
+					var icons = line.get('icons');
+					icons[0].offset = '0%';
+					line.set('icons', icons);
+					clearInterval(timerId);
+					$('#trace').button("option", "label", "Trace");
+					timerId = null;
+					count = 0;
+					return;
+				}
+				if (firstCall) {
+					firstCall = false;
+					$('#trace').button("option", "label", "Stop");
+				}
+				count += speed / 10.0;
+				var icons = line.get('icons');
+				icons[0].offset = (count / d) + '%';
+				line.set('icons', icons);
+			};
+			timerId = setInterval(f, 50);
 		}
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCC4nPG5F3bF4gXe9yc4-0cOQH4oGKqWI&callback=initMap"></script>
