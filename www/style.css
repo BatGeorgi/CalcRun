@@ -189,3 +189,15 @@ tr.border_bottom td {
 	border-collapse: collapse; 
 	text-align: center;
 }
+#titleBest {
+	color:#2a6cd6;
+	text-shadow: 1px 1px black;
+}
+#titleTotals {
+	color:#2a6cd6;
+	text-shadow: 1px 1px black;
+}
+#ht {
+	color:#2a6cd6;
+	text-shadow: 1px 1px black;
+}

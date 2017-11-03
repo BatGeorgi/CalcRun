@@ -74,3 +74,9 @@ th {
 #splitTable tr td {
 	border-right: 1px solid #C1DAD7;
 }
+#trace {
+	width: 80px;
+}
+#tres {
+	width: 80px;
+}

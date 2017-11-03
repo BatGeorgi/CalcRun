@@ -985,7 +985,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Run Analyzer 2.3</strong></H1>
+        <H1><strong>Run Analyzer 2.4</strong></H1>
     </div>
 	<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
