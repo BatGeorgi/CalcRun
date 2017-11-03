@@ -4,10 +4,10 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity details</title>
-	
-	<link rel="stylesheet" href="bootstrap.min.css">
-	<script src="bootstrap.min.js"></script>
-	
+
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <script src="bootstrap.min.js"></script>
+
     <link href="styleActivity.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -19,12 +19,11 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
-	
-	
-	
-	<script>
-	
-		function formatEleDiff(diff) {
+
+
+
+    <script>
+        function formatEleDiff(diff) {
             if (diff == 0) {
                 return '0';
             }
@@ -33,17 +32,17 @@
             }
             return '<span class="red">' + diff + '</span>';
         }
-	
-		function round(point) {
+
+        function round(point) {
             if (Math.abs(point - Math.round(point)) < 1e-3) {
                 return Math.round(point);
             }
             return point;
         }
-		
-		function init(item) {
-			$('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['date'] + '</strong></h1><hr>');
-			distr = item['speedDist'];
+
+        function init(item) {
+            $('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['date'] + '</strong></h1><hr>');
+            distr = item['speedDist'];
             tableHtml = '<span class="highlight"><table id="distTable"><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
             $.each(distr, function(i, diap) {
                 tableHtml += '<tr><td><strong>' + diap['range'] + ' km/h</strong></td><td>' + diap['time'] + '</td><td>' + diap['dist'] + '</td><td><span class="green">' + diap['elePos'] + '</span></td><td><span class="red">' + diap['eleNeg'] + '</span></td></tr>';
@@ -51,323 +50,340 @@
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
             splitHtml = '<span class="heading-data"><h2>Splits</h2></span>' +
-				'<span class="highlight"><table id="splitTable"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
-			collectHtml = "";
+                '<span class="highlight"><table id="splitTable"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
+            collectHtml = "";
             $.each(splits, function(i, sp) {
                 splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td><div id="spPace' + i + '">' + sp['pace'] + '</div></td><td>' + sp['speed'] + '</td><td><div id="spDiff' + i + '">' + formatEleDiff(sp['ele']) +
-				'</div></td><td><div id="spTotal' + i + '">' + sp['timeTotal'] +
-				'</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
-				collectHtml += '<div id="extsp' + i + '">' + formatEleDiff(sp['accElePos']) + '/' + formatEleDiff(-sp['accEleNeg']) + '</div>';
-				collectHtml += '<div id="spElePos' + i + '">' + sp['accElePos'] + '</div><div id="spEleNeg' + i + '">' + sp['accEleNeg'] + '</div>'; 
+                    '</div></td><td><div id="spTotal' + i + '">' + sp['timeTotal'] +
+                    '</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
+                collectHtml += '<div id="extsp' + i + '">' + formatEleDiff(sp['accElePos']) + '/' + formatEleDiff(-sp['accEleNeg']) + '</div>';
+                collectHtml += '<div id="spElePos' + i + '">' + sp['accElePos'] + '</div><div id="spEleNeg' + i + '">' + sp['accEleNeg'] + '</div>';
             });
-			$('#collect').html(collectHtml + '<div id="countSP">' + splits.length + '</div>');
+            $('#collect').html(collectHtml + '<div id="countSP">' + splits.length + '</div>');
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
-			var isMod = item['isModified'] == 'y';
-            $('#mainstats').html('<table><tbody><tr><td>Distance</td><td>'
-				+ item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>': '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') + 
-				'</td></tr><tr><td>Elevation gain</td><td>' +
+            var isMod = item['isModified'] == 'y';
+            $('#mainstats').html('<table><tbody><tr><td>Distance</td><td>' +
+                item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
+                '</td></tr><tr><td>Elevation gain</td><td>' +
                 '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
-				item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
+                item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
                 'Running|>9km/h| time</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| distance</td><td>' + (isMod ? '<em>' : '') +
-				item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| elevation gain</td><td>' +
-				'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
-                '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '' ) + item['timeRest'] + (isMod ? '*</em>':  '') +
-				'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-				'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
-			$('#splits').html('<span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
-			if (item['type'] != 'Running') {
-				$("#toggle").prop('checked', true).change();
-			}
-		}
-		
-		$(document).ready(function() {
-			$("#trace").button();
-			$('#tres').button();
-			$("#toggle").checkboxradio();
-			$.ajax({
+                item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| elevation gain</td><td>' +
+                '<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
+                '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
+                '</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
+                '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
+            $('#splits').html('<span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
+            if (item['type'] != 'Running') {
+                $('#toggle').prop('checked', true).change();
+            }
+        }
+
+        $(document).ready(function() {
+            $('#trace').button();
+            $('#tres').button();
+            $('#toggle').checkboxradio();
+            $.ajax({
                 url: 'TBD',
                 method: 'POST',
                 dataType: 'json',
-				headers: {
+                headers: {
                     'Content-Type': 'application/json'
                 },
                 statusCode: {
                     200: function(data) {
-							document.title = decodeURIComponent(data['name']);
-							init(data);
-                        }
+                        document.title = decodeURIComponent(data['name']);
+                        init(data);
+                    }
                 }
-			});
-		});
-	</script>
+            });
+        });
+    </script>
 
 </head>
 
 <body>
-	<div id="heading"></div>
-	<div class="container-fluid">
-		<div class="row-fluid">
-			
-			<div class="col-sm-3">
-				<div id="mainstats"></div>
-			</div>
-			
-			<div class="col-sm-6">
-				<div id="mapHolder">
-					<div id="map"></div>
-					<button id="trace">Trace</button>
-					<button id="tres">Reset</button>
-					<label for="tSpeed">Speed</label>
-					<input id="tSpeed" type="number" min="1" max="100" step="1" value="10"></input>
-					<label for="toggle">Toggle km markers</label>
-					<input type="checkbox" id="toggle" />
-				</div>
-			</div>
-		
-			<div class="col-sm-3">
-				<div id="splits"></div>
-			</div>
-			
-		</div>
-	</div>
-	<div style="display: none" id="collect"></div>
-	
-	<script>
+    <div id="heading"></div>
+    <div class="container-fluid">
+        <div class="row-fluid">
 
-		var marks = [];
-		timerId = null;
-		count = 0;
+            <div class="col-sm-3">
+                <div id="mainstats"></div>
+            </div>
 
-		function initMap() {
-			var mapOptions = {
-				center: {lat: 42.7, lng: 25},
-				zoom:10,
-				mapTypeControl: true,
-				mapTypeControlOptions: {
-					style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
-					mapTypeId: ['roadmap', 'terrain']
-				},
-				mapTypeId: google.maps.MapTypeId.HYBRID
-			};
-			var map = new google.maps.Map(document.getElementById('map'), mapOptions);
-			$.ajax({
+            <div class="col-sm-6">
+                <div id="mapHolder">
+                    <div id="map"></div>
+                    <button id="trace">Trace</button>
+                    <button id="tres">Reset</button>
+                    <label for="tSpeed">Speed</label>
+                    <input id="tSpeed" type="number" min="1" max="100" step="1" value="10"></input>
+                    <label for="toggle">Toggle km markers</label>
+                    <input type="checkbox" id="toggle" />
+                </div>
+            </div>
+
+            <div class="col-sm-3">
+                <div id="splits"></div>
+            </div>
+
+        </div>
+    </div>
+    <div style="display: none" id="collect"></div>
+
+    <script>
+        var marks = [];
+        timerId = null;
+        count = 0;
+
+        function initMap() {
+            var mapOptions = {
+                center: {
+                    lat: 42.7,
+                    lng: 25
+                },
+                zoom: 10,
+                mapTypeControl: true,
+                mapTypeControlOptions: {
+                    style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+                    mapTypeId: ['roadmap', 'terrain']
+                },
+                mapTypeId: google.maps.MapTypeId.HYBRID
+            };
+            var map = new google.maps.Map(document.getElementById('map'), mapOptions);
+            $.ajax({
                 url: 'coords',
                 method: 'POST',
                 dataType: 'json',
-				headers: {
+                headers: {
                     'Content-Type': 'application/json',
-					'activity': 'TBD'
+                    'activity': 'TBD'
                 },
                 statusCode: {
                     200: function(data) {
-						coords = [];
-						lats = data['lats'];
-						lons = data['lons'];
-						markers = data['markers'];
-						var west = 200;
-						var east = -200;
-						var south = 90;
-						var north = -90;
-						$.each(lats, function(i, item) {
-							coords.push({lat: item, lng: lons[i]});
-							north = Math.max(north, lats[i]);
-							south = Math.min(south, lats[i]);
-							east = Math.max(east, lons[i]);
-							west = Math.min(west, lons[i]);
-						});
-						var lineSymbol = {
-							path: google.maps.SymbolPath.CIRCLE,
-							scale: 6,
-							strokeColor: '#393'
-						};
-						var runPath = new google.maps.Polyline({
-							path: coords,
-							geodesic: true,
-							strokeColor: '#FF0000',
-							strokeOpacity: 1.0,
-							strokeWeight: 2,
-							icons: [{
-								icon: lineSymbol,
-								offset: '0%'
-							}]
-						});
-						var md = Math.max(north - south, east - west);
-						if (md < 0.006) {
-							map.setZoom(17);
-						} else if (md < 0.012) {
-							map.setZoom(16);
-						} else if (md < 0.03) {
-							map.setZoom(15);
-						} else if (md < 0.06) {
-							map.setZoom(14);
-						} else if (md < 0.11) {
-							map.setZoom(13);
-						} else if (md < 0.2) {
-							map.setZoom(12);
-						} else if (md < 0.4) {
-							map.setZoom(11);
-						}
-						map.setCenter({lat: (south + north) / 2.0, lng: (east + west) / 2.0});
-						var mStart = new google.maps.Marker({
-							position: {lat: lats[0], lng: lons[0]},
-							map: map,
-							label: {
-								text: 'Start',
-								fontSize: "18px",
-								fontWeight: 'bold'
-							},
-							icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
-						});
-						var mEnd = new google.maps.Marker({
-							position: {lat: lats[lats.length - 1], lng: lons[lons.length - 1]},
-							map: map,
-							label: {
-								text: 'End',
-								fontSize: "18px",
-								fontWeight: 'bold'
-							},
-							icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
-						});
-						mStart.setMap(map);
-						mEnd.setMap(map);
-						var infowindow = new google.maps.InfoWindow({
-									content: ''
-						});
-						for (i = 0; i < markers.length; ++i) {
-							var mark = new google.maps.Marker({
-								position: {lat: lats[markers[i]], lng: lons[markers[i]]},
-								label: {
-									text: (i + 1) + ' km',
-									fontSize: "18px",
-									fontWeight: 'bold',
-									color: 'red'
-								},
-								icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
-							});
-							marks.push(mark);
-							if ($("#toggle").prop('checked')) {
-								mark.setMap(map);
-							}
-							google.maps.event.addListener(mark,'click', (function(mark,content,infowindow){ 
-								return function() {
-									var diffPos = 0;
-									var diffNeg = 0;
-									var diffS = '';
-									if (content > 0) {
-										var prev = content - 1;
-										diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
-										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
-										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
-									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Average speed " + $('#spAS' + content).text()
-									+ "<p>Split elevation diff  " + $('#spDiff' + content).html() +
-									"<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $("#extsp" + content).html());
-									infowindow.open(map,mark);
-								};
-							})(mark,i,infowindow));
-						}
-						google.maps.event.addListener(mEnd,'click', (function(mark,content,infowindow){ 
-								return function() {
-									var v = marks.length;
-									if (content == marks.length) {
-										content = parseInt($('#countSP').text()) - 1;
-									}
-									var diffPos = 0;
-									var diffNeg = 0;
-									var diffS = '';
-									if (marks.length > 0) {
-										var prev = marks.length - 1;
-										diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
-										diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
-										diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
-									}
-									infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Average speed " + $('#spAS' + content).text()
-									+ "<p>Split elevation diff " + $('#spDiff' + v).html() +
-									"<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $("#extsp" + content).html());
-									infowindow.open(map,mark);
-								};
-							})(mEnd,marks.length,infowindow));
-						$("#toggle").change(function() {
-							if ($("#toggle").prop('checked')) {
-								for (i = 0; i < marks.length; ++i) {
-									marks[i].setMap(map);
-								}
-							} else {
-								for (i = 0; i < marks.length; ++i) {
-									marks[i].setMap(null);
-								}
-							}
-						});
-						runPath.setMap(map);
-						$('#trace').click(function() {
-							if (timerId == null) {
-								animateCircle(runPath);
-							} else {
-								clearInterval(timerId);
-								timerId = null;
-								$('#trace').button("option", "label", "Trace");
-							}
-						});
-						$('#tres').click(function() {
-							if (timerId != null) {
-								clearInterval(timerId);
-							}
-							var icons = runPath.get('icons');
-							icons[0].offset = '0%';
-							runPath.set('icons', icons);
-							$('#trace').button("option", "label", "Trace");
-							timerId = null;
-							count = 0;
-						});
+                        coords = [];
+                        lats = data['lats'];
+                        lons = data['lons'];
+                        markers = data['markers'];
+                        var west = 200;
+                        var east = -200;
+                        var south = 90;
+                        var north = -90;
+                        $.each(lats, function(i, item) {
+                            coords.push({
+                                lat: item,
+                                lng: lons[i]
+                            });
+                            north = Math.max(north, lats[i]);
+                            south = Math.min(south, lats[i]);
+                            east = Math.max(east, lons[i]);
+                            west = Math.min(west, lons[i]);
+                        });
+                        var lineSymbol = {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 6,
+                            strokeColor: '#393'
+                        };
+                        var runPath = new google.maps.Polyline({
+                            path: coords,
+                            geodesic: true,
+                            strokeColor: '#FF0000',
+                            strokeOpacity: 1.0,
+                            strokeWeight: 2,
+                            icons: [{
+                                icon: lineSymbol,
+                                offset: '0%'
+                            }]
+                        });
+                        var md = Math.max(north - south, east - west);
+                        if (md < 0.006) {
+                            map.setZoom(17);
+                        } else if (md < 0.012) {
+                            map.setZoom(16);
+                        } else if (md < 0.03) {
+                            map.setZoom(15);
+                        } else if (md < 0.06) {
+                            map.setZoom(14);
+                        } else if (md < 0.11) {
+                            map.setZoom(13);
+                        } else if (md < 0.2) {
+                            map.setZoom(12);
+                        } else if (md < 0.4) {
+                            map.setZoom(11);
+                        }
+                        map.setCenter({
+                            lat: (south + north) / 2.0,
+                            lng: (east + west) / 2.0
+                        });
+                        var mStart = new google.maps.Marker({
+                            position: {
+                                lat: lats[0],
+                                lng: lons[0]
+                            },
+                            map: map,
+                            label: {
+                                text: 'Start',
+                                fontSize: "18px",
+                                fontWeight: 'bold'
+                            },
+                            icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
+                        });
+                        var mEnd = new google.maps.Marker({
+                            position: {
+                                lat: lats[lats.length - 1],
+                                lng: lons[lons.length - 1]
+                            },
+                            map: map,
+                            label: {
+                                text: 'End',
+                                fontSize: "18px",
+                                fontWeight: 'bold'
+                            },
+                            icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
+                        });
+                        mStart.setMap(map);
+                        mEnd.setMap(map);
+                        var infowindow = new google.maps.InfoWindow({
+                            content: ''
+                        });
+                        for (i = 0; i < markers.length; ++i) {
+                            var mark = new google.maps.Marker({
+                                position: {
+                                    lat: lats[markers[i]],
+                                    lng: lons[markers[i]]
+                                },
+                                label: {
+                                    text: (i + 1) + ' km',
+                                    fontSize: "18px",
+                                    fontWeight: 'bold',
+                                    color: 'red'
+                                },
+                                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
+                            });
+                            marks.push(mark);
+                            if ($('#toggle').prop('checked')) {
+                                mark.setMap(map);
+                            }
+                            google.maps.event.addListener(mark, 'click', (function(mark, content, infowindow) {
+                                return function() {
+                                    var diffPos = 0;
+                                    var diffNeg = 0;
+                                    var diffS = '';
+                                    if (content > 0) {
+                                        var prev = content - 1;
+                                        diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
+                                        diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
+                                        diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
+                                    }
+                                    infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Average speed " + $('#spAS' + content).text() +
+                                        "<p>Split elevation diff  " + $('#spDiff' + content).html() +
+                                        "<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $('#extsp' + content).html());
+                                    infowindow.open(map, mark);
+                                };
+                            })(mark, i, infowindow));
+                        }
+                        google.maps.event.addListener(mEnd, 'click', (function(mark, content, infowindow) {
+                            return function() {
+                                var v = marks.length;
+                                if (content == marks.length) {
+                                    content = parseInt($('#countSP').text()) - 1;
+                                }
+                                var diffPos = 0;
+                                var diffNeg = 0;
+                                var diffS = '';
+                                if (marks.length > 0) {
+                                    var prev = marks.length - 1;
+                                    diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
+                                    diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
+                                    diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
+                                }
+                                infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Average speed " + $('#spAS' + content).text() +
+                                    "<p>Split elevation diff " + $('#spDiff' + v).html() +
+                                    "<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $('#extsp' + content).html());
+                                infowindow.open(map, mark);
+                            };
+                        })(mEnd, marks.length, infowindow));
+                        $('#toggle').change(function() {
+                            if ($('#toggle').prop('checked')) {
+                                for (i = 0; i < marks.length; ++i) {
+                                    marks[i].setMap(map);
+                                }
+                            } else {
+                                for (i = 0; i < marks.length; ++i) {
+                                    marks[i].setMap(null);
+                                }
+                            }
+                        });
+                        runPath.setMap(map);
+                        $('#trace').click(function() {
+                            if (timerId == null) {
+                                animateCircle(runPath);
+                            } else {
+                                clearInterval(timerId);
+                                timerId = null;
+                                $('#trace').button("option", "label", "Trace");
+                            }
+                        });
+                        $('#tres').click(function() {
+                            if (timerId != null) {
+                                clearInterval(timerId);
+                            }
+                            var icons = runPath.get('icons');
+                            icons[0].offset = '0%';
+                            runPath.set('icons', icons);
+                            $('#trace').button("option", "label", "Trace");
+                            timerId = null;
+                            count = 0;
+                        });
                     }
                 }
-			});
-		}
-		
-		function animateCircle(line) {
-			var speed = $('#tSpeed').val();
-			if (speed == null || speed == '' || speed == 'undefined') {
-				speed = 10;
-				$('#tSpeed').val('10');
-			} else {
-				speed = parseInt(speed);
-			}
-			if (speed > 100) {
-				speed = 100;
-				$('#tSpeed').val('100');
-			}
-			if (speed < 1) {
-				speed = 1;
-				$('#tSpeed').val('1');
-			}
-			var limit = marks.length * 80;
-			var d = limit / 100;
-			var firstCall = true;
-			var f = function() {
-				if (count >= limit) {
-					var icons = line.get('icons');
-					icons[0].offset = '0%';
-					line.set('icons', icons);
-					clearInterval(timerId);
-					$('#trace').button("option", "label", "Trace");
-					timerId = null;
-					count = 0;
-					return;
-				}
-				if (firstCall) {
-					firstCall = false;
-					$('#trace').button("option", "label", "Stop");
-				}
-				count += speed / 10.0;
-				var icons = line.get('icons');
-				icons[0].offset = (count / d) + '%';
-				line.set('icons', icons);
-			};
-			timerId = setInterval(f, 50);
-		}
-	</script>
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCC4nPG5F3bF4gXe9yc4-0cOQH4oGKqWI&callback=initMap"></script>
+            });
+        }
+
+        function animateCircle(line) {
+            var speed = $('#tSpeed').val();
+            if (speed == null || speed == '' || speed == 'undefined') {
+                speed = 10;
+                $('#tSpeed').val('10');
+            } else {
+                speed = parseInt(speed);
+            }
+            if (speed > 100) {
+                speed = 100;
+                $('#tSpeed').val('100');
+            }
+            if (speed < 1) {
+                speed = 1;
+                $('#tSpeed').val('1');
+            }
+            var limit = marks.length * 80;
+            var d = limit / 100;
+            var firstCall = true;
+            var f = function() {
+                if (count >= limit) {
+                    var icons = line.get('icons');
+                    icons[0].offset = '0%';
+                    line.set('icons', icons);
+                    clearInterval(timerId);
+                    $('#trace').button("option", "label", "Trace");
+                    timerId = null;
+                    count = 0;
+                    return;
+                }
+                if (firstCall) {
+                    firstCall = false;
+                    $('#trace').button("option", "label", "Stop");
+                }
+                count += speed / 10.0;
+                var icons = line.get('icons');
+                icons[0].offset = (count / d) + '%';
+                line.set('icons', icons);
+            };
+            timerId = setInterval(f, 50);
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCC4nPG5F3bF4gXe9yc4-0cOQH4oGKqWI&callback=initMap"></script>
 </body>
 
 </html>
