@@ -548,7 +548,7 @@
             if (crun > 0) {
                 appc += 'Running: ' + crun;
             }
-            if (crun > 0) {
+            if (ctrail > 0) {
                 appc += (appc.length > 0 ? ', ' : '') + 'Trail: ' + ctrail;
             }
             if (cup > 0) {
