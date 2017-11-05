@@ -27,6 +27,11 @@ public class CalcDist {
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   };
+  
+  static final double DEFAULT_MIN_SPEED = 9;
+  static final double DEFAULT_INTERVAL = 100;
+  static final double DEFAULT_SPLIT = 1;
+  
   private static final String[] DAYS = new String[] {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
   };
@@ -55,6 +60,7 @@ public class CalcDist {
   
   private JSONArray lats = new JSONArray();
   private JSONArray lons = new JSONArray();
+  private JSONArray times = new JSONArray();
   private JSONArray markers = new JSONArray();
   
   private CalcDist(File file, double minRunningSpeed, double interval, double splitM) {
@@ -285,6 +291,7 @@ public class CalcDist {
         if (st.hasMoreTokens()) {
           cal.set(Calendar.MILLISECOND, Integer.parseInt(st.nextToken()));
         }
+        times.put(cal.getTimeInMillis());
         if (i == 0) {
           Object[] ret = new Object[1];
           data.put("date", getUserFriendlyDate(timeStart, ret));
@@ -393,6 +400,12 @@ public class CalcDist {
     }
   }
   
+  static JSONObject run(File file) throws Exception {
+  	JSONObject data = new JSONObject();
+  	run(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
+  	return data;
+  }
+  
   static void run(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
@@ -401,6 +414,7 @@ public class CalcDist {
     cd.process(data);
     data.put("lats", cd.lats);
     data.put("lons", cd.lons);
+    data.put("times", cd.times);
     data.put("markers", cd.markers);
     JSONArray arrSpeed = new JSONArray();
     for (int i = 0; i < BOUNDS.length; ++i) {

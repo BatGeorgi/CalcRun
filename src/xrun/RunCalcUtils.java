@@ -50,7 +50,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base, null).rescan();
+    new RunCalcUtils(base, null).rescan();//.sqLite.addCoordsTimes();
   }
   
   Cookie generateCookie() {
@@ -74,8 +74,7 @@ public class RunCalcUtils {
       }
       System.out.println("Process file " + targ);
       try {
-        JSONObject current = new JSONObject();
-        CalcDist.run(targ, 9, 100, 1, current); // default values
+        JSONObject current = CalcDist.run(targ);
         current.put("type", RUNNING);
         current.put("ccLink", "none");
         current.put("photosLink", "none");
@@ -95,8 +94,33 @@ public class RunCalcUtils {
     }
   }
   
-  JSONObject retrieveCoords(String activity) {
-    return sqLite.getCoordsData(activity);
+  JSONObject retrieveCoords(String activity, boolean percentage) {
+    JSONObject coords = sqLite.getCoordsData(activity);
+    if (!percentage) {
+    	return coords;
+    }
+    JSONArray lats = coords.getJSONArray("lats");
+    JSONArray lons = coords.getJSONArray("lons");
+    JSONArray perc = new JSONArray();
+    JSONObject data = sqLite.getActivity(activity);
+    double dist = 0.0;
+		if (data == null) {
+			for (int i = 1; i < lats.length(); ++i) {
+				dist += CalcDist.distance(lats.getDouble(i - 1), lats.getDouble(i),
+						lons.getDouble(i - 1), lons.getDouble(i));
+			}
+		} else {
+			dist = data.getDouble("distRaw") * 1000.0;
+		}
+		perc.put(0);
+		double cdist = 0.0;
+		for (int i = 1; i < lats.length(); ++i) {
+			cdist += CalcDist.distance(lats.getDouble(i - 1), lats.getDouble(i),
+					lons.getDouble(i - 1), lons.getDouble(i));
+			perc.put((cdist / dist) * 100.0);
+		}
+		coords.put("perc", perc);
+		return coords;
   }
   
   private File addActivity0(String name, InputStream is) throws IOException {
@@ -154,8 +178,7 @@ public class RunCalcUtils {
   	  return "DB error";
   	}
     try {
-      JSONObject current = new JSONObject();
-      CalcDist.run(file, 9, 100, 1, current); // default values
+      JSONObject current = CalcDist.run(file);
       if (activityName != null) {
         current.put("name", activityName);
       }
