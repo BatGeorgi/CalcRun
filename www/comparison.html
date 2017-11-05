@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <title>Activity details</title>
+    <title>Comparison details</title>
 
     <link rel="stylesheet" href="bootstrap.min.css">
     <script src="bootstrap.min.js"></script>
@@ -40,8 +40,7 @@
             return point;
         }
 
-        function init(item) {
-            $('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['date'] + '</strong></h1><hr>');
+        function init(item, divName) {
             distr = item['speedDist'];
             tableHtml = '<span class="highlight"><table id="distTable"><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
             $.each(distr, function(i, diap) {
@@ -63,7 +62,8 @@
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
             var isMod = item['isModified'] == 'y';
-            $('#mainstats').html('<table><tbody><tr><td>Distance</td><td>' +
+            $('#' + divName).html('<table><tbody><tr><td>Name</td><td>' + decodeURIComponent(item['name']) + '</td></tr><tr><td>Type</td><td>' + item['type'] + '</td></tr><tr><td>Date</td><td>' + item['date'] + '</td></tr>' +
+                '<tr><td>Distance</td><td>' +
                 item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
                 '</td></tr><tr><td>Elevation gain</td><td>' +
                 '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
@@ -74,7 +74,7 @@
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
                 '</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
                 '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
-            $('#splits').html('<span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
+            $('#' + divName).append('<hr><span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
             if (item['type'] != 'Running') {
                 $('#toggle').prop('checked', true).change();
             }
@@ -84,8 +84,9 @@
             $('#trace').button();
             $('#tres').button();
             $('#toggle').checkboxradio();
+            $('#heading').html('<h1><strong>Comparison data</strong></h1><hr>');
             $.ajax({
-                url: 'TBD',
+                url: 'fa/TBD1',
                 method: 'POST',
                 dataType: 'json',
                 headers: {
@@ -93,8 +94,20 @@
                 },
                 statusCode: {
                     200: function(data) {
-                        document.title = decodeURIComponent(data['name']);
-                        init(data);
+                        init(data, 'leftStats');
+                    }
+                }
+            });
+            $.ajax({
+                url: 'fa/TBD2',
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                statusCode: {
+                    200: function(data) {
+                        init(data, 'rightStats');
                     }
                 }
             });
@@ -109,7 +122,7 @@
         <div class="row-fluid">
 
             <div class="col-sm-3">
-                <div id="mainstats"></div>
+                <div id="leftStats"></div>
             </div>
 
             <div class="col-sm-6">
@@ -125,7 +138,7 @@
             </div>
 
             <div class="col-sm-3">
-                <div id="splits"></div>
+                <div id="rightStats"></div>
             </div>
 
         </div>
