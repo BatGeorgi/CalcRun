@@ -85,20 +85,46 @@ public class SQLiteManager {
     connDB2.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS " + COORDS_TABLE_NAME +
         " (id text PRIMARY KEY NOT NULL, data text NOT NULL)");
   }
+  
+  void addCoordsTimes() {
+  	try {
+  		ensureCoordsInit();
+  		File gpx = new File(dbCoords.getParent(), "gpx");
+  		String[] names = gpx.list();
+  		for (String name : names) {
+  			if (!hasActivity(name)) {
+  				continue;
+  			}
+  			File f = new File(gpx, name);
+  			if (!f.isFile()) {
+  				continue;
+  			}
+  			JSONObject data = CalcDist.run(f);
+  			System.out.println("PROCESSED " + name);
+  			addCoordsData(data.getString("genby"), data.getJSONArray("lats"), data.getJSONArray("lons"), data.getJSONArray("times"),
+  					data.getJSONArray("markers"));
+  		}
+  		close();
+  	} catch (Exception e) {
+  		e.printStackTrace();
+  	}
+  }
 	
-  private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray markers) {
+  private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray times, JSONArray markers) {
     try {
       synchronized (dbCoords) {
         ensureCoordsInit();
         JSONObject json = new JSONObject();
         json.put("lats", lats);
         json.put("lons", lons);
+        json.put("times", times);
         json.put("markers", markers);
         String str = json.toString();
         ResultSet rs = connDB2.createStatement().executeQuery("SELECT * FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
         if (!rs.next()) {
           connDB2.createStatement().executeUpdate("INSERT INTO " + COORDS_TABLE_NAME + " VALUES ('" + id + "', '" + str + "')");
         } else {
+        	System.out.println("update with data " + str);
           connDB2.createStatement().executeUpdate("UPDATE " + COORDS_TABLE_NAME + " SET data='" + str + "' WHERE id='" + id + "'");
         }
       }
@@ -239,8 +265,9 @@ public class SQLiteManager {
 	  }
 	  sb.append(')');
     executeQuery(sb.toString(), false);
-    if (entry.has("lons") && entry.has("lats") && entry.has("markers")) {
-      addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"), entry.getJSONArray("markers"));
+    if (entry.has("lons") && entry.has("lats") && entry.has("times") && entry.has("markers")) {
+      addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"), entry.getJSONArray("times"),
+      		entry.getJSONArray("markers"));
     }
 	}
 	

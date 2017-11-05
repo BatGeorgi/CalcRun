@@ -60,7 +60,8 @@ public class CalcDistServer {
     resourceHandler.setResourceBase("www");
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
-    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret, new File(resourceHandler.getBaseResource().getFile(), "activity.html"));
+    final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret, new File(resourceHandler.getBaseResource().getFile(), "activity.html"),
+    		new File(resourceHandler.getBaseResource().getFile(), "comparison.html"));
     handlers.setHandlers(new Handler[] { new MultipartConfigInjectionHandler(), resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
@@ -120,36 +121,59 @@ class CalcDistHandler extends AbstractHandler {
 
   private RunCalcUtils rcUtils;
   private File activityTemplateFile;
+  private File comparisonTemplateFile;
   private long actTempLastMod = Long.MIN_VALUE;
+  private long compTempLastMod = Long.MIN_VALUE;
   private String activityTemplate = "Not loaded :(";
+  private String comparisonTemplate = "Not loaded :(";
 
-  public CalcDistHandler(File tracksBase, File clientSecret, File activityTemplateFile) throws IOException {
+  public CalcDistHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile) throws IOException {
     rcUtils = new RunCalcUtils(tracksBase, clientSecret);
     this.activityTemplateFile = activityTemplateFile;
+    this.comparisonTemplateFile = comparisonTemplateFile;
     System.out.println("Initialize finished!");
   }
   
   private String getActivityTemplate() {
-    if (activityTemplateFile.isFile() && activityTemplateFile.lastModified() != actTempLastMod) {
+  	String result = getTemplate(activityTemplateFile, actTempLastMod);
+  	if (result == null) {
+  		result = activityTemplate;
+  	} else {
+  		actTempLastMod = activityTemplateFile.lastModified();
+  	}
+  	return result;
+  }
+  
+  private String getComparisionTemplate() {
+  	String result = getTemplate(comparisonTemplateFile, compTempLastMod);
+  	if (result == null) {
+  		result = comparisonTemplate;
+  	} else {
+  		compTempLastMod = comparisonTemplateFile.lastModified();
+  	}
+  	return result;
+  }
+  
+  private String getTemplate(File file, long lastMod) {
+  	String result = null;
+    if (file.isFile() && file.lastModified() != lastMod) {
       InputStream is = null;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       try {
-        is = new FileInputStream(activityTemplateFile);
+        is = new FileInputStream(file);
         byte[] buf = new byte[8192];
         int rd = 0;
         while ((rd = is.read(buf)) != -1) {
           baos.write(buf, 0, rd);
         }
-        activityTemplate = new String(baos.toByteArray());
-        actTempLastMod = activityTemplateFile.lastModified();
+        result = new String(baos.toByteArray());
       } catch (Exception ignore) {
         // silent catch
       } finally {
         RunCalcUtils.silentClose(is);
-      }
-      
+      } 
     }
-    return activityTemplate;
+    return result;
   }
   
   void dispose() {
@@ -554,6 +578,7 @@ class CalcDistHandler extends AbstractHandler {
   private void processGetActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
   	if (rcUtils.getActivity(target) == null && rcUtils.getActivity(target + ".gpx") == null) {
   		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  		baseRequest.setHandled(true);
   	} else {
   		response.setContentType("text/html");
   		PrintWriter pw = response.getWriter();
@@ -580,6 +605,26 @@ class CalcDistHandler extends AbstractHandler {
   	}
   }
   
+  private void processGetComparison(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+  	String name1 = baseRequest.getParameter("a1");
+  	String name2 = baseRequest.getParameter("a2");
+  	if (name1 == null || name2 == null) {
+  		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+  		baseRequest.setHandled(true);
+  	}
+  	response.setContentType("text/html");
+  	String template = getComparisionTemplate();
+  	String fixed = template.replace("TBD1", name1).replace("TBD2", name2);
+  	PrintWriter pw = response.getWriter();
+  	try {
+  		pw.println(fixed);
+  	} finally {
+  		pw.flush();
+  	}
+  	response.setStatus(HttpServletResponse.SC_OK);
+		baseRequest.setHandled(true);
+  }
+  
   private void processFetchActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
   	String name = target.substring(4);
   	JSONObject json = rcUtils.getActivity(name);
@@ -603,7 +648,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void processGetGoords(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-    JSONObject data = rcUtils.retrieveCoords(baseRequest.getHeader("activity"));
+    JSONObject data = rcUtils.retrieveCoords(baseRequest.getHeader("activity"), "true".equals(baseRequest.getHeader("perc")));
     response.setContentType("application/json");
     if (data == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -622,7 +667,11 @@ class CalcDistHandler extends AbstractHandler {
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
   	if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
-  		processGetActivity(target.substring(1), baseRequest, response);
+  		if (target.startsWith("/compare")) {
+  			processGetComparison(baseRequest, response);
+  		} else {
+  			processGetActivity(target.substring(1), baseRequest, response);
+  		}
   	}
 		if ("POST".equals(baseRequest.getMethod())) {
 			if (target.startsWith("/fa/") && target.length() > 4) {
