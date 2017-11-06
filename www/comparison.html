@@ -382,7 +382,6 @@
 							remSecondaryIts = secondaryIts;
 							secondaryTime = times2[times2.length - 1] - times2[ind2];
 							startSecTime = times2[ind2];
-							alert('not comp ' + secondaryIts);
 						}
 						if (remSecondaryIts >= 0) {
 							elapsedPerc = (secondaryIts - remSecondaryIts) / secondaryIts;
@@ -394,7 +393,6 @@
 								}
 								++ind2;
 							}
-							console.log("percs = " + percS);
 							var iconsB = lineB.get('icons');
 							iconsB[0].offset = percS + '%';
 							lineB.set('icons', iconsB);
@@ -446,7 +444,6 @@
 					}
 					++ind2;
 				}
-				console.log(ind2 + ' ' + percB + " " + times2[1000]);
 				var iconsB = lineB.get('icons');
 				iconsB[0].offset = percB + '%';
                 lineB.set('icons', iconsB);

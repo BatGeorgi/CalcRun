@@ -85,30 +85,6 @@ public class SQLiteManager {
     connDB2.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS " + COORDS_TABLE_NAME +
         " (id text PRIMARY KEY NOT NULL, data text NOT NULL)");
   }
-  
-  void addCoordsTimes() {
-  	try {
-  		ensureCoordsInit();
-  		File gpx = new File(dbCoords.getParent(), "gpx");
-  		String[] names = gpx.list();
-  		for (String name : names) {
-  			if (!hasActivity(name)) {
-  				continue;
-  			}
-  			File f = new File(gpx, name);
-  			if (!f.isFile()) {
-  				continue;
-  			}
-  			JSONObject data = CalcDist.run(f);
-  			System.out.println("PROCESSED " + name);
-  			addCoordsData(data.getString("genby"), data.getJSONArray("lats"), data.getJSONArray("lons"), data.getJSONArray("times"),
-  					data.getJSONArray("markers"));
-  		}
-  		close();
-  	} catch (Exception e) {
-  		e.printStackTrace();
-  	}
-  }
 	
   private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray times, JSONArray markers) {
     try {
