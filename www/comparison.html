@@ -160,6 +160,16 @@
 		
 		var lineA;
 		var lineB;
+
+		var totalIts = getTSec() * 20;
+        var remIts = totalIts;
+		var remTimeCompB = 0;
+		var fs = true;
+		var secondaryIts = 0;
+		var remSecondaryIts = 0;
+		var secondaryTime = 0;
+		var startSecTime = 0;
+		var alerted = false;
 		
 		function drawPath(map, data, isMain, lineColor, circleColor) {
 			pref = isMain ? 'A' : 'B';
@@ -340,8 +350,17 @@
                 }
             });
 			$('#trace').click(function() {
-				animateCircle();
+				if (timerId == null) {
+                    animateCircle();
+                } else {
+                    clearInterval(timerId);
+					timerId = null;
+					$('#trace').button("option", "label", "Trace");
+                }
 			});
+			$('#tres').click(function() {
+                resetCircle();
+            });
         }
 		
 		function getTSec() {
@@ -363,18 +382,40 @@
 			return speed;
 		}
 
+		function resetCircle() {
+			if (timerId != null) {
+				clearInterval(timerId);
+			}
+			icons = lineA.get('icons');
+            icons[0].offset = '0%';
+            lineA.set('icons', icons);
+			icons = lineB.get('icons');
+            icons[0].offset = '0%';
+            lineB.set('icons', icons);
+            $('#trace').button("option", "label", "Trace");
+            timerId = null;
+            
+			itr1 = 0;
+			ind1 = 0;
+			ind2 = 0;
+			totalIts = getTSec() * 20;
+			remIts = totalIts;
+			remTimeCompB = 0;
+			fs = true;
+			secondaryIts = 0;
+			remSecondaryIts = 0;
+			secondaryTime = 0;
+			startSecTime = 0;
+			alerted = false;
+		}
+
         function animateCircle() {
-			var totalIts = getTSec() * 20;
-            var remIts = totalIts;
-			var totalTime = times1[times1.length - 1];
-			var remTimeCompB = 0;
-			var fs = true;
-			var secondaryIts = 0;
-			var remSecondaryIts = 0;
-			var secondaryTime = 0;
-			var startSecTime = 0;
-			var alerted = false;
+			var firstCall = true;
             var f = function() {
+				if (firstCall) {
+                	firstCall = false;
+               		$('#trace').button("option", "label", "Stop");
+            	}
                 if (remIts == 0) {
 					if (ind2 < perc2.length) {
 						if (fs) {
@@ -400,17 +441,19 @@
 							lineB.set('icons', iconsB);
 							--remSecondaryIts;
 						}
+					} else {
+						resetCircle();
 					}
-                    return;
+					return;
                 }
 				elapsedPerc = (totalIts - remIts) / totalIts;
 				--remIts;
 				percA = 100;
                 while (itr1 < times1.length) {
-					timePerc = times1[itr1] / totalTime;
+					timePerc = times1[itr1] / times1[times1.length - 1];
 					if (timePerc >= elapsedPerc) {
 						tprev = (itr1 > 0 ? times1[itr1 - 1] : 0);
-						timePercPrev = tprev / totalTime;
+						timePercPrev = tprev / times1[times1.length - 1];
 						diff = timePerc - timePercPrev;
 						coef = (diff > 0 ? (elapsedPerc - timePercPrev) / diff : 0);
 						percPrev = (itr1 > 0 ? perc1[itr1 - 1] : 0);
