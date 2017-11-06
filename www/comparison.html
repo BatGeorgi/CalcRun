@@ -169,7 +169,8 @@
 		var remSecondaryIts = 0;
 		var secondaryTime = 0;
 		var startSecTime = 0;
-		var alerted = false;
+
+		var isActive = false;
 		
 		function drawPath(map, data, isMain, lineColor, circleColor) {
 			pref = isMain ? 'A' : 'B';
@@ -351,6 +352,11 @@
             });
 			$('#trace').click(function() {
 				if (timerId == null) {
+					if (!isActive) {
+						totalIts = getTSec() * 20;
+						remIts = totalIts;
+					}
+					isActive = true;
                     animateCircle();
                 } else {
                     clearInterval(timerId);
@@ -383,6 +389,7 @@
 		}
 
 		function resetCircle() {
+			isActive = false;
 			if (timerId != null) {
 				clearInterval(timerId);
 			}
@@ -406,7 +413,6 @@
 			remSecondaryIts = 0;
 			secondaryTime = 0;
 			startSecTime = 0;
-			alerted = false;
 		}
 
         function animateCircle() {
@@ -418,9 +424,9 @@
             	}
                 if (remIts == 0) {
 					if (ind2 < perc2.length) {
+						console.log(ind2 + ' ' + perc2.length);
 						if (fs) {
 							fs = false;
-							alert('Runner A wins');
 							secondaryIts = ((times2[times2.length - 1] - times2[ind2]) / times2[ind2]) * totalIts;
 							remSecondaryIts = secondaryIts;
 							secondaryTime = times2[times2.length - 1] - times2[ind2];
@@ -428,18 +434,25 @@
 						}
 						if (remSecondaryIts >= 0) {
 							elapsedPerc = (secondaryIts - remSecondaryIts) / secondaryIts;
+							inc = false;
 							while (ind2 < perc2.length) {
 								cPerc = (times2[ind2] - startSecTime) / secondaryTime;
 								if (cPerc >= elapsedPerc) {
+									if (!inc) {
+										++ind2;
+									}
 									percS = perc2[ind2];
 									break;
 								}
+								inc = false;
 								++ind2;
 							}
 							var iconsB = lineB.get('icons');
 							iconsB[0].offset = percS + '%';
 							lineB.set('icons', iconsB);
 							--remSecondaryIts;
+						} else {
+							resetCircle();
 						}
 					} else {
 						resetCircle();
@@ -488,10 +501,6 @@
 						break;
 					}
 					++ind2;
-				}
-				if (!alerted && ind2 == perc2.length) {
-					alerted = true;
-					alert('Runner B wins');
 				}
 				var iconsB = lineB.get('icons');
 				iconsB[0].offset = percB + '%';
