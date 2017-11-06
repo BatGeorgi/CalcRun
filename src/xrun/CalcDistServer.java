@@ -135,7 +135,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private String getActivityTemplate() {
-  	String result = getTemplate(activityTemplateFile, actTempLastMod);
+  	String result = getTemplate(activityTemplateFile, actTempLastMod, "Not loaded :(".equals(activityTemplate));
   	if (result == null) {
   		result = activityTemplate;
   	} else {
@@ -145,7 +145,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private String getComparisionTemplate() {
-  	String result = getTemplate(comparisonTemplateFile, compTempLastMod);
+  	String result = getTemplate(comparisonTemplateFile, compTempLastMod, "Not loaded :(".equals(comparisonTemplate));
   	if (result == null) {
   		result = comparisonTemplate;
   	} else {
@@ -154,9 +154,9 @@ class CalcDistHandler extends AbstractHandler {
   	return result;
   }
   
-  private String getTemplate(File file, long lastMod) {
+  private String getTemplate(File file, long lastMod, boolean isRequired) {
   	String result = null;
-    //if (file.isFile() && file.lastModified() != lastMod) {
+    if (isRequired || (file.isFile() && file.lastModified() != lastMod)) {
       InputStream is = null;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       try {
@@ -172,7 +172,7 @@ class CalcDistHandler extends AbstractHandler {
       } finally {
         RunCalcUtils.silentClose(is);
       } 
-    //}
+    }
     return result;
   }
   
