@@ -146,9 +146,153 @@
     <div style="display: none" id="collect"></div>
 
     <script>
-        var marks = [];
+        var marks1 = [];
+		var marks2 = [];
+		var perc1 = [];
+		var times1 = [];
+		var perc2 = [];
+		var times2 = [];
         timerId = null;
         count = 0;
+		
+		var ind1 = 0;
+		var ind2 = 0;
+		
+		var lineA;
+		var lineB;
+		
+		function drawPath(map, data, isMain, lineColor, circleColor) {
+			pref = isMain ? 'A' : 'B';
+			coords = [];
+			lats = data['lats'];
+			lons = data['lons'];
+			markers = data['markers'];
+			var west = 200;
+			var east = -200;
+			var south = 90;
+			var north = -90;
+			$.each(lats, function(i, item) {
+				coords.push({
+					lat: item,
+					lng: lons[i]
+				});
+				north = Math.max(north, lats[i]);
+				south = Math.min(south, lats[i]);
+				east = Math.max(east, lons[i]);
+				west = Math.min(west, lons[i]);
+			});
+			var lineSymbol = {
+				path: google.maps.SymbolPath.CIRCLE,
+				scale: 6,
+				strokeColor: circleColor
+			};
+			var runPath = new google.maps.Polyline({
+				path: coords,
+				geodesic: true,
+				strokeColor: lineColor,
+				strokeOpacity: 1.0,
+				strokeWeight: 2,
+				icons: [{
+					icon: lineSymbol,
+					offset: '0%'
+				}]
+			});
+			if (isMain) {
+				var md = Math.max(north - south, east - west);
+				if (md < 0.006) {
+					map.setZoom(17);
+				} else if (md < 0.012) {
+					map.setZoom(16);
+				} else if (md < 0.03) {
+					map.setZoom(15);
+				} else if (md < 0.06) {
+					map.setZoom(14);
+				} else if (md < 0.11) {
+					map.setZoom(13);
+				} else if (md < 0.2) {
+					map.setZoom(12);
+				} else if (md < 0.4) {
+					map.setZoom(11);
+				}
+				map.setCenter({
+					lat: (south + north) / 2.0,
+					lng: (east + west) / 2.0
+				});
+			}
+			var mStart = new google.maps.Marker({
+				position: {
+					lat: lats[0],
+					lng: lons[0]
+				},
+				map: map,
+				label: {
+					text: pref + ' Start',
+					fontSize: "18px",
+					fontWeight: 'bold'
+				},
+				icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
+			});
+			var mEnd = new google.maps.Marker({
+				position: {
+					lat: lats[lats.length - 1],
+					lng: lons[lons.length - 1]
+				},
+				map: map,
+				label: {
+					text: pref + ' End',
+					fontSize: "18px",
+					fontWeight: 'bold'
+				},
+				icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
+			});
+			mStart.setMap(map);
+			mEnd.setMap(map);
+			for (i = 0; i < markers.length; ++i) {
+				var mark = new google.maps.Marker({
+					position: {
+						lat: lats[markers[i]],
+						lng: lons[markers[i]]
+					},
+					label: {
+						text: pref + (i + 1) + '',
+						fontSize: "18px",
+						fontWeight: 'bold',
+						color: 'red'
+					},
+					icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
+				});
+				if (isMain) {
+					marks1.push(mark);
+				} else {
+					marks2.push(mark);
+				}
+				if ($('#toggle').prop('checked')) {
+					mark.setMap(map);
+				}
+			}
+			$('#toggle').change(function() {
+				arr = (isMain ? marks1 : marks2);
+				if ($('#toggle').prop('checked')) {
+					for (i = 0; i < arr.length; ++i) {
+						arr[i].setMap(map);
+					}
+				} else {
+					for (i = 0; i < arr.length; ++i) {
+						arr[i].setMap(null);
+					}
+				}
+			});
+			runPath.setMap(map);
+			if (isMain) {
+				lineA = runPath;
+				perc1 = data['perc'];
+				times1 = data['times'];
+			} else {
+				lineB = runPath;
+				perc2 = data['perc'];
+				times2 = data['times'];
+			}
+		}
 
         function initMap() {
             var mapOptions = {
@@ -171,190 +315,36 @@
                 dataType: 'json',
                 headers: {
                     'Content-Type': 'application/json',
-                    'activity': 'TBD'
+                    'activity': 'TBD1',
+					'perc': 'true'
                 },
                 statusCode: {
                     200: function(data) {
-                        coords = [];
-                        lats = data['lats'];
-                        lons = data['lons'];
-                        markers = data['markers'];
-                        var west = 200;
-                        var east = -200;
-                        var south = 90;
-                        var north = -90;
-                        $.each(lats, function(i, item) {
-                            coords.push({
-                                lat: item,
-                                lng: lons[i]
-                            });
-                            north = Math.max(north, lats[i]);
-                            south = Math.min(south, lats[i]);
-                            east = Math.max(east, lons[i]);
-                            west = Math.min(west, lons[i]);
-                        });
-                        var lineSymbol = {
-                            path: google.maps.SymbolPath.CIRCLE,
-                            scale: 6,
-                            strokeColor: '#393'
-                        };
-                        var runPath = new google.maps.Polyline({
-                            path: coords,
-                            geodesic: true,
-                            strokeColor: '#FF0000',
-                            strokeOpacity: 1.0,
-                            strokeWeight: 2,
-                            icons: [{
-                                icon: lineSymbol,
-                                offset: '0%'
-                            }]
-                        });
-                        var md = Math.max(north - south, east - west);
-                        if (md < 0.006) {
-                            map.setZoom(17);
-                        } else if (md < 0.012) {
-                            map.setZoom(16);
-                        } else if (md < 0.03) {
-                            map.setZoom(15);
-                        } else if (md < 0.06) {
-                            map.setZoom(14);
-                        } else if (md < 0.11) {
-                            map.setZoom(13);
-                        } else if (md < 0.2) {
-                            map.setZoom(12);
-                        } else if (md < 0.4) {
-                            map.setZoom(11);
-                        }
-                        map.setCenter({
-                            lat: (south + north) / 2.0,
-                            lng: (east + west) / 2.0
-                        });
-                        var mStart = new google.maps.Marker({
-                            position: {
-                                lat: lats[0],
-                                lng: lons[0]
-                            },
-                            map: map,
-                            label: {
-                                text: 'Start',
-                                fontSize: "18px",
-                                fontWeight: 'bold'
-                            },
-                            icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
-                        });
-                        var mEnd = new google.maps.Marker({
-                            position: {
-                                lat: lats[lats.length - 1],
-                                lng: lons[lons.length - 1]
-                            },
-                            map: map,
-                            label: {
-                                text: 'End',
-                                fontSize: "18px",
-                                fontWeight: 'bold'
-                            },
-                            icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
-                        });
-                        mStart.setMap(map);
-                        mEnd.setMap(map);
-                        var infowindow = new google.maps.InfoWindow({
-                            content: ''
-                        });
-                        for (i = 0; i < markers.length; ++i) {
-                            var mark = new google.maps.Marker({
-                                position: {
-                                    lat: lats[markers[i]],
-                                    lng: lons[markers[i]]
-                                },
-                                label: {
-                                    text: (i + 1) + ' km',
-                                    fontSize: "18px",
-                                    fontWeight: 'bold',
-                                    color: 'red'
-                                },
-                                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
-                            });
-                            marks.push(mark);
-                            if ($('#toggle').prop('checked')) {
-                                mark.setMap(map);
-                            }
-                            google.maps.event.addListener(mark, 'click', (function(mark, content, infowindow) {
-                                return function() {
-                                    var diffPos = 0;
-                                    var diffNeg = 0;
-                                    var diffS = '';
-                                    if (content > 0) {
-                                        var prev = content - 1;
-                                        diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
-                                        diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
-                                        diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
-                                    }
-                                    infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + content).text() + "<p>Average speed " + $('#spAS' + content).text() +
-                                        "<p>Split elevation diff  " + $('#spDiff' + content).html() +
-                                        "<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $('#extsp' + content).html());
-                                    infowindow.open(map, mark);
-                                };
-                            })(mark, i, infowindow));
-                        }
-                        google.maps.event.addListener(mEnd, 'click', (function(mark, content, infowindow) {
-                            return function() {
-                                var v = marks.length;
-                                if (content == marks.length) {
-                                    content = parseInt($('#countSP').text()) - 1;
-                                }
-                                var diffPos = 0;
-                                var diffNeg = 0;
-                                var diffS = '';
-                                if (marks.length > 0) {
-                                    var prev = marks.length - 1;
-                                    diffPos = parseInt($('#spElePos' + content).text()) - parseInt($('#spElePos' + prev).text());
-                                    diffNeg = parseInt($('#spEleNeg' + content).text()) - parseInt($('#spEleNeg' + prev).text());
-                                    diffS = '<p>Split elev ' + formatEleDiff(diffPos) + '/' + formatEleDiff(-diffNeg);
-                                }
-                                infowindow.setContent('Total time ' + $('#spTotal' + content).text() + "<p>Split pace " + $('#spPace' + v).text() + "<p>Average speed " + $('#spAS' + content).text() +
-                                    "<p>Split elevation diff " + $('#spDiff' + v).html() +
-                                    "<p>Rel elevation diff " + $('#spAcc' + content).html() + diffS + "<p>Total elevation " + $('#extsp' + content).html());
-                                infowindow.open(map, mark);
-                            };
-                        })(mEnd, marks.length, infowindow));
-                        $('#toggle').change(function() {
-                            if ($('#toggle').prop('checked')) {
-                                for (i = 0; i < marks.length; ++i) {
-                                    marks[i].setMap(map);
-                                }
-                            } else {
-                                for (i = 0; i < marks.length; ++i) {
-                                    marks[i].setMap(null);
-                                }
-                            }
-                        });
-                        runPath.setMap(map);
-                        $('#trace').click(function() {
-                            if (timerId == null) {
-                                animateCircle(runPath);
-                            } else {
-                                clearInterval(timerId);
-                                timerId = null;
-                                $('#trace').button("option", "label", "Trace");
-                            }
-                        });
-                        $('#tres').click(function() {
-                            if (timerId != null) {
-                                clearInterval(timerId);
-                            }
-                            var icons = runPath.get('icons');
-                            icons[0].offset = '0%';
-                            runPath.set('icons', icons);
-                            $('#trace').button("option", "label", "Trace");
-                            timerId = null;
-                            count = 0;
-                        });
+                        drawPath(map, data, true, '#cc3d20', '#5bba25');
                     }
                 }
             });
+			$.ajax({
+                url: 'coords',
+                method: 'POST',
+                dataType: 'json',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'activity': 'TBD2',
+					'perc': 'true'
+                },
+                statusCode: {
+                    200: function(data) {
+                        drawPath(map, data, false, '#2261b5', '#b7b521');
+                    }
+                }
+            });
+			$('#trace').click(function() {
+				animateCircle();
+			});
         }
 
-        function animateCircle(line) {
+        function animateCircle() {
             var speed = $('#tSpeed').val();
             if (speed == null || speed == '' || speed == 'undefined') {
                 speed = 10;
@@ -370,14 +360,14 @@
                 speed = 1;
                 $('#tSpeed').val('1');
             }
-            var limit = marks.length * 80;
+            var limit = marks1.length * 80;
             var d = limit / 100;
             var firstCall = true;
             var f = function() {
                 if (count >= limit) {
-                    var icons = line.get('icons');
+                    var icons = lineA.get('icons');
                     icons[0].offset = '0%';
-                    line.set('icons', icons);
+                    lineA.set('icons', icons);
                     clearInterval(timerId);
                     $('#trace').button("option", "label", "Trace");
                     timerId = null;
@@ -389,9 +379,35 @@
                     $('#trace').button("option", "label", "Stop");
                 }
                 count += speed / 10.0;
-                var icons = line.get('icons');
+                var icons = lineA.get('icons');
                 icons[0].offset = (count / d) + '%';
-                line.set('icons', icons);
+                lineA.set('icons', icons);
+				var tt = 0;
+				var percA = count/d;
+				while (ind1 < perc1.length) {
+					if (perc1[ind1] >= percA) {
+						coef = (percA - perc1[ind1 - 1]) / (perc1[ind1] - perc1[ind1 - 1]);
+						tt = times1[ind1 - 1] + coef * (times1[ind1] - times1[ind1 - 1]);
+						break;
+					}
+					++ind1;
+				}
+				console.log('ind1 = ' + ind1);
+				console.log('tt = ' + tt);
+				var percB = 0;
+				while (ind2 < perc2.length) {
+					if (times2[ind2] >= tt) {
+						coef = (tt - times2[ind2 - 1]) / (times2[ind2] - times2[ind2 - 1]);
+						percB = perc2[ind2 - 1] + coef * (perc2[ind2] - perc2[ind2 - 1]);
+						break;
+					}
+					++ind2;
+				}
+				console.log('ind2 = ' + ind2);
+				console.log('percB = ' + percB);
+				var iconsB = lineB.get('icons');
+				iconsB[0].offset = percB + '%';
+                lineB.set('icons', iconsB);
             };
             timerId = setInterval(f, 50);
         }
