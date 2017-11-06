@@ -50,7 +50,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base, null).rescan();//.sqLite.addCoordsTimes();
+    new RunCalcUtils(base, null).rescan(); //sqLite.addCoordsTimes();
   }
   
   Cookie generateCookie() {
@@ -102,16 +102,11 @@ public class RunCalcUtils {
     JSONArray lats = coords.getJSONArray("lats");
     JSONArray lons = coords.getJSONArray("lons");
     JSONArray perc = new JSONArray();
-    JSONObject data = sqLite.getActivity(activity);
     double dist = 0.0;
-		if (data == null) {
-			for (int i = 1; i < lats.length(); ++i) {
-				dist += CalcDist.distance(lats.getDouble(i - 1), lats.getDouble(i),
-						lons.getDouble(i - 1), lons.getDouble(i));
-			}
-		} else {
-			dist = data.getDouble("distRaw") * 1000.0;
-		}
+    for (int i = 1; i < lats.length(); ++i) {
+      dist += CalcDist.distance(lats.getDouble(i - 1), lats.getDouble(i),
+          lons.getDouble(i - 1), lons.getDouble(i));
+    }
 		perc.put(0);
 		double cdist = 0.0;
 		for (int i = 1; i < lats.length(); ++i) {
@@ -120,6 +115,7 @@ public class RunCalcUtils {
 			perc.put((cdist / dist) * 100.0);
 		}
 		coords.put("perc", perc);
+		System.out.println(perc.length() + " " + coords.getJSONArray("times").length());
 		return coords;
   }
   

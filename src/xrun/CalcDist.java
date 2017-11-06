@@ -266,6 +266,7 @@ public class CalcDist {
       double eleTotalPos = 0.0;
       double eleTotalNeg = 0.0;
       
+      long stt = 0;
       for (int i = 0; i < list.getLength(); ++i) {
         Node node = list.item(i);
         String latS = node.getAttributes().getNamedItem("lat").getNodeValue();
@@ -291,7 +292,10 @@ public class CalcDist {
         if (st.hasMoreTokens()) {
           cal.set(Calendar.MILLISECOND, Integer.parseInt(st.nextToken()));
         }
-        times.put(cal.getTimeInMillis());
+        if (i == 0) {
+          stt = cal.getTimeInMillis();
+        }
+        times.put(cal.getTimeInMillis() - stt);
         if (i == 0) {
           Object[] ret = new Object[1];
           data.put("date", getUserFriendlyDate(timeStart, ret));

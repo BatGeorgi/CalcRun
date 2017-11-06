@@ -156,7 +156,7 @@ class CalcDistHandler extends AbstractHandler {
   
   private String getTemplate(File file, long lastMod) {
   	String result = null;
-    if (file.isFile() && file.lastModified() != lastMod) {
+    //if (file.isFile() && file.lastModified() != lastMod) {
       InputStream is = null;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       try {
@@ -172,7 +172,7 @@ class CalcDistHandler extends AbstractHandler {
       } finally {
         RunCalcUtils.silentClose(is);
       } 
-    }
+    //}
     return result;
   }
   

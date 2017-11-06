@@ -130,8 +130,8 @@
                     <div id="map"></div>
                     <button id="trace">Trace</button>
                     <button id="tres">Reset</button>
-                    <label for="tSpeed">Speed</label>
-                    <input id="tSpeed" type="number" min="1" max="100" step="1" value="10"></input>
+                    <label for="tSec">Simulation time(lower is faster)</label>
+                    <input id="tSec" type="number" min="10" max="240" step="1" value="45"></input>
                     <label for="toggle">Toggle km markers</label>
                     <input type="checkbox" id="toggle" />
                 </div>
@@ -153,8 +153,8 @@
 		var perc2 = [];
 		var times2 = [];
         timerId = null;
-        count = 0;
 		
+		var itr1 = 0;
 		var ind1 = 0;
 		var ind2 = 0;
 		
@@ -343,68 +343,110 @@
 				animateCircle();
 			});
         }
-
-        function animateCircle() {
-            var speed = $('#tSpeed').val();
+		
+		function getTSec() {
+			var speed = $('#tSec').val();
             if (speed == null || speed == '' || speed == 'undefined') {
-                speed = 10;
-                $('#tSpeed').val('10');
+                speed = 45;
+                $('#tSec').val('45');
             } else {
                 speed = parseInt(speed);
             }
-            if (speed > 100) {
-                speed = 100;
-                $('#tSpeed').val('100');
+            if (speed > 240) {
+                speed = 240;
+                $('#tSec').val('240');
             }
-            if (speed < 1) {
-                speed = 1;
-                $('#tSpeed').val('1');
+            if (speed < 10) {
+                speed = 10;
+                $('#tSec').val('10');
             }
-            var limit = marks1.length * 80;
-            var d = limit / 100;
-            var firstCall = true;
+			return speed;
+		}
+
+        function animateCircle() {
+			var totalIts = getTSec() * 20;
+            var remIts = totalIts;
+			var totalTime = times1[times1.length - 1];
+			var remTimeCompB = 0;
+			var fs = true;
+			var secondaryIts = 0;
+			var remSecondaryIts = 0;
+			var secondaryTime = 0;
+			var startSecTime = 0;
             var f = function() {
-                if (count >= limit) {
-                    var icons = lineA.get('icons');
-                    icons[0].offset = '0%';
-                    lineA.set('icons', icons);
-                    clearInterval(timerId);
-                    $('#trace').button("option", "label", "Trace");
-                    timerId = null;
-                    count = 0;
+                if (remIts == 0) {
+					if (ind2 < perc2.length) {
+						if (fs) {
+							fs = false;
+							secondaryIts = ((times2[times2.length - 1] - times2[ind2]) / times2[ind2]) * totalIts;
+							remSecondaryIts = secondaryIts;
+							secondaryTime = times2[times2.length - 1] - times2[ind2];
+							startSecTime = times2[ind2];
+							alert('not comp ' + secondaryIts);
+						}
+						if (remSecondaryIts >= 0) {
+							elapsedPerc = (secondaryIts - remSecondaryIts) / secondaryIts;
+							while (ind2 < perc2.length) {
+								cPerc = (times2[ind2] - startSecTime) / secondaryTime;
+								if (cPerc >= elapsedPerc) {
+									percS = perc2[ind2];
+									break;
+								}
+								++ind2;
+							}
+							console.log("percs = " + percS);
+							var iconsB = lineB.get('icons');
+							iconsB[0].offset = percS + '%';
+							lineB.set('icons', iconsB);
+							--remSecondaryIts;
+						}
+					}
                     return;
                 }
-                if (firstCall) {
-                    firstCall = false;
-                    $('#trace').button("option", "label", "Stop");
-                }
-                count += speed / 10.0;
+				elapsedPerc = (totalIts - remIts) / totalIts;
+				--remIts;
+				percA = 100;
+                while (itr1 < times1.length) {
+					timePerc = times1[itr1] / totalTime;
+					if (timePerc >= elapsedPerc) {
+						tprev = (itr1 > 0 ? times1[itr1 - 1] : 0);
+						timePercPrev = tprev / totalTime;
+						diff = timePerc - timePercPrev;
+						coef = (diff > 0 ? (elapsedPerc - timePercPrev) / diff : 0);
+						percPrev = (itr1 > 0 ? perc1[itr1 - 1] : 0);
+						percA = percPrev + coef * (perc1[itr1] - percPrev);
+						break;
+					}
+					++itr1;
+				}
                 var icons = lineA.get('icons');
-                icons[0].offset = (count / d) + '%';
+                icons[0].offset = percA + '%';
                 lineA.set('icons', icons);
-				var tt = 0;
-				var percA = count/d;
+				var tt = times1[times1.length - 1];
 				while (ind1 < perc1.length) {
 					if (perc1[ind1] >= percA) {
-						coef = (percA - perc1[ind1 - 1]) / (perc1[ind1] - perc1[ind1 - 1]);
-						tt = times1[ind1 - 1] + coef * (times1[ind1] - times1[ind1 - 1]);
+						percPrev = (ind1 > 0 ? perc1[ind1 - 1] : 0);
+						diff = (perc1[ind1] - percPrev);
+						coef = (diff > 0 ? (percA - percPrev) / diff : 0);
+						timePrev = (ind1 > 0 ? times1[ind1 - 1] : 0);
+						tt = timePrev + coef * (times1[ind1] - timePrev);
 						break;
 					}
 					++ind1;
 				}
-				console.log('ind1 = ' + ind1);
-				console.log('tt = ' + tt);
-				var percB = 0;
+				var percB = 100;
 				while (ind2 < perc2.length) {
 					if (times2[ind2] >= tt) {
-						coef = (tt - times2[ind2 - 1]) / (times2[ind2] - times2[ind2 - 1]);
-						percB = perc2[ind2 - 1] + coef * (perc2[ind2] - perc2[ind2 - 1]);
+						timePrev = (ind2 > 0 ? times2[ind2 - 1] : 0);
+						diff = times2[ind2] - timePrev;
+						coef = diff > 0 ? (tt - timePrev) / diff : 0;
+						percPrev = (ind2 > 0 ? perc2[ind2 - 1] : 0)
+						percB = percPrev + coef * (perc2[ind2] - percPrev);
 						break;
 					}
 					++ind2;
 				}
-				console.log('ind2 = ' + ind2);
-				console.log('percB = ' + percB);
+				console.log(ind2 + ' ' + percB + " " + times2[1000]);
 				var iconsB = lineB.get('icons');
 				iconsB[0].offset = percB + '%';
                 lineB.set('icons', iconsB);
