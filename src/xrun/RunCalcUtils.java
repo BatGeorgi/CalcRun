@@ -50,7 +50,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base, null).rescan(); //sqLite.addCoordsTimes();
+    new RunCalcUtils(base, null).rescan();
   }
   
   Cookie generateCookie() {
@@ -115,7 +115,6 @@ public class RunCalcUtils {
 			perc.put((cdist / dist) * 100.0);
 		}
 		coords.put("perc", perc);
-		System.out.println(perc.length() + " " + coords.getJSONArray("times").length());
 		return coords;
   }
   
