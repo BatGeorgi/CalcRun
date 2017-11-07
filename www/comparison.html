@@ -143,11 +143,13 @@
 						<input id="tSec" type="number" min="10" max="240" step="1" value="200"></input>
 						</span>
 					<hr>
-					<div id="meas">
-						<div id="dist1">Distance A: 0</div>
-						<div id="dist2">Distance B: 0</div>
-						<div id="ctime">Total Time: 00:00:00</div>
-					</div>
+						<table id="meas">
+							<tbody>
+								<tr><td><span class="fdist1">Distance A</span></td><td><div class="fdist1" id="dist1">0</div></td></tr>
+								<tr><td><span class="fdist2">Distance B</span></td><td><div class="fdist2" id="dist2">0</div></td></tr>
+								<tr><td><span class="ftime">Time</span></td><td><div class="ftime" id="ctime">00:00:00</div></td></tr>
+							</tbody>
+						</table>
                 </div>
             </div>
 
@@ -206,9 +208,9 @@
 				west = Math.min(west, lons[i]);
 			});
 			if (isMain) {
-				$('#dist1').css('color', circleColor);
+				$('.fdist1').css('color', circleColor);
 			} else {
-				$('#dist2').css('color', circleColor);
+				$('.fdist2').css('color', circleColor);
 			}
 			var lineSymbol = {
 				path: google.maps.SymbolPath.CIRCLE,
@@ -385,9 +387,9 @@
             $('#trace').button("option", "label", "Trace");
 			$('#tSec').prop('disabled', false);
             timerId = null;
-			$('#dist1').text('Distance A: 0');
-			$('#dist2').text('Distance B: 0');
-			$('#ctime').text('Total Time: 00:00:00');
+			$('#dist1').text('0');
+			$('#dist2').text('0');
+			$('#ctime').text('00:00:00');
             
 			itr1 = 0;
 			ind1 = 0;
@@ -450,12 +452,12 @@
 								++ind2;
 							}
 							if (ind2 < times2.length) {
-								$('#ctime').text('Total Time: ' + formatTime(times2[ind2]));
+								$('#ctime').text(formatTime(times2[ind2]));
 							}
 							var iconsB = lineB.get('icons');
 							iconsB[0].offset = percS + '%';
 							lineB.set('icons', iconsB);
-							$('#dist2').text('Distance B: ' + ((percS / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
+							$('#dist2').text(((percS / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
 							--remSecondaryIts;
 						} else {
 							resetCircle();
@@ -485,7 +487,7 @@
                 icons[0].offset = percA + '%';
                 lineA.set('icons', icons);
 				console.log($('#totDist1').val());
-				$('#dist1').text('Distance A: ' + ((percA / 100.0) * parseFloat($('#totDist1').val())).toFixed(3));
+				$('#dist1').text(((percA / 100.0) * parseFloat($('#totDist1').val())).toFixed(3));
 				var tt = times1[times1.length - 1];
 				while (ind1 < perc1.length) {
 					if (perc1[ind1] >= percA) {
@@ -498,7 +500,7 @@
 					}
 					++ind1;
 				}
-				$('#ctime').text('Total Time: ' + formatTime(tt));
+				$('#ctime').text(formatTime(tt));
 				var percB = 100;
 				while (ind2 < perc2.length) {
 					if (times2[ind2] >= tt) {
@@ -514,7 +516,7 @@
 				var iconsB = lineB.get('icons');
 				iconsB[0].offset = percB + '%';
                 lineB.set('icons', iconsB);
-				$('#dist2').text('Distance B: ' + ((percB / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
+				$('#dist2').text(((percB / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
             };
             timerId = setInterval(f, 50);
         }
