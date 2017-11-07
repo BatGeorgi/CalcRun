@@ -3,12 +3,12 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <title>Comparison details</title>
+    <title>Comparison data</title>
 
     <link rel="stylesheet" href="bootstrap.min.css">
     <script src="bootstrap.min.js"></script>
 
-    <link href="styleActivity.css" type="text/css" rel="stylesheet" />
+    <link href="styleComp.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
@@ -62,7 +62,19 @@
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
             var isMod = item['isModified'] == 'y';
-            $('#' + divName).html('<table><tbody><tr><td>Name</td><td>' + decodeURIComponent(item['name']) + '</td></tr><tr><td>Type</td><td>' + item['type'] + '</td></tr><tr><td>Date</td><td>' + item['date'] + '</td></tr>' +
+			runT = '';
+			if (divName == 'leftStats') {
+				$('#totDist1').val(isMod ? origData['dist'] : item['dist']);
+				runT = 'Run A';
+			} else {
+				$('#totDist2').val(isMod ? origData['dist'] : item['dist']);
+				runT = 'Run B';
+			}
+			var gb = item['genby'];
+			if (gb.endsWith('.gpx')) {
+				gb = gb.substring(0, gb.length - 4);
+			}
+            $('#' + divName).html('<h2><div class="ahead"><a href="' + gb + '" target="_blank">' + runT + '</a><div></h2><table><tbody><tr><td>Name</td><td>' + decodeURIComponent(item['name']) + '</td></tr><tr><td>Type</td><td>' + item['type'] + '</td></tr><tr><td>Date</td><td>' + item['date'] + '</td></tr>' +
                 '<tr><td>Distance</td><td>' +
                 item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
                 '</td></tr><tr><td>Elevation gain</td><td>' +
@@ -75,15 +87,11 @@
                 '</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
                 '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
             $('#' + divName).append('<hr><span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
-            if (item['type'] != 'Running') {
-                $('#toggle').prop('checked', true).change();
-            }
         }
 
         $(document).ready(function() {
             $('#trace').button();
             $('#tres').button();
-            $('#toggle').checkboxradio();
             $('#heading').html('<h1><strong>Comparison data</strong></h1><hr>');
             $.ajax({
                 url: 'fa/TBD1',
@@ -128,12 +136,18 @@
             <div class="col-sm-6">
                 <div id="mapHolder">
                     <div id="map"></div>
-                    <button id="trace">Trace</button>
-                    <button id="tres">Reset</button>
-                    <label for="tSec">Simulation time(lower is faster)</label>
-                    <input id="tSec" type="number" min="10" max="240" step="1" value="45"></input>
-                    <label for="toggle">Toggle km markers</label>
-                    <input type="checkbox" id="toggle" />
+					<span>
+						<button id="trace">Trace</button>
+						<button id="tres">Reset</button>
+						<label for="tSec">Simulation speed<label>
+						<input id="tSec" type="number" min="10" max="240" step="1" value="200"></input>
+						</span>
+					<hr>
+					<div id="meas">
+						<div id="dist1">Distance A: 0</div>
+						<div id="dist2">Distance B: 0</div>
+						<div id="ctime">Total Time: 00:00:00</div>
+					</div>
                 </div>
             </div>
 
@@ -144,10 +158,10 @@
         </div>
     </div>
     <div style="display: none" id="collect"></div>
+	<div id="totDist1" style="display: none"></div>
+	<div id="totDist2" style="display: none"></div>
 
     <script>
-        var marks1 = [];
-		var marks2 = [];
 		var perc1 = [];
 		var times1 = [];
 		var perc2 = [];
@@ -177,7 +191,6 @@
 			coords = [];
 			lats = data['lats'];
 			lons = data['lons'];
-			markers = data['markers'];
 			var west = 200;
 			var east = -200;
 			var south = 90;
@@ -192,6 +205,11 @@
 				east = Math.max(east, lons[i]);
 				west = Math.min(west, lons[i]);
 			});
+			if (isMain) {
+				$('#dist1').css('color', circleColor);
+			} else {
+				$('#dist2').css('color', circleColor);
+			}
 			var lineSymbol = {
 				path: google.maps.SymbolPath.CIRCLE,
 				scale: 6,
@@ -241,7 +259,7 @@
 					fontSize: "18px",
 					fontWeight: 'bold'
 				},
-				icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|59f442'
+				icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + circleColor.substring(1, circleColor.length)
 			});
 			var mEnd = new google.maps.Marker({
 				position: {
@@ -254,45 +272,10 @@
 					fontSize: "18px",
 					fontWeight: 'bold'
 				},
-				icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|e2093b'
+				icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + circleColor.substring(1, circleColor.length)
 			});
 			mStart.setMap(map);
 			mEnd.setMap(map);
-			for (i = 0; i < markers.length; ++i) {
-				var mark = new google.maps.Marker({
-					position: {
-						lat: lats[markers[i]],
-						lng: lons[markers[i]]
-					},
-					label: {
-						text: pref + (i + 1) + '',
-						fontSize: "18px",
-						fontWeight: 'bold',
-						color: 'red'
-					},
-					icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|4286f4'
-				});
-				if (isMain) {
-					marks1.push(mark);
-				} else {
-					marks2.push(mark);
-				}
-				if ($('#toggle').prop('checked')) {
-					mark.setMap(map);
-				}
-			}
-			$('#toggle').change(function() {
-				arr = (isMain ? marks1 : marks2);
-				if ($('#toggle').prop('checked')) {
-					for (i = 0; i < arr.length; ++i) {
-						arr[i].setMap(map);
-					}
-				} else {
-					for (i = 0; i < arr.length; ++i) {
-						arr[i].setMap(null);
-					}
-				}
-			});
 			runPath.setMap(map);
 			if (isMain) {
 				lineA = runPath;
@@ -372,8 +355,8 @@
 		function getTSec() {
 			var speed = $('#tSec').val();
             if (speed == null || speed == '' || speed == 'undefined') {
-                speed = 45;
-                $('#tSec').val('45');
+                speed = 200;
+                $('#tSec').val('200');
             } else {
                 speed = parseInt(speed);
             }
@@ -385,7 +368,7 @@
                 speed = 10;
                 $('#tSec').val('10');
             }
-			return speed;
+			return 250 - speed;
 		}
 
 		function resetCircle() {
@@ -400,7 +383,11 @@
             icons[0].offset = '0%';
             lineB.set('icons', icons);
             $('#trace').button("option", "label", "Trace");
+			$('#tSec').prop('disabled', false);
             timerId = null;
+			$('#dist1').text('Distance A: 0');
+			$('#dist2').text('Distance B: 0');
+			$('#ctime').text('Total Time: 00:00:00');
             
 			itr1 = 0;
 			ind1 = 0;
@@ -414,6 +401,20 @@
 			secondaryTime = 0;
 			startSecTime = 0;
 		}
+		
+		function addLead(g) {
+			return (g < 10 ? '0' : '') + g;
+		}
+		
+		function formatTime(tt) {
+			tt = Math.round(tt / 1000.0);
+			hrs = addLead(Math.floor(tt / 3600));
+			tt = Math.floor(tt) % 3600;
+			mins = addLead(Math.floor(tt / 60));
+			tt = tt % 60;
+			sec = addLead(tt);
+			return hrs + ':' + mins + ':' + sec;
+		}
 
         function animateCircle() {
 			var firstCall = true;
@@ -421,6 +422,7 @@
 				if (firstCall) {
                 	firstCall = false;
                		$('#trace').button("option", "label", "Stop");
+					$('#tSec').prop('disabled', true);
             	}
                 if (remIts == 0) {
 					if (ind2 < perc2.length) {
@@ -447,9 +449,13 @@
 								inc = false;
 								++ind2;
 							}
+							if (ind2 < times2.length) {
+								$('#ctime').text('Total Time: ' + formatTime(times2[ind2]));
+							}
 							var iconsB = lineB.get('icons');
 							iconsB[0].offset = percS + '%';
 							lineB.set('icons', iconsB);
+							$('#dist2').text('Distance B: ' + ((percS / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
 							--remSecondaryIts;
 						} else {
 							resetCircle();
@@ -478,6 +484,8 @@
                 var icons = lineA.get('icons');
                 icons[0].offset = percA + '%';
                 lineA.set('icons', icons);
+				console.log($('#totDist1').val());
+				$('#dist1').text('Distance A: ' + ((percA / 100.0) * parseFloat($('#totDist1').val())).toFixed(3));
 				var tt = times1[times1.length - 1];
 				while (ind1 < perc1.length) {
 					if (perc1[ind1] >= percA) {
@@ -490,6 +498,7 @@
 					}
 					++ind1;
 				}
+				$('#ctime').text('Total Time: ' + formatTime(tt));
 				var percB = 100;
 				while (ind2 < perc2.length) {
 					if (times2[ind2] >= tt) {
@@ -505,6 +514,7 @@
 				var iconsB = lineB.get('icons');
 				iconsB[0].offset = percB + '%';
                 lineB.set('icons', iconsB);
+				$('#dist2').text('Distance B: ' + ((percB / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
             };
             timerId = setInterval(f, 50);
         }

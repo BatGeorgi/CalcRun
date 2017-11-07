@@ -612,6 +612,12 @@ class CalcDistHandler extends AbstractHandler {
   		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
   		baseRequest.setHandled(true);
   	}
+  	if (rcUtils.getActivity(name1) == null) {
+      name1 += ".gpx";
+    }
+    if (rcUtils.getActivity(name2) == null) {
+      name2 += ".gpx";
+    }
   	response.setContentType("text/html");
   	String template = getComparisionTemplate();
   	String fixed = template.replace("TBD1", name1).replace("TBD2", name2);
