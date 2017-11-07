@@ -96,6 +96,12 @@ public class RunCalcUtils {
   
   JSONObject retrieveCoords(String activity, boolean percentage) {
     JSONObject coords = sqLite.getCoordsData(activity);
+    if (coords == null) {
+      coords = sqLite.getCoordsData(activity + ".gpx");
+    }
+    if (coords == null) {
+      return null;
+    }
     if (!percentage) {
     	return coords;
     }
