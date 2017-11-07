@@ -7,9 +7,7 @@
 #meas {
 	margin: auto;
 }
-#mapHolder {
-	text-align: center;
-}
+
 .ahead {
 	text-align: center;
 	font-weight: bold;
@@ -90,15 +88,15 @@ th {
 #tres {
 	width: 80px;
 }
-#dist1 {
+.fdist1 {
 	font-weight:bold;
 	font-size: 140%;
 }
-#dist2 {
+.fdist2 {
 	font-weight:bold;
 	font-size: 140%;
 }
-#ctime {
+.ftime {
 	font-weight:bold;
 	font-size: 140%;
 }
