@@ -139,8 +139,8 @@
 					<span>
 						<button id="trace">Trace</button>
 						<button id="tres">Reset</button>
-						<label for="tSec">Simulation speed<label>
-						<input id="tSec" type="number" min="10" max="240" step="1" value="200"></input>
+						<label for="tSec">Slowdown<label>
+						<input id="tSec" type="number" min="10" max="240" step="1" value="50"></input>
 						</span>
 					<hr>
 						<table id="meas">
@@ -340,6 +340,7 @@
 					if (!isActive) {
 						totalIts = getTSec() * 20;
 						remIts = totalIts;
+						resetData();
 					}
 					isActive = true;
                     animateCircle();
@@ -350,15 +351,15 @@
                 }
 			});
 			$('#tres').click(function() {
-                resetCircle();
+                resetCircle(true);
             });
         }
 		
 		function getTSec() {
 			var speed = $('#tSec').val();
             if (speed == null || speed == '' || speed == 'undefined') {
-                speed = 200;
-                $('#tSec').val('200');
+                speed = 50;
+                $('#tSec').val('50');
             } else {
                 speed = parseInt(speed);
             }
@@ -370,26 +371,32 @@
                 speed = 10;
                 $('#tSec').val('10');
             }
-			return 250 - speed;
+			return speed;
 		}
-
-		function resetCircle() {
-			isActive = false;
-			if (timerId != null) {
-				clearInterval(timerId);
-			}
+		
+		function resetData() {
+			$('#dist1').text('0');
+			$('#dist2').text('0');
+			$('#ctime').text('00:00:00');
 			icons = lineA.get('icons');
             icons[0].offset = '0%';
             lineA.set('icons', icons);
 			icons = lineB.get('icons');
             icons[0].offset = '0%';
             lineB.set('icons', icons);
+		}
+
+		function resetCircle(rd) {
+			isActive = false;
+			if (timerId != null) {
+				clearInterval(timerId);
+			}
             $('#trace').button("option", "label", "Trace");
 			$('#tSec').prop('disabled', false);
             timerId = null;
-			$('#dist1').text('0');
-			$('#dist2').text('0');
-			$('#ctime').text('00:00:00');
+			if (rd) {
+				resetData();
+			}
             
 			itr1 = 0;
 			ind1 = 0;
@@ -427,6 +434,11 @@
 					$('#tSec').prop('disabled', true);
             	}
                 if (remIts == 0) {
+					var icons = lineA.get('icons');
+					icons[0].offset = '100%';
+					lineA.set('icons', icons);
+					$('#dist1').text($('#totDist1').val());
+					$('#ctime').text(formatTime(times1[times1.length - 1]));
 					if (ind2 < perc2.length) {
 						console.log(ind2 + ' ' + perc2.length);
 						if (fs) {
@@ -460,10 +472,15 @@
 							$('#dist2').text(((percS / 100.0) * parseFloat($('#totDist2').val())).toFixed(3));
 							--remSecondaryIts;
 						} else {
-							resetCircle();
+							$('#ctime').text(formatTime(times2[times2.length - 1]));
+							$('#dist2').text($('#totDist2').val());
+							var icons = lineB.get('icons');
+							icons[0].offset = '100%';
+							lineB.set('icons', icons);
+							resetCircle(false);
 						}
 					} else {
-						resetCircle();
+						resetCircle(false);
 					}
 					return;
                 }
