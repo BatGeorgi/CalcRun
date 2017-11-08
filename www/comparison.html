@@ -50,15 +50,11 @@
             splits = item['splits']
             splitHtml = '<span class="heading-data"><h2>Splits</h2></span>' +
                 '<span class="highlight"><table id="splitTable"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
-            collectHtml = "";
             $.each(splits, function(i, sp) {
                 splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td><div id="spPace' + i + '">' + sp['pace'] + '</div></td><td>' + sp['speed'] + '</td><td><div id="spDiff' + i + '">' + formatEleDiff(sp['ele']) +
                     '</div></td><td><div id="spTotal' + i + '">' + sp['timeTotal'] +
                     '</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
-                collectHtml += '<div id="extsp' + i + '">' + formatEleDiff(sp['accElePos']) + '/' + formatEleDiff(-sp['accEleNeg']) + '</div>';
-                collectHtml += '<div id="spElePos' + i + '">' + sp['accElePos'] + '</div><div id="spEleNeg' + i + '">' + sp['accEleNeg'] + '</div>';
             });
-            $('#collect').html(collectHtml + '<div id="countSP">' + splits.length + '</div>');
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
             var isMod = item['isModified'] == 'y';
@@ -159,7 +155,6 @@
 
         </div>
     </div>
-    <div style="display: none" id="collect"></div>
 	<div id="totDist1" style="display: none"></div>
 	<div id="totDist2" style="display: none"></div>
 
@@ -440,7 +435,6 @@
 					$('#dist1').text($('#totDist1').val());
 					$('#ctime').text(formatTime(times1[times1.length - 1]));
 					if (ind2 < perc2.length) {
-						console.log(ind2 + ' ' + perc2.length);
 						if (fs) {
 							fs = false;
 							secondaryIts = ((times2[times2.length - 1] - times2[ind2]) / times2[ind2]) * totalIts;
@@ -451,10 +445,11 @@
 						if (remSecondaryIts >= 0) {
 							elapsedPerc = (secondaryIts - remSecondaryIts) / secondaryIts;
 							inc = false;
+							percS = 1;
 							while (ind2 < perc2.length) {
 								cPerc = (times2[ind2] - startSecTime) / secondaryTime;
 								if (cPerc >= elapsedPerc) {
-									if (!inc) {
+									if (!inc && ind2 < perc2.length - 1) {
 										++ind2;
 									}
 									percS = perc2[ind2];
@@ -503,7 +498,6 @@
                 var icons = lineA.get('icons');
                 icons[0].offset = percA + '%';
                 lineA.set('icons', icons);
-				console.log($('#totDist1').val());
 				$('#dist1').text(((percA / 100.0) * parseFloat($('#totDist1').val())).toFixed(3));
 				var tt = times1[times1.length - 1];
 				while (ind1 < perc1.length) {
