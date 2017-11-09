@@ -4,6 +4,9 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity details</title>
+	
+	<link rel="stylesheet" href="odometer.css" />
+	<script src="odometer-patched.js"></script>
 
     <link rel="stylesheet" href="bootstrap.min.css">
     <script src="bootstrap.min.js"></script>
@@ -20,7 +23,11 @@
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
 
-
+	<style>
+		.odometer {
+			font-size: 150%;
+		}
+	</style>
 
     <script>
         function formatEleDiff(diff) {
@@ -63,6 +70,7 @@
             splitHtml += '</tbody></table></span>';
             var origData = item['origData'];
             var isMod = item['isModified'] == 'y';
+			$('#totDist').val(isMod ? origData['dist'] : item['dist']);
             $('#mainstats').html('<table><tbody><tr><td>Distance</td><td>' +
                 item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
                 '</td></tr><tr><td>Elevation gain</td><td>' +
@@ -113,12 +121,18 @@
             </div>
 
             <div class="col-sm-6">
+				<table id="meas">
+					<tbody>
+						<tr><td><span class="fdist">Distance </span></td><td><div class="odometer" id="dist">0</div></td></tr>
+						<tr><td><span class="ftime">Time</span></td><td><div class="ftime" id="ctime">00:00:00</div></td></tr>
+					</tbody>
+				</table>
                 <div id="mapHolder">
                     <div id="map"></div>
                     <button id="trace">Trace</button>
                     <button id="tres">Reset</button>
-                    <label for="tSpeed">Speed</label>
-                    <input id="tSpeed" type="number" min="1" max="100" step="1" value="10"></input>
+                    <label for="tSec">Slowdown</label>
+                    <input id="tSec" type="number" min="10" max="240" step="1" value="50"></input>
                     <label for="toggle">Toggle km markers</label>
                     <input type="checkbox" id="toggle" />
                 </div>
@@ -131,11 +145,21 @@
         </div>
     </div>
     <div style="display: none" id="collect"></div>
+	<div style="display: none" id="totDist"></div>
 
     <script>
         var marks = [];
         timerId = null;
         count = 0;
+		
+		var line;
+		var perc = [];
+		var times = [];
+		var ind = 0;
+
+		var totalIts = 50 * 20;
+        var remIts = totalIts;
+		var isActive = false;
 
         function initMap() {
             var mapOptions = {
@@ -158,7 +182,8 @@
                 dataType: 'json',
                 headers: {
                     'Content-Type': 'application/json',
-                    'activity': 'TBD'
+                    'activity': 'TBD',
+					'perc': 'true'
                 },
                 statusCode: {
                     200: function(data) {
@@ -166,6 +191,8 @@
                         lats = data['lats'];
                         lons = data['lons'];
                         markers = data['markers'];
+						times = data['times'];
+						perc = data['perc'];
                         var west = 200;
                         var east = -200;
                         var south = 90;
@@ -316,68 +343,122 @@
                             }
                         });
                         runPath.setMap(map);
+						line = runPath;
                         $('#trace').click(function() {
-                            if (timerId == null) {
-                                animateCircle(runPath);
-                            } else {
-                                clearInterval(timerId);
-                                timerId = null;
-                                $('#trace').button("option", "label", "Trace");
-                            }
-                        });
-                        $('#tres').click(function() {
-                            if (timerId != null) {
-                                clearInterval(timerId);
-                            }
-                            var icons = runPath.get('icons');
-                            icons[0].offset = '0%';
-                            runPath.set('icons', icons);
-                            $('#trace').button("option", "label", "Trace");
-                            timerId = null;
-                            count = 0;
-                        });
+							if (timerId == null) {
+								if (!isActive) {
+									totalIts = getTSec() * 20;
+									remIts = totalIts;
+									resetData();
+								}
+								isActive = true;
+								animateCircle();
+							} else {
+								clearInterval(timerId);
+								timerId = null;
+								$('#trace').button("option", "label", "Trace");
+							}
+						});
+						$('#tres').click(function() {
+							resetCircle(true);
+						});
                     }
                 }
             });
         }
-
-        function animateCircle(line) {
-            var speed = $('#tSpeed').val();
+		
+		function addLead(g) {
+			return (g < 10 ? '0' : '') + g;
+		}
+		
+		function formatTime(tt) {
+			tt = Math.round(tt / 1000.0);
+			hrs = addLead(Math.floor(tt / 3600));
+			tt = Math.floor(tt) % 3600;
+			mins = addLead(Math.floor(tt / 60));
+			tt = tt % 60;
+			sec = addLead(tt);
+			return hrs + ':' + mins + ':' + sec;
+		}
+		
+		function getTSec() {
+			var speed = $('#tSec').val();
             if (speed == null || speed == '' || speed == 'undefined') {
-                speed = 10;
-                $('#tSpeed').val('10');
+                speed = 50;
+                $('#tSec').val('50');
             } else {
                 speed = parseInt(speed);
             }
-            if (speed > 100) {
-                speed = 100;
-                $('#tSpeed').val('100');
+            if (speed > 240) {
+                speed = 240;
+                $('#tSec').val('240');
             }
-            if (speed < 1) {
-                speed = 1;
-                $('#tSpeed').val('1');
+            if (speed < 10) {
+                speed = 10;
+                $('#tSec').val('10');
             }
-            var limit = marks.length * 80;
-            var d = limit / 100;
-            var firstCall = true;
+			return speed;
+		}
+		
+		function resetData() {
+			$('#dist').text('0');
+			$('#ctime').text('00:00:00');
+			icons = line.get('icons');
+            icons[0].offset = '0%';
+            line.set('icons', icons);
+		}
+
+		function resetCircle(rd) {
+			isActive = false;
+			if (timerId != null) {
+				clearInterval(timerId);
+			}
+            $('#trace').button("option", "label", "Trace");
+			$('#tSec').prop('disabled', false);
+            timerId = null;
+			if (rd) {
+				resetData();
+			}
+            
+			ind = 0;
+			totalIts = 50 * 20;
+			remIts = totalIts;
+		}
+
+        function animateCircle() {
+			var firstCall = true;
             var f = function() {
-                if (count >= limit) {
-                    var icons = line.get('icons');
-                    icons[0].offset = '0%';
-                    line.set('icons', icons);
-                    clearInterval(timerId);
-                    $('#trace').button("option", "label", "Trace");
-                    timerId = null;
-                    count = 0;
-                    return;
+				if (firstCall) {
+                	firstCall = false;
+               		$('#trace').button("option", "label", "Stop");
+					$('#tSec').prop('disabled', true);
+            	}
+                if (remIts < 0) {
+					resetCircle(false);
+					return;
                 }
-                if (firstCall) {
-                    firstCall = false;
-                    $('#trace').button("option", "label", "Stop");
-                }
-                count += speed / 10.0;
+				elapsedPerc = (totalIts - remIts) / totalIts;
+				--remIts;
+				percA = 100;
+                while (ind < times.length) {
+					timePerc = times[ind] / times[times.length - 1];
+					if (timePerc >= elapsedPerc) {
+						tprev = (ind > 0 ? times[ind - 1] : 0);
+						timePercPrev = tprev / times[times.length - 1];
+						diff = timePerc - timePercPrev;
+						coef = (diff > 0 ? (elapsedPerc - timePercPrev) / diff : 0);
+						percPrev = (ind > 0 ? perc[ind - 1] : 0);
+						percA = percPrev + coef * (perc[ind] - percPrev);
+						break;
+					}
+					++ind;
+				}
+				currentDist = (percA / 100.0) * parseFloat($("#totDist").val());
+				currentTime = elapsedPerc * times[times.length - 1];
+				$('#dist').text(currentDist);
+				$('#ctime').text(formatTime(currentTime));
                 var icons = line.get('icons');
-                icons[0].offset = (count / d) + '%';
+                icons[0].offset = percA + '%';
                 line.set('icons', icons);
             };
             timerId = setInterval(f, 50);

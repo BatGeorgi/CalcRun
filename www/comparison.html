@@ -4,6 +4,9 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Comparison data</title>
+	
+	<link rel="stylesheet" href="odometer.css" />
+	<script src="odometer-patched.js"></script>
 
     <link rel="stylesheet" href="bootstrap.min.css">
     <script src="bootstrap.min.js"></script>
@@ -19,8 +22,12 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
-
-
+	
+	<style>
+		.odometer {
+			font-size: 150%;
+		}
+	</style>
 
     <script>
         function formatEleDiff(diff) {
@@ -131,21 +138,20 @@
 
             <div class="col-sm-6">
                 <div id="mapHolder">
+					<table id="meas">
+							<tbody>
+								<tr><td><span class="fdist1">Distance A</span></td><td><div class="odometer" id="dist1">0</div></td></tr>
+								<tr><td><span class="fdist2">Distance B</span></td><td><div class="odometer" id="dist2">0</div></td></tr>
+								<tr><td><span class="ftime">Time</span></td><td><div class="ftime" id="ctime">00:00:00</div></td></tr>
+							</tbody>
+					</table>
                     <div id="map"></div>
 					<span>
 						<button id="trace">Trace</button>
 						<button id="tres">Reset</button>
 						<label for="tSec">Slowdown<label>
 						<input id="tSec" type="number" min="10" max="240" step="1" value="50"></input>
-						</span>
-					<hr>
-						<table id="meas">
-							<tbody>
-								<tr><td><span class="fdist1">Distance A</span></td><td><div class="fdist1" id="dist1">0</div></td></tr>
-								<tr><td><span class="fdist2">Distance B</span></td><td><div class="fdist2" id="dist2">0</div></td></tr>
-								<tr><td><span class="ftime">Time</span></td><td><div class="ftime" id="ctime">00:00:00</div></td></tr>
-							</tbody>
-						</table>
+					</span>
                 </div>
             </div>
 
