@@ -284,7 +284,7 @@ public class CalcDist {
         StringTokenizer st = new StringTokenizer(timeS, "-T:.Z", false);
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.YEAR, Integer.parseInt(st.nextToken()));
-        cal.set(Calendar.MONTH, Integer.parseInt(st.nextToken()));
+        cal.set(Calendar.MONTH, Integer.parseInt(st.nextToken()) - 1);
         cal.set(Calendar.DATE, Integer.parseInt(st.nextToken()));
         cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(st.nextToken()));
         cal.set(Calendar.MINUTE, Integer.parseInt(st.nextToken()));
