@@ -20,6 +20,7 @@ public class SQLiteManager {
   
   private static final String RUNS_TABLE_NAME = "runs";
   private static final String COOKIES_TABLE_NAME = "cookies";
+  private static final String DASHBOARDS_TABLE_NAME = "dashboards";
   private static final String COORDS_TABLE_NAME = "coords";
   
   private static final String[] KEYS = new String[] {
@@ -28,6 +29,7 @@ public class SQLiteManager {
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "garminLink", "ccLink", "photosLink",
+      "dashboards",
       "speedDist", "splits",
       "origData"
   };
@@ -37,6 +39,7 @@ public class SQLiteManager {
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
       "text", "text", "text",
+      "text",
       "text", "text",
       "text"
   };
@@ -44,6 +47,8 @@ public class SQLiteManager {
   
   private static final String CREATE_STATEMENT_COOKIES_TABLE = "CREATE TABLE IF NOT EXISTS " + COOKIES_TABLE_NAME + 
       "(uid PRIMARY KEY NOT NULL, expires NOT NULL)";
+  private static final String CREATE_STATEMENT_DASHBOARDS_TABLE = "CREATE TABLE IF NOT EXISTS " + DASHBOARDS_TABLE_NAME + 
+      "(name PRIMARY KEY NOT NULL)";
 
 	private File dbActivities;
 	private File dbCoords;
@@ -185,7 +190,7 @@ public class SQLiteManager {
 	  return result;
 	}
 	
-	synchronized void ensureInit() throws SQLException {
+	synchronized void ensureActivitiesInit() throws SQLException {
 	  if (conn != null) {
 	    return;
 	  }
@@ -195,7 +200,7 @@ public class SQLiteManager {
 	
   private ResultSet executeQuery(String query, boolean returnResult) {
     try {
-      ensureInit();
+      ensureActivitiesInit();
       if (returnResult) {
         return conn.createStatement().executeQuery(query);
       }
@@ -219,6 +224,7 @@ public class SQLiteManager {
 	private void createTablesIfNotExists() {
 	  executeCreate(createStatementRunsTable);
 	  executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
+	  executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
 	}
 	
 	synchronized void addActivity(JSONObject entry) {
