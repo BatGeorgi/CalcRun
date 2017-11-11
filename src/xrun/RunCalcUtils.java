@@ -50,7 +50,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base, null).rescan();
+    new RunCalcUtils(base, null).sqLite.addMainDash();//.rescan();
   }
   
   Cookie generateCookie() {
@@ -450,6 +450,37 @@ public class RunCalcUtils {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
       drive.backupDB(sqLite.getCoordsDBFile(), "coords");
     }
+  }
+  
+  String addDashboard(String name) {
+    try {
+      sqLite.addDashboard(name);
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    return null;
+  }
+  
+  String renameDashboard(String name, String newName) {
+    try {
+      sqLite.renameDashboard(name, newName);
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    return null;
+  }
+  
+  String removeDashboard(String name) {
+    try {
+      sqLite.removeDashboard(name, true);
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    return null;
+  }
+  
+  JSONObject getDashboards() {
+    return sqLite.getDashboards();
   }
   
   void dispose() {

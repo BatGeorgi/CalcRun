@@ -669,6 +669,61 @@ class CalcDistHandler extends AbstractHandler {
     }
     baseRequest.setHandled(true);
   }
+  
+  private void processAddDashboard(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    response.setContentType("application/txt");
+    PrintWriter pw = response.getWriter();
+    try {
+      String reason = rcUtils.addDashboard(baseRequest.getHeader("name"));
+      pw.println(reason == null ? "Dashboard created!" : reason);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
+
+  private void processRenameDashboard(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    response.setContentType("application/txt");
+    PrintWriter pw = response.getWriter();
+    try {
+      String reason = rcUtils.renameDashboard(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
+      pw.println(reason == null ? "Dashboard renamed!" : reason);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
+
+  private void processRemoveDashboard(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    response.setContentType("application/txt");
+    PrintWriter pw = response.getWriter();
+    try {
+      String reason = rcUtils.removeDashboard(baseRequest.getHeader("name"));
+      pw.println(reason == null ? "Dashboard removed!" : reason);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
+  
+  private void processGetDashboards(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    response.setContentType("application/json");
+    PrintWriter pw = response.getWriter();
+    try {
+      pw.println(rcUtils.getDashboards().toString());
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
@@ -706,6 +761,14 @@ class CalcDistHandler extends AbstractHandler {
 			  processRevert(baseRequest, response);
 			} else if ("/coords".equalsIgnoreCase(target)) {
 			  processGetGoords(baseRequest, response);
+			} else if ("/addDash".equalsIgnoreCase(target)) {
+			  processAddDashboard(baseRequest, response);
+			} else if ("/renameDash".equalsIgnoreCase(target)) {
+        processRenameDashboard(baseRequest, response);
+      } else if ("/removeDash".equalsIgnoreCase(target)) {
+			  processRemoveDashboard(baseRequest, response);
+			} else if ("/getDash".equalsIgnoreCase(target)) {
+			  processGetDashboards(baseRequest, response);
 			}
 		}
   }
