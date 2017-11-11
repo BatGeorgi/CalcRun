@@ -23,6 +23,8 @@ public class SQLiteManager {
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
   private static final String COORDS_TABLE_NAME = "coords";
   
+  private static final String MAIN_DASHBOARD = "Main";
+  
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
       "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
@@ -80,6 +82,26 @@ public class SQLiteManager {
 		}
 		cr.append(KEYS[len - 1] + ' ' + TYPES[len - 1] + " NOT NULL)");
 		createStatementRunsTable = cr.toString();
+	}
+	
+	void addMainDash() {
+	  try {
+	    /*executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + MAIN_DASHBOARD + "')", false);*/
+	    ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
+	    while (rs.next()) {
+	      String dash = rs.getString(2);
+	      JSONArray arr = new JSONArray(dash);
+	      while (arr.length() > 0) {
+	        arr.remove(0);
+	      }
+	      arr.put(MAIN_DASHBOARD);
+        String genby = rs.getString(1);
+        executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
+        System.out.println("updated " + genby);
+	    }
+	  } catch (Exception e) {
+	    e.printStackTrace();
+	  }
 	}
 	
   private void ensureCoordsInit() throws SQLException {
@@ -209,6 +231,15 @@ public class SQLiteManager {
       System.out.println("Error working with db");
       e.printStackTrace();
     }
+    return null;
+  }
+  
+  private ResultSet executeQueryExc(String query, boolean returnResult) throws SQLException {
+    ensureActivitiesInit();
+    if (returnResult) {
+      return conn.createStatement().executeQuery(query);
+    }
+    conn.createStatement().executeUpdate(query);
     return null;
   }
   
@@ -463,6 +494,100 @@ public class SQLiteManager {
     }
 	  return result;
 	}
+	
+  synchronized void addDashboard(String name) throws Exception {
+    if (name == null) {
+      throw new IllegalArgumentException("No name specified");
+    }
+    if (MAIN_DASHBOARD.equals(name)) {
+      throw new IllegalArgumentException("Cannot re-add main dashboard");
+    }
+    executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + name + "')", false);
+  }
+
+  synchronized void renameDashboard(String name, String newName) throws Exception {
+    if (name == null) {
+      throw new IllegalArgumentException("No name specified");
+    }
+    if (MAIN_DASHBOARD.equals(name) || MAIN_DASHBOARD.equals(newName)) {
+      throw new IllegalArgumentException("Cannot rename main dashboard");
+    }
+    ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE newName='" + newName + "'", true);
+    if (rs.next()) {
+      throw new IllegalArgumentException("Dashboard " + newName + " already exists");
+    }
+    rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + newName + "'", true);
+    if (!rs.next()) {
+      throw new IllegalArgumentException("Dashboard " + name + " doest not exist");
+    }
+    rs = executeQueryExc("SELECT genby FROM " + RUNS_TABLE_NAME, true);
+    
+    addDashboard(newName);
+    rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
+    while (rs.next()) {
+      String dash = rs.getString(2);
+      JSONArray arr = new JSONArray(dash);
+      boolean mod = false;
+      for (int i = 0; i < arr.length(); ++i) {
+        if (name.equals(arr.get(i))) {
+          arr.put(i, newName);
+          mod = true;
+          break;
+        }
+      }
+      if (mod) {
+        String genby = rs.getString(1);
+        executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
+      }
+    }
+    removeDashboard(name, false);
+  }
+
+  synchronized void removeDashboard(String name, boolean fixActivities) throws Exception {
+    if (name == null) {
+      throw new IllegalArgumentException("No name specified");
+    }
+    if (MAIN_DASHBOARD.equals(name)) {
+      throw new IllegalArgumentException("Cannot remove main dashboard");
+    }
+    executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + name + "'", false);
+    if (!fixActivities) {
+      return;
+    }
+    ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
+    while (rs.next()) {
+      String dash = rs.getString(2);
+      JSONArray arr = new JSONArray(dash);
+      boolean mod = false;
+      for (int i = 0; i < arr.length(); ++i) {
+        if (name.equals(arr.get(i))) {
+          arr.remove(i);
+          mod = true;
+          break;
+        }
+      }
+      if (mod) {
+        String genby = rs.getString(1);
+        executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
+      }
+    }
+  }
+
+  synchronized JSONObject getDashboards() {
+    JSONArray arr = new JSONArray();
+    try {
+      ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, false);
+      while (rs.next()) {
+        arr.put(rs.getShort(1));
+      }
+    } catch (SQLException e) {
+      System.out.println("Error fetching dashboards");
+      e.printStackTrace();
+    }
+    JSONObject result = new JSONObject();
+    result.put("dashboards", arr);
+    return result;
+  }
 	
   synchronized boolean saveCookie(String uid, Calendar expires) {
     try {
