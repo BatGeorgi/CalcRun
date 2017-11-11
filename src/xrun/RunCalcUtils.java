@@ -50,7 +50,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base, null).sqLite.addMainDash();//.rescan();
+    new RunCalcUtils(base, null).rescan();
   }
   
   Cookie generateCookie() {

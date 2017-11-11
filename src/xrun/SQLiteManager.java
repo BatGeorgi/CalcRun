@@ -84,26 +84,6 @@ public class SQLiteManager {
 		createStatementRunsTable = cr.toString();
 	}
 	
-	void addMainDash() {
-	  try {
-	    /*executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + MAIN_DASHBOARD + "')", false);*/
-	    ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
-	    while (rs.next()) {
-	      String dash = rs.getString(2);
-	      JSONArray arr = new JSONArray(dash);
-	      while (arr.length() > 0) {
-	        arr.remove(0);
-	      }
-	      arr.put(MAIN_DASHBOARD);
-        String genby = rs.getString(1);
-        executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
-        System.out.println("updated " + genby);
-	    }
-	  } catch (Exception e) {
-	    e.printStackTrace();
-	  }
-	}
-	
   private void ensureCoordsInit() throws SQLException {
     if (connDB2 != null) {
       return;
@@ -258,7 +238,14 @@ public class SQLiteManager {
 	  executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
 	}
 	
+	private void setMainDashboard(JSONObject entry) {
+		JSONArray arr = new JSONArray();
+		arr.put(MAIN_DASHBOARD);
+		entry.put("dashboards", arr);
+	}
+	
 	synchronized void addActivity(JSONObject entry) {
+		setMainDashboard(entry); // temporary
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
 	  if (!entry.has("origData")) {
