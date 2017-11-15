@@ -384,7 +384,7 @@ public class RunCalcUtils {
       for (int j = 0; j < splits.length(); ++j) {
         JSONObject sp = splits.getJSONObject(j);
         double point = sp.getDouble("totalRaw");
-        if (Math.abs(point - Math.round(point)) > 1e-3) {
+        if (Math.abs(point - Math.round(point)) > 0.010001) {
           continue;
         }
         int rounded = (int) Math.round(point);

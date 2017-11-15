@@ -1017,7 +1017,7 @@
     <a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
     <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
     <button id="loginButton">Login</button>
-	<button id="hideFilters">Show filters</button>
+	<button id="hideFilters">Show Filters</button>
     <div id="filters" style="display:none">
         <fieldset>
             <legend class="legend-cap">Activity Type</legend>
