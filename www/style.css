@@ -198,9 +198,12 @@ tr.border_bottom td {
 	text-shadow: 1px 1px black;
 }
 #ht {
-	color:#2a6cd6;
+	color:#1c9e45;
 	text-shadow: 1px 1px black;
 }
 #hideFilters {
+	width: 140px;
+}
+#search {
 	width: 140px;
 }
