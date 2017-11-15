@@ -201,3 +201,6 @@ tr.border_bottom td {
 	color:#2a6cd6;
 	text-shadow: 1px 1px black;
 }
+#hideFilters {
+	width: 140px;
+}
