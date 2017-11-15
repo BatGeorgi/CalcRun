@@ -645,10 +645,6 @@
             });
         }
 
-        function disableSearch() {
-            $('#search').button("option", "disabled", true);
-        }
-
         var fetchEnabled = true;
 
         function fetch() {
@@ -660,6 +656,7 @@
             var ds = $('#dtStart').datepicker('getDate');
             var de = $('#dtEnd').datepicker('getDate');
             var nf = encodeURIComponent($('#searchName').val());
+            $('#search').button("option", "disabled", true);
             $.ajax({
                 url: 'fetch',
                 method: 'POST',
@@ -683,21 +680,21 @@
                 statusCode: {
                     200: function(data) {
                         initContent(data);
+                        $('#search').button("option", "disabled", false);
                     },
                     400: function(data) {
                         $('#infoDialog').html('Invalid distance arguments!');
                         $('#infoDialog').dialog('option', 'title', 'Bad data');
                         $('#infoDialog').dialog('open');
+                        $('#search').button("option", "disabled", false);
                     }
                 }
             });
         }
 
-        function disableAndFetch() {
-            disableSearch();
+        function disableDates() {
             $('#dtStart').datepicker('disable');
             $('#dtEnd').datepicker('disable');
-            fetch();
         }
 
         function getStat(data, opt) {
@@ -830,11 +827,11 @@
             checkCookieVal();
             $('#selectAll').button();
             $('#search').button();
-            $('#dsearch').button();
-            $('#findNames').button();
+            $('#search').click(function() {
+                fetch();
+            });
             $('#bestTotalsBtn').button();
             $('#mTotalsBtn').button();
-            $('#search').button("option", "disabled", true);
             $('input[name=selectPeriod]').checkboxradio();
             $('input[name=selectLast]').checkboxradio();
             $('#checkbox-1').checkboxradio();
@@ -843,9 +840,6 @@
             $('#checkbox-4').checkboxradio();
             $('#checkbox-5').checkboxradio();
             $('#checkbox-6').checkboxradio();
-            $('#findNames').click(function() {
-                fetch();
-            });
             $('#selectAll').click(function() {
                 fetchEnabled = false;
                 $("#checkbox-1").prop('checked', true).change();
@@ -857,38 +851,24 @@
                 fetchEnabled = true;
                 fetch();
             });
-            $('#search').click(function() {
-                fetch();
-            });
-            $('#dsearch').click(function() {
-                fetch();
-            });
             $("#bestTotalsBtn").click(function() {
                 $("#bestSplits").dialog('open');
             });
             $("#mTotalsBtn").click(function() {
                 $("#mTotals").dialog('open');
             });
-            $("#radio-1").change(disableAndFetch);
-            $("#radio-2").change(disableAndFetch);
-            $("#radio-3").change(disableAndFetch);
-            $("#radio-4").change(disableAndFetch);
-            $("#radio-5").change(disableAndFetch);
-            $("#radio-6").change(disableAndFetch);
+            $("#radio-1").change(disableDates);
+            $("#radio-2").change(disableDates);
+            $("#radio-3").change(disableDates);
+            $("#radio-4").change(disableDates);
+            $("#radio-5").change(disableDates);
+            $("#radio-6").change(disableDates);
             $("#radio-7").change(function() {
                 if (this.checked) {
-                    $('#search').button("option", "disabled", false);
                     $('#dtStart').datepicker('enable');
                     $('#dtEnd').datepicker('enable');
                 }
             });
-            $("input[name=selectLast]").change(fetch);
-            $("#checkbox-1").change(fetch);
-            $("#checkbox-2").change(fetch);
-            $("#checkbox-3").change(fetch);
-            $("#checkbox-4").change(fetch);
-            $("#checkbox-5").change(fetch);
-            $("#checkbox-6").change(fetch);
             $("#loginButton").button();
             initDialogs();
             $("#loginButton").click(function() {
@@ -1040,7 +1020,6 @@
             <fieldset>
                 <legend class="legend-cap">Activity name</legend>
                 <input type="text" name="searchName" id="searchName" />
-                <button id="findNames">Search</button>
             </fieldset>
             <p>
                 <fieldset>
@@ -1065,7 +1044,6 @@
                         <p>Start date: <input type="text" id="dtStart" />
                             <p>End date: <input type="text" id="dtEnd" />
                     </div>
-                    <button id="search">Search</button>
                     <p>
                         <fieldset>
                             <legend class="legend-cap">Distance</legend>
@@ -1073,7 +1051,6 @@
                             <input id="spinnerMin" name="dmin" />
                             <label for="spinnerMax">Max km</label>
                             <input id="spinnerMax" name="dmax" />
-                            <button id="dsearch">Search</button>
                         </fieldset>
                         <p>
                             <fieldset>
@@ -1089,6 +1066,8 @@
                                 <label for="l-inf">All</label>
                                 <input type="radio" name="selectLast" id="l-inf" cap="-1" checked>
                             </fieldset>
+                            <p>
+                                <button id="search">Search</button>
     </div>
     <div id="activities">
         <div id="overallWrap">
@@ -1112,9 +1091,9 @@
             </table>
         </div>
         <h2>
-            <div id="ht">Activities</div>
+            <div id="ht">Fetching activities...</div>
         </h2>
-        <table class="tablesorter highlight" id="runs" cellspacing="0" summary="Running and hiking activities">
+        <table class="tablesorter highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
             <thead>
                 <tr>
                     <th>#</th>
