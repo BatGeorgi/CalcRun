@@ -92,14 +92,23 @@ public class CalcDist {
   }
   
   private static String formatTime(long seconds) {
-    return formatTime(seconds, true);
+    return formatTime(seconds, true, false);
+  }
+  
+  static String formatTime(long seconds, boolean includeHours) {
+    return formatTime(seconds, includeHours, false);
   }
     
-  static String formatTime(long seconds, boolean includeHours) {
+  static String formatTime(long seconds, boolean includeHours, boolean includeDays) {
     int hours = (int) (seconds / 3600);
     int minutes = (int) ((seconds % 3600) / 60);
     seconds = (int) seconds % 60;
     StringBuffer sb = new StringBuffer();
+    if (includeDays && hours >= 24) {
+      int days = hours / 24;
+      hours %= 24;
+      sb.append(days + "d, ");
+    }
     if (includeHours || hours > 0) {
       if (hours < 10) {
         sb.append('0');
@@ -116,6 +125,9 @@ public class CalcDist {
       sb.append('0');
     }
     sb.append(seconds);
+    if (includeDays) {
+      
+    }
     return sb.toString();
   }
   

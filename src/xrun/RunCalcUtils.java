@@ -232,7 +232,7 @@ public class RunCalcUtils {
     }
     if (totals != null) {
       totals.put("avgSpeed", String.format("%.3f", totals.getDouble("totalDistance") / (totals.getLong("totalTime") / 3600.0)));
-      totals.put("totalTime", CalcDist.formatTime(totals.getLong("totalTime"), true));
+      totals.put("totalTime", CalcDist.formatTime(totals.getLong("totalTime"), true, true));
     }
     for (int i = 1; i < matched.size(); ++i) {
       activities.put(matched.get(i));

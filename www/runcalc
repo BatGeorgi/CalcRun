@@ -453,7 +453,7 @@
             }
             $('#overall').show();
             $('#runs').show();
-            $('#ht').text(all.length + ' matching ' + (all.length != 1 ? 'activities' : 'activity'));
+            $('#ht').html(data['filter'] + '<p>');
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
@@ -553,6 +553,7 @@
                     '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
                     '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
+			var happc = all.length + (all.length != 1 ? ' matches' : ' match');
             var appc = '';
             if (crun > 0) {
                 appc += 'Running: ' + crun;
@@ -575,7 +576,7 @@
             if (appc.length > 0) {
                 appc = ' |' + appc + '|';
             }
-            $('#ht').append(appc);
+            $('#ht').append(happc + appc);
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
             $('#runs').trigger("sorton", [
@@ -1086,7 +1087,7 @@
                                 <label for="l-100">Last 100</label>
                                 <input type="radio" name="selectLast" id="l-100" cap="100">
                                 <label for="l-inf">All</label>
-                                <input type="radio" name="selectLast" id="l-inf" cap="1234567" checked>
+                                <input type="radio" name="selectLast" id="l-inf" cap="-1" checked>
                             </fieldset>
     </div>
     <div id="activities">
