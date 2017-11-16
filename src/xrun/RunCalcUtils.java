@@ -209,7 +209,10 @@ public class RunCalcUtils {
   }
   
   JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other, int records,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard) {
+    if (dashboard == null || dashboard.trim().length() == 0) {
+      dashboard = SQLiteManager.MAIN_DASHBOARD;
+    }
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
     List<JSONObject> matched = filter(run, trail, uphill, hike, walk, other, startDate, endDate,
@@ -221,7 +224,7 @@ public class RunCalcUtils {
     }
     while(it.hasNext()) {
       JSONObject cr = it.next();
-      if (!matchName(nameFilter, cr.getString("name"))) {
+      if (!matchName(nameFilter, cr.getString("name")) || !isFromDashboard(cr, dashboard)) {
         it.remove();
         totals.put("totalDistance", totals.getDouble("totalDistance") - cr.getDouble("distRaw"));
         totals.put("totalTime", totals.getLong("totalTime") - cr.getLong("timeTotalRaw"));
@@ -280,6 +283,22 @@ public class RunCalcUtils {
       }
     }
     return false;
+  }
+  
+  private static boolean isFromDashboard(JSONObject activity, String dashboard) {
+    return find(new JSONArray(activity.remove("dashboards")), dashboard) != -1;
+  }
+  
+  static int find(JSONArray array, Object element) {
+    if (element == null) {
+      return -1;
+    }
+    for (int i = 0; i < array.length(); ++i) {
+      if (element.equals(array.get(i))) {
+        return i;
+      }
+    }
+    return -1;
   }
   
   JSONObject compare(JSONObject run1, JSONObject run2) {
@@ -458,6 +477,9 @@ public class RunCalcUtils {
     } catch (Exception e) {
       return e.getMessage();
     }
+    if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
     return null;
   }
   
@@ -466,6 +488,9 @@ public class RunCalcUtils {
       sqLite.renameDashboard(name, newName);
     } catch (Exception e) {
       return e.getMessage();
+    }
+    if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
     }
     return null;
   }
@@ -476,11 +501,44 @@ public class RunCalcUtils {
     } catch (Exception e) {
       return e.getMessage();
     }
+    if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
     return null;
   }
   
   JSONObject getDashboards() {
     return sqLite.getDashboards();
+  }
+  
+  String addToDashboard(String activity, String dashboard) {
+    if (activity == null || dashboard == null) {
+      return "Invalid parameters";
+    }
+    try {
+      sqLite.addToDashboard(activity, dashboard);
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
+    return null;
+  }
+  
+  String removeFromDashboard(String activity, String dashboard) {
+    if (activity == null || dashboard == null) {
+      return "Invalid parameters";
+    }
+    try {
+      sqLite.removeFromDashboard(activity, dashboard);
+    } catch (Exception e) {
+      return e.getMessage();
+    }
+    if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
+    return null;
   }
   
   void dispose() {

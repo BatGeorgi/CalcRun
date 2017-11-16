@@ -423,7 +423,7 @@ class CalcDistHandler extends AbstractHandler {
       filterStr.append(", matching the name regex");
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
-        records, startDate, endDate, dmin, dmax);
+        records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"));
     data.put("filter", filterStr.toString());
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();
@@ -752,6 +752,23 @@ class CalcDistHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+  
+  private void processChangeDash(Request baseRequest, HttpServletResponse response, boolean add)
+      throws IOException, ServletException {
+    String activity = baseRequest.getHeader("activity");
+    String target = baseRequest.getHeader("dashboard");
+    response.setContentType("application/txt");
+    String successMsg = "Activity successfully " + (add ? "added" : "removed") + '!';
+    PrintWriter pw = response.getWriter();
+    try {
+      String reason = (add ? rcUtils.addToDashboard(activity, target) : rcUtils.removeFromDashboard(activity, target));
+      pw.println(reason == null ? successMsg : reason);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
@@ -797,6 +814,10 @@ class CalcDistHandler extends AbstractHandler {
 			  processRemoveDashboard(baseRequest, response);
 			} else if ("/getDash".equalsIgnoreCase(target)) {
 			  processGetDashboards(baseRequest, response);
+			} else if ("/addToDash".equalsIgnoreCase(target)) {
+			  processChangeDash(baseRequest, response, true);
+			} else if ("/removeFromDash".equalsIgnoreCase(target)) {
+			  processChangeDash(baseRequest, response, false);
 			}
 		}
   }

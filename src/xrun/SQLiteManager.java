@@ -23,7 +23,7 @@ public class SQLiteManager {
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
   private static final String COORDS_TABLE_NAME = "coords";
   
-  private static final String MAIN_DASHBOARD = "Main";
+  static final String MAIN_DASHBOARD = "Main";
   
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -481,6 +481,44 @@ public class SQLiteManager {
     }
 	  return result;
 	}
+	
+	synchronized void addToDashboard(String activity, String dashboard) throws SQLException {
+	  ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + dashboard + "'", true);
+    if (!rs.next()) {
+      throw new IllegalArgumentException("Dashboard not found");
+    }
+	  rs = executeQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+	  if (!rs.next()) {
+	    throw new IllegalArgumentException("Activity not found");
+	  }
+	  JSONArray dashboards = new JSONArray(rs.getString(1));
+	  if (RunCalcUtils.find(dashboards, dashboard) != -1) {
+	    throw new IllegalArgumentException("Activity already in dashboard");
+	  }
+	  dashboards.put(dashboard);
+	  executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + dashboards.toString() + "' WHERE genby='" + activity + "'", false);
+	}
+	
+	synchronized void removeFromDashboard(String activity, String dashboard) throws SQLException {
+	  ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + dashboard + "'", true);
+    if (!rs.next()) {
+      throw new IllegalArgumentException("Dashboard not found");
+    }
+    rs = executeQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+    if (!rs.next()) {
+      throw new IllegalArgumentException("Activity not found");
+    }
+    JSONArray dashboards = new JSONArray(rs.getString(1));
+    int ind = RunCalcUtils.find(dashboards, dashboard);
+    if (ind == -1) {
+      throw new IllegalArgumentException("Activity not in dashboard");
+    }
+    if (dashboards.length() == 1) {
+      throw new IllegalArgumentException("Activity must be present in at least one dashboard");
+    }
+    dashboards.remove(ind);
+    executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + dashboards.toString() + "' WHERE genby='" + activity + "'", false);
+  }
 	
   synchronized void addDashboard(String name) throws Exception {
     if (name == null) {
