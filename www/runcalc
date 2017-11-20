@@ -645,12 +645,7 @@
             });
         }
 
-        var fetchEnabled = true;
-
         function fetch() {
-            if (!fetchEnabled) {
-                return false;
-            }
             var period = $('input[name=selectPeriod]:checked').attr('id');
             var records = parseInt($('input[name=selectLast]:checked').attr('cap'));
             var ds = $('#dtStart').datepicker('getDate');
@@ -797,6 +792,28 @@
             });
         }
 
+        function initDashboards() {
+            $.ajax({
+                url: 'getDash',
+                method: 'POST',
+                dataType: 'json',
+                statusCode: {
+                    200: function(data) {
+                        console.log(data);
+                        arr = data['dashboards'];
+                        dashHtml = '';
+                        $.each(arr, function(i, item) {
+                            dashHtml += '<button id="dashboard' + item + '">' + item + '</button>';
+                        });
+                        $('#allDash').html(dashHtml);
+                        $.each(arr, function(i, item) {
+                            $('#dashboard' + item).button();
+                        });
+                    }
+                }
+            });
+        }
+
         function checkWidth() {
             if ($(window).width() < 1375) {
                 initSecondaryDialogs();
@@ -841,15 +858,12 @@
             $('#checkbox-5').checkboxradio();
             $('#checkbox-6').checkboxradio();
             $('#selectAll').click(function() {
-                fetchEnabled = false;
                 $("#checkbox-1").prop('checked', true).change();
                 $("#checkbox-2").prop('checked', true).change();
                 $("#checkbox-3").prop('checked', true).change();
                 $("#checkbox-4").prop('checked', true).change();
                 $("#checkbox-5").prop('checked', true).change();
                 $("#checkbox-6").prop('checked', true).change();
-                fetchEnabled = true;
-                fetch();
             });
             $("#bestTotalsBtn").click(function() {
                 $("#bestSplits").dialog('open');
@@ -887,6 +901,7 @@
             });
             $('#dtStart').datepicker('disable');
             $('#dtEnd').datepicker('disable');
+            initDashboards();
             fetch();
             $.tablesorter.addWidget({
                 id: "numbering",
@@ -1089,6 +1104,12 @@
             <table id="bestOf">
                 <tbody></tbody>
             </table>
+        </div>
+        <div id="dashboards">
+            <fieldset>
+                <legend class="legend-cap">Dashboards</legend>
+                <div id="allDash"></div>
+            </fieldset>
         </div>
         <h2>
             <div id="ht">Fetching activities...</div>

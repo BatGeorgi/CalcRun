@@ -601,9 +601,9 @@ public class SQLiteManager {
   synchronized JSONObject getDashboards() {
     JSONArray arr = new JSONArray();
     try {
-      ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, false);
+      ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
       while (rs.next()) {
-        arr.put(rs.getShort(1));
+        arr.put(rs.getString(1));
       }
     } catch (SQLException e) {
       System.out.println("Error fetching dashboards");

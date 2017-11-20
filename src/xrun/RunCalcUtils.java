@@ -286,7 +286,7 @@ public class RunCalcUtils {
   }
   
   private static boolean isFromDashboard(JSONObject activity, String dashboard) {
-    return find(new JSONArray(activity.remove("dashboards")), dashboard) != -1;
+    return find(new JSONArray(activity.getString("dashboards")), dashboard) != -1;
   }
   
   static int find(JSONArray array, Object element) {
