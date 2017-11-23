@@ -700,6 +700,11 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processAddDashboard(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -714,6 +719,11 @@ class CalcDistHandler extends AbstractHandler {
 
   private void processRenameDashboard(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -728,6 +738,11 @@ class CalcDistHandler extends AbstractHandler {
 
   private void processRemoveDashboard(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -755,6 +770,11 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processChangeDash(Request baseRequest, HttpServletResponse response, boolean add)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
     String activity = baseRequest.getHeader("activity");
     String target = baseRequest.getHeader("dashboard");
     response.setContentType("application/txt");
