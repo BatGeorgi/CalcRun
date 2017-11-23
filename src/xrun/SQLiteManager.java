@@ -520,7 +520,7 @@ public class SQLiteManager {
     executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + dashboards.toString() + "' WHERE genby='" + activity + "'", false);
   }
 	
-  synchronized void addDashboard(String name) throws Exception {
+  synchronized void addDashboard(String name) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
@@ -530,18 +530,18 @@ public class SQLiteManager {
     executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + name + "')", false);
   }
 
-  synchronized void renameDashboard(String name, String newName) throws Exception {
+  synchronized void renameDashboard(String name, String newName) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
     if (MAIN_DASHBOARD.equals(name) || MAIN_DASHBOARD.equals(newName)) {
       throw new IllegalArgumentException("Cannot rename main dashboard");
     }
-    ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE newName='" + newName + "'", true);
+    ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + newName + "'", true);
     if (rs.next()) {
       throw new IllegalArgumentException("Dashboard " + newName + " already exists");
     }
-    rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + newName + "'", true);
+    rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + name + "'", true);
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard " + name + " doest not exist");
     }
@@ -568,7 +568,7 @@ public class SQLiteManager {
     removeDashboard(name, false);
   }
 
-  synchronized void removeDashboard(String name, boolean fixActivities) throws Exception {
+  synchronized void removeDashboard(String name, boolean fixActivities) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
@@ -602,6 +602,9 @@ public class SQLiteManager {
     JSONArray arr = new JSONArray();
     try {
       ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
+      if (rs == null) {
+        executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + MAIN_DASHBOARD + "')", false);
+      }
       while (rs.next()) {
         arr.put(rs.getString(1));
       }

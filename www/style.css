@@ -201,9 +201,59 @@ tr.border_bottom td {
 	color:#1c9e45;
 	text-shadow: 1px 1px black;
 }
-#hideFilters {
-	width: 140px;
-}
 #search {
 	width: 140px;
+}
+#hideFilters {
+	width : 140px;
+}
+.dashButton {
+	box-shadow: rgb(39, 104, 115) 0px 10px 14px -7px;
+	background: linear-gradient(rgb(89, 155, 179) 5%, rgb(64, 140, 153) 100%) rgb(89, 155, 179);
+	display: inline-block;
+	cursor: pointer;
+	color: rgb(255, 255, 255);
+	font-family: Arial;
+	font-size: 20px;
+	font-weight: bold;
+	padding: 8px 12px;
+	text-decoration: none;
+	text-shadow: rgb(61, 118, 138) 0px 1px 0px;
+}
+.notSelectedDash {
+	background: linear-gradient(rgb(89, 155, 179) 5%, rgb(64, 140, 153) 100%) rgb(89, 155, 179);
+}
+.selectedDash {
+	background: rgb(191, 193, 40);
+}
+.controlButton {
+	box-shadow: rgb(159, 180, 242) 0px 0px 0px 2px;
+	background: linear-gradient(rgb(120, 146, 194) 5%, rgb(71, 110, 158) 100%) rgb(120, 146, 194);
+	border-radius: 10px;
+	border: 1px solid rgb(78, 96, 150);
+	display: inline-block;
+	cursor: pointer;
+	color: rgb(255, 255, 255);
+	font-family: Arial;
+	font-size: 16px;
+	padding: 8px 12px;
+	text-decoration: none;
+	text-shadow: rgb(40, 57, 102) 0px 1px 0px;
+}
+#controls {
+	width: 100%
+}
+#importButton {
+	display: inline-block;
+}
+#rescanButton {
+	display: inline-block;
+}
+#dashHeading {
+	margin: auto;
+	text-align: center;
+	color: red;
+	font-size: 22px;
+	text-shadow: 1px 1px black;
+	text-decoration: underline;
 }

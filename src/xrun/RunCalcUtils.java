@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -474,8 +475,10 @@ public class RunCalcUtils {
   String addDashboard(String name) {
     try {
       sqLite.addDashboard(name);
-    } catch (Exception e) {
-      return e.getMessage();
+    } catch (SQLException e) {
+      return "Error creating dashboard " + name + " - db error";
+    } catch (RuntimeException re) {
+      return re.getMessage();
     }
     if (drive != null) {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
@@ -486,8 +489,10 @@ public class RunCalcUtils {
   String renameDashboard(String name, String newName) {
     try {
       sqLite.renameDashboard(name, newName);
-    } catch (Exception e) {
-      return e.getMessage();
+    } catch (SQLException e) {
+      return "Error renaming dashboard " + name + " - db error";
+    } catch (RuntimeException re) {
+      return re.getMessage();
     }
     if (drive != null) {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
@@ -498,8 +503,10 @@ public class RunCalcUtils {
   String removeDashboard(String name) {
     try {
       sqLite.removeDashboard(name, true);
-    } catch (Exception e) {
-      return e.getMessage();
+    } catch (SQLException e) {
+      return "Error removing dashboard " + name + " - db error";
+    } catch (RuntimeException re) {
+      return re.getMessage();
     }
     if (drive != null) {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
@@ -517,8 +524,10 @@ public class RunCalcUtils {
     }
     try {
       sqLite.addToDashboard(activity, dashboard);
-    } catch (Exception e) {
-      return e.getMessage();
+    } catch (SQLException e) {
+      return "Error adding activity " + activity + " to " + dashboard + " - db error";
+    } catch (RuntimeException re) {
+      return re.getMessage();
     }
     if (drive != null) {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
@@ -532,8 +541,10 @@ public class RunCalcUtils {
     }
     try {
       sqLite.removeFromDashboard(activity, dashboard);
-    } catch (Exception e) {
-      return e.getMessage();
+    } catch (SQLException e) {
+      return "Error removing activity " + activity + " from " + dashboard + " - db error";
+    } catch (RuntimeException re) {
+      return re.getMessage();
     }
     if (drive != null) {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");

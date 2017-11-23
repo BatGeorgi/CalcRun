@@ -98,8 +98,154 @@
             }
             return point;
         }
+		
+		function changeDash(alias, activity, dashboard) {
+			if (dashboard == '') {
+				return;
+			}
+			$.ajax({
+                url: alias,
+                headers: {
+                    'Content-Type': 'application/txt',
+                    'activity': activity,
+                    'dashboard': dashboard,
+                },
+                method: 'POST',
+                dataType: 'text',
+                statusCode: {
+                    200: function(resp) {
+                        $('#infoDialog').html(resp);
+                        $('#infoDialog').dialog('option', 'title', 'Status');
+                        $('#infoDialog').dialog('open');
+                    },
+                    401: function(resp) {
+                        $('#infoDialog').html('Please sign in!');
+                        $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                        $('#infoDialog').dialog('open');
+                    }
+                }
+            });
+		}
 
         function initDialogs() {
+			$('#createDashboard').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Create": function() {
+						$.ajax({
+                            url: 'addDash',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'name': $('#cdName').val()
+                            },
+                            method: 'POST',
+                            dataType: 'text',
+                            statusCode: {
+                                200: function(resp) {
+									initDashboards();
+									$('#infoDialog').html(resp);
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+                                },
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
+								}
+                            }
+                        });
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 200
+            });
+			$('#renameDashboard').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Rename": function() {
+						var newName = $('#newDashName').val();
+						$.ajax({
+                            url: 'renameDash',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'name': $('#dashboard' + currentDash).attr('name'),
+								'newName': newName
+                            },
+                            method: 'POST',
+                            dataType: 'text',
+                            statusCode: {
+                                200: function(resp) {
+									initDashboards();
+									$('#infoDialog').html(resp);
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+                                },
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
+								}
+                            }
+                        });
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 200
+            });
+			$('#removeDashboard').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Remove": function() {
+						$.ajax({
+                            url: 'removeDash',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'name': $('#dashboard' + currentDash).attr('name')
+                            },
+                            method: 'POST',
+                            dataType: 'text',
+                            statusCode: {
+                                200: function(resp) {
+									currentDash = 0;
+									initDashboards();
+									fetch();
+									$('#infoDialog').html(resp);
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+                                },
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
+								}
+                            }
+                        });
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 200
+            });
             $('#infoDialog').dialog({
                 autoOpen: false,
                 modal: true,
@@ -134,8 +280,8 @@
                                     $('#infoDialog').html('Logged in!');
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
-                                    $('#loginButton').button("option", "disabled", true);
-                                    $('#loginButton').button("option", "label", "Authorized");
+                                    $('#loginButton').prop("disabled",true);
+                                    $('#loginButton').text("Authorized");
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
@@ -193,6 +339,10 @@
                         $(this).dialog("close");
                     },
                     "Modify": function() {
+						dashAdd = $('#addToDash option:selected').val();
+						dashRem = $('#remFromDash option:selected').val();
+						changeDash('addToDash', $('#editable').attr('genby'), dashAdd);
+						changeDash('removeFromDash', $('#editable').attr('genby'), dashRem);
                         $.ajax({
                             url: 'editActivity',
                             headers: {
@@ -230,8 +380,8 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min($(window).width() * 0.62, 560),
-                height: Math.min($(window).height() * 0.75, 600),
+				width: Math.min($(window).width() * 0.7, 600),
+                height: Math.min($(window).height() * 0.85, 750),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -601,12 +751,19 @@
                 });
                 $('#edit' + i).click(function() {
                     type = $('#type' + i).text();
+					opts = '<option value="">---Keep---</option>';
+					for (q = 0; q < dashCount; ++q) {
+						name = $('#dashboard' + q).attr('name');
+						opts += '<option value="' + name + '">' + name + '</option>';
+					}
                     $('#editable').html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
                         getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td>' +
                         '<tr><td>Garmin </td><td><input size="50" type="text" id="chooseGarmin" value="' + (item['garminLink'] != 'none' ? item['garminLink'] : "") + '"/></td></tr>' +
                         '<tr><td>Relive CC </td><td><input size="50" type="text" id="chooseCC" value="' + (item['ccLink'] != 'none' ? decodeURIComponent(item['ccLink']) : "") + '"/></td></tr>' +
-                        '<tr><td>Photos </td><td><input size="50" type="text" id="choosePhotos" value="' + (item['photosLink'] != 'none' ? decodeURIComponent(item['photosLink']) : "") + '"/></td></tr></tbody></table>' +
-                        '<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
+                        '<tr><td>Photos </td><td><input size="50" type="text" id="choosePhotos" value="' + (item['photosLink'] != 'none' ? decodeURIComponent(item['photosLink']) : "") + '"/></td></tr>' +
+                        '<tr><td>Add to dashboard</td><td><select id="addToDash">' + opts + '</select></td></tr>' + 
+						'<tr><td>Remove from dashboard</td><td><select id="remFromDash">' + opts + '</select></td></tr></tbody></table>' +
+						'<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
                         '<table><tbody><tr><td>Actual distance</td><td><input type="text" id="actDist" /></td></tr>' +
                         '<tr><td>Actual time(hh:mm:ss)</td><td><input type="text" id="actTime" /></td></tr>' +
                         '<tr><td>Actual elevation gain</td><td><input type="text" id="actGain" /></td></tr>' +
@@ -670,18 +827,25 @@
                     'records': records,
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
-                    'dmax': $('#spinnerMax').val()
+                    'dmax': $('#spinnerMax').val(),
+					'dashboard': $('#dashboard' + currentDash).attr('name')
                 },
                 statusCode: {
                     200: function(data) {
                         initContent(data);
                         $('#search').button("option", "disabled", false);
+						for (i = 0; i < dashCount; ++i) {
+							$('#dashboard' + i).prop("disabled", false);
+						}
                     },
                     400: function(data) {
                         $('#infoDialog').html('Invalid distance arguments!');
                         $('#infoDialog').dialog('option', 'title', 'Bad data');
                         $('#infoDialog').dialog('open');
                         $('#search').button("option", "disabled", false);
+						for (i = 0; i < dashCount; ++i) {
+							$('#dashboard' + i).prop("disabled", false);
+						}
                     }
                 }
             });
@@ -782,15 +946,18 @@
                 dataType: 'json',
                 statusCode: {
                     200: function(xhr) {
-                        $('#loginButton').button("option", "disabled", true);
-                        $('#loginButton').button("option", "label", "Authorized");
+                        $('#loginButton').prop("disabled",true);
+                        $('#loginButton').text('Authorized');
                     },
                     401: function(xhr) {
-                        $('#loginButton').button("option", "disabled", false);
+                        $('#loginButton').prop("disabled",false);
                     }
                 }
             });
         }
+		
+		var dashCount = 0;
+		var currentDash = 0;
 
         function initDashboards() {
             $.ajax({
@@ -799,15 +966,34 @@
                 dataType: 'json',
                 statusCode: {
                     200: function(data) {
-                        console.log(data);
                         arr = data['dashboards'];
                         dashHtml = '';
+						dashCount = arr.length;
                         $.each(arr, function(i, item) {
-                            dashHtml += '<button id="dashboard' + item + '">' + item + '</button>';
+                            dashHtml += '<button class="dashButton" id="dashboard' + i + '">' + item + '</button>';
                         });
                         $('#allDash').html(dashHtml);
-                        $.each(arr, function(i, item) {
-                            $('#dashboard' + item).button();
+						$.each(arr, function(i, item) {
+                            $('#dashboard' + i).addClass(i == currentDash ? 'selectedDash' : 'notSelectedDash');
+							$('#dashboard' + i).attr('name', item);
+							$('#dashboard' + i).click(function() {
+								if (currentDash == i) {
+									return;
+								}
+								currentDash = i;
+								$('#dashboard' + i).addClass('selectedDash');
+								$('#dashboard' + i).removeClass('notSelectedDash');
+								for (j = 0; j < dashCount; ++j) {
+									if (j != i) {
+										$('#dashboard' + j).prop("disabled",true);
+										$('#dashboard' + j).addClass('notSelectedDash');
+										$('#dashboard' + j).removeClass('selectedDash');
+									}
+								}
+								$('#runs').hide();
+								$('#ht').html('Fetching activities...');
+								fetch();
+							});
                         });
                     }
                 }
@@ -883,7 +1069,6 @@
                     $('#dtEnd').datepicker('enable');
                 }
             });
-            $("#loginButton").button();
             initDialogs();
             $("#loginButton").click(function() {
                 $('#login').html('<table><tbody><tr><td>User </td><td><input type="text" id="loginUser" value="BatGeorgi"/></td></tr>' +
@@ -891,6 +1076,22 @@
                 $('#login').dialog('option', 'title', 'Login');
                 $('#login').dialog('open');
             });
+			$('#createDashboardButton').click(function () {
+				$('#createDashboard').html('Dashboard name&nbsp;<input type="text" id="cdName" />');
+				$('#createDashboard').dialog('option', 'title', 'Create new dashboard');
+				$('#createDashboard').dialog('open');
+			});
+			$('#renameDashboardButton').click(function () {
+				$('#renameDashboard').html('New name&nbsp;<input type="text" id="newDashName" />');
+				$('#renameDashboard').dialog('option', 'title', 'Rename dashboard ' + $('#dashboard' + currentDash).attr('name'));
+				$('#renameDashboard').dialog('open');
+			});
+			$('#removeDashboardButton').click(function () {
+				crName = $('#dashboard' + currentDash).attr('name');
+				$('#removeDashboard').html('Really remove dashboard ' + crName + '?');
+				$('#removeDashboard').dialog('option', 'title', 'Remove dashboard ' + $('#dashboard' + currentDash).attr('name'));
+				$('#removeDashboard').dialog('open');
+			});
             $('#dtStart').datepicker({
                 yearRange: '2013:c',
                 changeYear: true
@@ -920,12 +1121,11 @@
             $("#spinnerMax").spinner({
                 min: 0
             });
-			$('#hideFilters').button();
 			$('#hideFilters').click(function() {
 				if ($('#filters').css('display') == 'none') {
-					$(this).button("option", "label", "Hide Filters");
+					$(this).text("Hide Filters");
 				} else {
-					$(this).button("option", "label", "Show Filters");
+					$(this).text("Show Filters");
 				}
 				$('#filters').toggle();
 			});
@@ -1007,13 +1207,21 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.45</strong></H1>
+        <H1><strong>Activity Tracker 2.5</strong></H1>
 		<hr>
     </div>
-    <a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
-    <input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
-    <button id="loginButton">Login</button>
-	<button id="hideFilters">Show Filters</button>
+	<div id="controls">
+		<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
+		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
+		<button id="loginButton" class="controlButton">Login</button>
+		<button id="hideFilters" class="controlButton">Show Filters</button>
+		<button id="createDashboardButton" class="controlButton">New dashboard</button>
+		<button id="renameDashboardButton" class="controlButton">Rename dashboard</button>
+		<button id="removeDashboardButton" class="controlButton">Remove dashboard</button>
+	</div><p><p><p><p>
+	<div id="createDashboard"></div>
+	<div id="renameDashboard"></div>
+	<div id="removeDashboard"></div>
     <div id="filters" style="display:none">
         <fieldset>
             <legend class="legend-cap">Activity Type</legend>
@@ -1106,10 +1314,8 @@
             </table>
         </div>
         <div id="dashboards">
-            <fieldset>
-                <legend class="legend-cap">Dashboards</legend>
-                <div id="allDash"></div>
-            </fieldset>
+            <div id="dashHeading">Dashboards</div><p>
+            <div id="allDash"></div>
         </div>
         <h2>
             <div id="ht">Fetching activities...</div>
