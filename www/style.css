@@ -60,9 +60,11 @@ th {
 }
 #activities {
 	text-align: center;
+	width: 100%;
 }
 #runs {
 	margin: auto;
+	display: inline-block;
 	text-align: left;
 	width: 65%;
 	border-collapse:separate; 
@@ -84,6 +86,7 @@ th {
 #overallWrap {
 	float: left;
 	width: 16%;
+	display: inline-block;
 }
 #overallWrap td:nth-child(2) {
 	width: 50%;
@@ -91,6 +94,7 @@ th {
 #bestOfWrap {
 	float: right;
 	width: 16%;
+	display: inline-block;
 }
 #filters {
 	text-align: center;
