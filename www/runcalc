@@ -1001,7 +1001,7 @@
         }
 
         function checkWidth() {
-            if ($(window).width() < 1375) {
+            if ($(window).width() < 1300) {
                 initSecondaryDialogs();
                 $('#bestOfWrap').append('<button id="bestOfBtn">Best achievements</button>');
                 $('#bestOfBtn').button();
@@ -1293,6 +1293,13 @@
                                 <button id="search">Search</button>
     </div>
     <div id="activities">
+	<div id="dashboards">
+            <div id="dashHeading">Dashboards</div><p>
+            <div id="allDash"></div>
+        </div>
+	<h2>
+            <div id="ht">Fetching activities...</div>
+        </h2>
         <div id="overallWrap">
             <button id="mTotalsBtn">Monthly totals</button>
             <hr>
@@ -1303,23 +1310,6 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div id="bestOfWrap">
-            <button id="bestTotalsBtn">Best split times</button>
-            <hr>
-            <div id="titleBest">
-                <h2>Best</h2>
-            </div>
-            <table id="bestOf">
-                <tbody></tbody>
-            </table>
-        </div>
-        <div id="dashboards">
-            <div id="dashHeading">Dashboards</div><p>
-            <div id="allDash"></div>
-        </div>
-        <h2>
-            <div id="ht">Fetching activities...</div>
-        </h2>
         <table class="tablesorter highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
             <thead>
                 <tr>
@@ -1337,6 +1327,16 @@
             </thead>
             <tbody />
         </table>
+	<div id="bestOfWrap">
+            <button id="bestTotalsBtn">Best split times</button>
+            <hr>
+            <div id="titleBest">
+                <h2>Best</h2>
+            </div>
+            <table id="bestOf">
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
     <div id="editable"></div>
     <div id="removable"></div>
