@@ -58,22 +58,16 @@ th {
 #runs tr td:not(:last-child) {
 	cursor:pointer;
 }
-#activities {
-	text-align: center;
-	width: 100%;
-}
 #runs {
 	margin: auto;
 	display: inline-block;
 	text-align: left;
-	width: 65%;
 	border-collapse:separate; 
 	border-spacing: 0px 3px;
 }
 #runs td {
 	padding-top: .5em;
     padding-bottom: .5em;
-	
 }
 #runs tr td:first-child {
 	border-top-left-radius: 10px;
@@ -83,19 +77,6 @@ th {
 	border-top-right-radius: 10px;
 	border-bottom-right-radius: 10px;
 }
-#overallWrap {
-	float: left;
-	width: 16%;
-	display: inline-block;
-}
-#overallWrap td:nth-child(2) {
-	width: 50%;
-}
-#bestOfWrap {
-	float: right;
-	width: 16%;
-	display: inline-block;
-}
 #filters {
 	text-align: center;
 }
@@ -103,14 +84,6 @@ th {
 	font-weight: bold;
 	cursor:pointer;
 	color: #255096;
-}
-#bestTotalsBtn {
-	font-weight: bold;
-	color: #1f1f21;
-}
-#mTotalsBtn {
-	font-weight: bold;
-	color: #1f1f21;
 }
 #bestOfBtn {
 	font-weight: bold;
@@ -260,4 +233,41 @@ tr.border_bottom td {
 	font-size: 22px;
 	text-shadow: 1px 1px black;
 	text-decoration: underline;
+}
+#bestTotalsBtn {
+	font-weight: bold;
+	color: #1f1f21;
+	width: 200px;
+}
+#mTotalsBtn {
+	font-weight: bold;
+	color: #1f1f21;
+	width: 200px;
+}
+#overallWrap {
+	display: inline-block;
+}
+#overallWrap td:nth-child(2) {
+	width: 50%;
+}
+#bestOfWrap {
+	display: inline-block;
+}
+#activities {
+	text-align: center;
+	width: 100%;
+}
+#mainBar {
+  display: flex;
+  flex-direction: column;
+}
+#sideBar {
+  display: flex;
+  flex-direction: column;
+}
+#userData {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-around;
 }
