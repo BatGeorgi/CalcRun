@@ -1222,6 +1222,8 @@
 	<div id="createDashboard"></div>
 	<div id="renameDashboard"></div>
 	<div id="removeDashboard"></div>
+	<div id="userData">
+	<div id="mainBar">
     <div id="filters" style="display:none">
         <fieldset>
             <legend class="legend-cap">Activity Type</legend>
@@ -1292,24 +1294,15 @@
                             <p>
                                 <button id="search">Search</button>
     </div>
-    <div id="activities">
 	<div id="dashboards">
             <div id="dashHeading">Dashboards</div><p>
             <div id="allDash"></div>
-        </div>
-	<h2>
+    </div>
+    <div id="activities">
+		
+		<h2>
             <div id="ht">Fetching activities...</div>
         </h2>
-        <div id="overallWrap">
-            <button id="mTotalsBtn">Monthly totals</button>
-            <hr>
-            <div id="titleTotals">
-                <h2>Totals</h2>
-            </div>
-            <table id="overall">
-                <tbody></tbody>
-            </table>
-        </div>
         <table class="tablesorter highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
             <thead>
                 <tr>
@@ -1327,9 +1320,20 @@
             </thead>
             <tbody />
         </table>
-	<div id="bestOfWrap">
-            <button id="bestTotalsBtn">Best split times</button>
-            <hr>
+    </div>
+	</div>
+	<div id="sideBar">
+		<button id="mTotalsBtn">Monthly totals</button>
+		<button id="bestTotalsBtn">Best split times</button>
+		<div id="overallWrap">
+            <div id="titleTotals">
+                <h2>Totals</h2>
+            </div>
+            <table id="overall">
+                <tbody></tbody>
+            </table>
+        </div>
+		<div id="bestOfWrap">
             <div id="titleBest">
                 <h2>Best</h2>
             </div>
@@ -1337,7 +1341,8 @@
                 <tbody></tbody>
             </table>
         </div>
-    </div>
+	</div>
+	</div>
     <div id="editable"></div>
     <div id="removable"></div>
     <div id="details"></div>
