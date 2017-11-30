@@ -64,6 +64,7 @@ th {
 	text-align: left;
 	border-collapse:separate; 
 	border-spacing: 0px 3px;
+	width: 80%;
 }
 #runs td {
 	padding-top: .5em;
@@ -260,10 +261,15 @@ tr.border_bottom td {
 #mainBar {
   display: flex;
   flex-direction: column;
+  width: 80%;
 }
 #sideBar {
   display: flex;
   flex-direction: column;
+  width: 20%;
+}
+#dashboards {
+	text-align: center;
 }
 #userData {
   display: flex;
