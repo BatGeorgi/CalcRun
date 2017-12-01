@@ -167,6 +167,10 @@ tr.border_bottom td {
 	border-collapse: collapse; 
 	text-align: center;
 }
+#wtt { 
+    border-collapse: collapse; 
+	text-align: center;
+}
 #titleBest {
 	color:#2a6cd6;
 	text-shadow: 1px 1px black;
@@ -241,6 +245,11 @@ tr.border_bottom td {
 	width: 200px;
 }
 #mTotalsBtn {
+	font-weight: bold;
+	color: #1f1f21;
+	width: 200px;
+}
+#wTotalsBtn {
 	font-weight: bold;
 	color: #1f1f21;
 	width: 200px;

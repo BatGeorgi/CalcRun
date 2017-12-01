@@ -533,7 +533,27 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min(400),
+                width: Math.min(400, $(window).width() * 0.8),
+                height: Math.min($(window).height() * 0.85, 900),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 50,
+                        "top": 150
+                    });
+                }
+            });
+			$('#wTotals').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min(600, $(window).width() * 0.8),
                 height: Math.min($(window).height() * 0.85, 900),
                 create: function(event) {
                     $(event.target).parent().css({
@@ -607,6 +627,7 @@
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
+			initWeeklyTotals(data['wtotals']);
             runsHtml = '';
             optsAll = '';
             var dialog = {
@@ -934,6 +955,12 @@
                 '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] +
                 '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
         }
+		
+		function getWTable(item) {
+            return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr>' +
+                '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] +
+                '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
+        }
 
         function initMonthlyTotals(data) {
             $('#mTotals').dialog('option', 'title', 'Total distance by month');
@@ -944,6 +971,24 @@
             tableHtml += '</tbody></table>';
             $('#mTotals').html(tableHtml);
         }
+		
+		function initWeeklyTotals(data) {
+			$('#wTotals').dialog('option', 'title', 'Total distance by week');
+			buttonHtml = '';
+            tableHtml = '<table id="wtt" align="center"><tbody>';
+            $.each(data, function(i, item) {
+				intData = item['data'];
+				wy = item['year'];
+				buttonHtml += i > 0 ? '<a href="#shortcut' + wy + '"><button id=wy"' + wy + '">' + wy + '</button></a>' : '';
+				firstEl = i > 0 ? '<div id="shortcut' + wy + '"/>' : '';
+				$.each(intData, function(j, wdata) {
+					tableHtml += '<tr class="border_bottom"><td>' + firstEl + wy + ' ' + wdata['info'] + '</td><td>' + getWTable(wdata) + '</td></tr>';
+					firstEl = '';
+				});
+            });
+            tableHtml += '</tbody></table>';
+            $('#wTotals').html(buttonHtml + '<hr>' + tableHtml);
+		}
 
         function checkCookieVal(cookieVal) {
             $.ajax({
@@ -1096,6 +1141,7 @@
             });
             $('#bestTotalsBtn').button();
             $('#mTotalsBtn').button();
+			$('#wTotalsBtn').button();
             $('input[name=selectPeriod]').checkboxradio();
             $('input[name=selectLast]').checkboxradio();
             $('#checkbox-1').checkboxradio();
@@ -1117,6 +1163,9 @@
             });
             $("#mTotalsBtn").click(function() {
                 $("#mTotals").dialog('open');
+            });
+			$("#wTotalsBtn").click(function() {
+                $("#wTotals").dialog('open');
             });
             $("#radio-1").change(disableDates);
             $("#radio-2").change(disableDates);
@@ -1385,6 +1434,7 @@
 	</div>
 	<div id="sideBar">
 		<button id="mTotalsBtn">Monthly totals</button>
+		<button id="wTotalsBtn">Weekly totals</button>
 		<button id="bestTotalsBtn">Best split times</button>
 		<div id="overallWrap">
             <div id="titleTotals">
@@ -1409,6 +1459,7 @@
     <div id="details"></div>
     <div id="bestSplits"></div>
     <div id="mTotals"></div>
+	<div id="wTotals"></div>
     <div id="dataHolder" />
     <div id="comparable">
         <div id="compareResults" />

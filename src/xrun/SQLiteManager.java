@@ -162,6 +162,7 @@ public class SQLiteManager {
         while (rs.next()) {
           Calendar cal = new GregorianCalendar();
           cal.setTimeInMillis(rs.getLong("timeRawMs"));
+          cal.setFirstDayOfWeek(Calendar.MONDAY);
           int week = cal.get(Calendar.WEEK_OF_YEAR);
           JSONObject data = weekly.get(week);
           if (data == null) {
@@ -196,6 +197,11 @@ public class SQLiteManager {
         for (int week = 60; week >= 0; --week) {
           JSONObject data = weekly.get(week);
           if (data != null) {
+            data.put("r", String.format("%.3f", data.getDouble("r")));
+            data.put("t", String.format("%.3f", data.getDouble("t")));
+            data.put("u", String.format("%.3f", data.getDouble("u")));
+            data.put("h", String.format("%.3f", data.getDouble("h")));
+            data.put("rt", String.format("%.3f", data.getDouble("rt")));
             wArr.put(data);
           }
         }
