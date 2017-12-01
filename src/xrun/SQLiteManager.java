@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -141,6 +143,71 @@ public class SQLiteManager {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+  
+  synchronized JSONArray getWeeklyTotals() {
+    JSONArray result = new JSONArray();
+    try {
+      ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + RUNS_TABLE_NAME, true);
+      List<Integer> years = new ArrayList<Integer>();
+      while (rs.next()) {
+        years.add(rs.getInt(1));
+      }
+      rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
+      Collections.sort(years);
+      for (int i = years.size() - 1; i >= 0; --i) {
+        rs = executeQuery("SELECT timeRawMs, type, distRaw FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
+        Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
+        JSONArray wArr = new JSONArray();
+        while (rs.next()) {
+          Calendar cal = new GregorianCalendar();
+          cal.setTimeInMillis(rs.getLong("timeRawMs"));
+          int week = cal.get(Calendar.WEEK_OF_YEAR);
+          JSONObject data = weekly.get(week);
+          if (data == null) {
+            data = new JSONObject();
+            data.put("r", 0d);
+            data.put("t", 0d);
+            data.put("u", 0d);
+            data.put("h", 0d);
+            data.put("rt", 0d);
+            Calendar first = (Calendar) cal.clone();
+            first.add(Calendar.DAY_OF_WEEK, Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK));
+            Calendar last = (Calendar) first.clone();
+            last.add(Calendar.DAY_OF_YEAR, 6);
+            data.put("info", "Week " + week + ": " + first.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[first.get(Calendar.MONTH)] + " - " +
+                last.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[last.get(Calendar.MONTH)]);
+          }
+          String type = rs.getString("type");
+          double dist = rs.getDouble("distRaw");
+          if (RunCalcUtils.RUNNING.equals(type)) {
+            data.put("r", data.getDouble("r") + dist);
+            data.put("rt", data.getDouble("rt") + dist);
+          } else if (RunCalcUtils.TRAIL.equals(type)) {
+            data.put("t", data.getDouble("t") + dist);
+            data.put("rt", data.getDouble("rt") + dist);
+          } else if (RunCalcUtils.UPHILL.equals(type)) {
+            data.put("u", data.getDouble("u") + dist);
+          } else if (RunCalcUtils.HIKING.equals(type)) {
+            data.put("h", data.getDouble("h") + dist);
+          }
+          weekly.put(week, data);
+        }
+        for (int week = 60; week >= 0; --week) {
+          JSONObject data = weekly.get(week);
+          if (data != null) {
+            wArr.put(data);
+          }
+        }
+        JSONObject yinfo = new JSONObject();
+        yinfo.put("year", years.get(i));
+        yinfo.put("data", wArr);
+        result.put(yinfo);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return result;
   }
 	
 	synchronized JSONArray getMonthlyTotals() {
