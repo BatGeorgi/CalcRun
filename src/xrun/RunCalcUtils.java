@@ -165,10 +165,6 @@ public class RunCalcUtils {
   	return file;
   }
   
-  JSONArray getMonthlyTotals() {
-    return sqLite.getMonthlyTotals();
-  }
-  
   String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos) {
   	File file = null;
   	try {
@@ -242,7 +238,8 @@ public class RunCalcUtils {
       activities.put(matched.get(i));
     }
     result.put("activities", activities);
-    result.put("mtotals", getMonthlyTotals());
+    result.put("mtotals", sqLite.getMonthlyTotals());
+    result.put("wtotals", sqLite.getWeeklyTotals());
     if (activities.length() > 0) {
       for (String key : totals.keySet()) {
         Object value = totals.get(key);

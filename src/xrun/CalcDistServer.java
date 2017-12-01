@@ -789,6 +789,31 @@ class CalcDistHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+  
+  private void processMoveDash(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    // TODO
+  }
+  
+  private void processSaveFilter(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    // TODO
+  }
+  
+  private void processRenameFilter(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    // TODO
+  }
+  
+  private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    // TODO
+  }
+  
+  private void processMoveFilter(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    // TODO
+  }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
@@ -838,6 +863,16 @@ class CalcDistHandler extends AbstractHandler {
 			  processChangeDash(baseRequest, response, true);
 			} else if ("/removeFromDash".equalsIgnoreCase(target)) {
 			  processChangeDash(baseRequest, response, false);
+			} else if ("/moveDash".equalsIgnoreCase(target)) {
+			  processMoveDash(baseRequest, response);
+			} else if ("/saveFilter".equalsIgnoreCase(target)) {
+			  processSaveFilter(baseRequest, response);
+			} else if ("/renameFilter".equalsIgnoreCase(target)) {
+			  processRenameFilter(baseRequest, response);
+			} else if ("/removeFilter".equalsIgnoreCase(target)) {
+        processRemoveFilter(baseRequest, response);
+      } else if ("/moveFilter".equalsIgnoreCase(target)) {
+			  processMoveFilter(baseRequest, response);
 			}
 		}
   }
