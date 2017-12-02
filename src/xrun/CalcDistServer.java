@@ -790,11 +790,6 @@ class CalcDistHandler extends AbstractHandler {
     baseRequest.setHandled(true);
   }
   
-  private void processMoveDash(Request baseRequest, HttpServletResponse response)
-      throws IOException, ServletException {
-    // TODO
-  }
-  
   private void processSaveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     // TODO
@@ -806,11 +801,6 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
-      throws IOException, ServletException {
-    // TODO
-  }
-  
-  private void processMoveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     // TODO
   }
@@ -863,17 +853,13 @@ class CalcDistHandler extends AbstractHandler {
 			  processChangeDash(baseRequest, response, true);
 			} else if ("/removeFromDash".equalsIgnoreCase(target)) {
 			  processChangeDash(baseRequest, response, false);
-			} else if ("/moveDash".equalsIgnoreCase(target)) {
-			  processMoveDash(baseRequest, response);
 			} else if ("/saveFilter".equalsIgnoreCase(target)) {
 			  processSaveFilter(baseRequest, response);
 			} else if ("/renameFilter".equalsIgnoreCase(target)) {
 			  processRenameFilter(baseRequest, response);
 			} else if ("/removeFilter".equalsIgnoreCase(target)) {
         processRemoveFilter(baseRequest, response);
-      } else if ("/moveFilter".equalsIgnoreCase(target)) {
-			  processMoveFilter(baseRequest, response);
-			}
+      }
 		}
   }
 }
