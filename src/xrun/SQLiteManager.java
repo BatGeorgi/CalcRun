@@ -12,6 +12,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -23,6 +24,7 @@ public class SQLiteManager {
   private static final String RUNS_TABLE_NAME = "runs";
   private static final String COOKIES_TABLE_NAME = "cookies";
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
+  private static final String PRESETS_TABLE_NAME = "presets";
   private static final String COORDS_TABLE_NAME = "coords";
   
   static final String MAIN_DASHBOARD = "Main";
@@ -53,6 +55,9 @@ public class SQLiteManager {
       "(uid PRIMARY KEY NOT NULL, expires NOT NULL)";
   private static final String CREATE_STATEMENT_DASHBOARDS_TABLE = "CREATE TABLE IF NOT EXISTS " + DASHBOARDS_TABLE_NAME + 
       "(name PRIMARY KEY NOT NULL)";
+  private static final String CREATE_STATEMENT_PRESETS_TABLE = "CREATE TABLE IF NOT EXISTS " + PRESETS_TABLE_NAME + 
+      "(name text NOT NULL, types text NOT NULL, pattern text NOT NULL, startDate text NOT NULL, endDate text NOT NULL, "
+      + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL)";
 
 	private File dbActivities;
 	private File dbCoords;
@@ -309,12 +314,65 @@ public class SQLiteManager {
 	  executeCreate(createStatementRunsTable);
 	  executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
 	  executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
+	  executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
 	}
 	
 	private void setMainDashboard(JSONObject entry) {
 		JSONArray arr = new JSONArray();
 		arr.put(MAIN_DASHBOARD);
 		entry.put("dashboards", arr);
+	}
+	
+	synchronized void addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top) throws SQLException {
+		StringBuffer sb = new StringBuffer("INSERT INTO " + PRESETS_TABLE_NAME + " VALUES(");
+		sb.append("'" + name + "', ");
+		sb.append("'" + types + "', ");
+		sb.append("'" + pattern + "', ");
+		sb.append("'" + startDate + "', ");
+		sb.append("'" + endDate + "', ");
+		sb.append(minDist + ", " + maxDist + ", " + top + ')');
+		executeQueryExc(sb.toString(), false);
+	}
+	
+	synchronized void renamePreset(String name, String newName) throws SQLException {
+		executeQueryExc("UPDATE " + PRESETS_TABLE_NAME + " SET name='" + newName + "' WHERE name='" + name + "'", false);
+	}
+	
+	synchronized void removePreset(String name) throws SQLException {
+		executeQueryExc("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", false);
+	}
+	
+	synchronized JSONArray getPresets() {
+		JSONArray result = new JSONArray();
+		ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME, true);
+		if (rs == null) {
+			return result;
+		}
+		try {
+			while (rs.next()) {
+				JSONObject preset = new JSONObject();
+				preset.put("name", rs.getString("name"));
+				preset.put("pattern", rs.getString("pattern"));
+				preset.put("startDate", rs.getString("startDate"));
+				preset.put("endDate", rs.getString("endDate"));
+				preset.put("minDist", rs.getInt("minDist"));
+				preset.put("maxDist", rs.getInt("maxDist"));
+				preset.put("top", rs.getInt("top"));
+				String types = rs.getString("types");
+				StringTokenizer st = new StringTokenizer(types, ",", false);
+				while (st.hasMoreTokens()) {
+					String next = st.nextToken().trim();
+					if (next.length() > 0) {
+						preset.put(next, true);
+					}
+				}
+				result.put(preset);
+			}
+		} catch (Exception e) {
+			System.out.println("Error working with db - getting presets");
+      e.printStackTrace();
+		}
+		return result;
 	}
 	
 	synchronized void addActivity(JSONObject entry) {

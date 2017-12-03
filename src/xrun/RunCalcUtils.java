@@ -244,6 +244,7 @@ public class RunCalcUtils {
     result.put("activities", activities);
     result.put("mtotals", sqLite.getMonthlyTotals());
     result.put("wtotals", sqLite.getWeeklyTotals());
+    result.put("presets", sqLite.getPresets());
     if (activities.length() > 0) {
       for (String key : totals.keySet()) {
         Object value = totals.get(key);
@@ -617,6 +618,39 @@ public class RunCalcUtils {
     }
     activity.put("origData", new JSONObject());
     return true;
+  }
+  
+  String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top) {
+  	try {
+  		sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top);
+  	} catch (SQLException e) {
+  		return "Error adding preset " + name + " - db error";
+  	} catch (RuntimeException re) {
+  		return re.getMessage();
+  	}
+  	return null;
+  }
+  
+  String renamePreset(String name, String newName) {
+  	try {
+  		sqLite.renamePreset(name, newName);
+  	} catch (SQLException e) {
+  		return "Error renaming preset " + name + " - db error";
+  	} catch (RuntimeException re) {
+  		return re.getMessage();
+  	}
+  	return null;
+  }
+  
+  String removePreset(String name) {
+  	try {
+  		sqLite.removePreset(name);
+  	} catch (SQLException e) {
+  		return "Error removing preset " + name + " - db error";
+  	} catch (RuntimeException re) {
+  		return re.getMessage();
+  	}
+  	return null;
   }
 
 }
