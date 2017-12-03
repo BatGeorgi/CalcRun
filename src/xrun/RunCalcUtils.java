@@ -219,6 +219,7 @@ public class RunCalcUtils {
     if (it.hasNext()) {
       totals = it.next();
     }
+    int count = 0;
     while(it.hasNext()) {
       JSONObject cr = it.next();
       if (!matchName(nameFilter, cr.getString("name")) || !isFromDashboard(cr, dashboard)) {
@@ -228,11 +229,14 @@ public class RunCalcUtils {
         totals.put("elePos", totals.getLong("elePos") - cr.getLong("eleTotalPos"));
         totals.put("eleNeg", totals.getLong("eleNeg") - cr.getLong("eleTotalNeg"));
         totals.put("totalRunDist", totals.getDouble("totalRunDist") - cr.getDouble("distRunningRaw"));
+      } else {
+      	++count;
       }
     }
     if (totals != null) {
       totals.put("avgSpeed", String.format("%.3f", totals.getDouble("totalDistance") / (totals.getLong("totalTime") / 3600.0)));
       totals.put("totalTime", CalcDist.formatTime(totals.getLong("totalTime"), true, true));
+      totals.put("avgDist", String.format("%.3f", totals.getDouble("totalDistance") / (double) count));
     }
     for (int i = 1; i < matched.size(); ++i) {
       activities.put(matched.get(i));
