@@ -792,17 +792,78 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processSaveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
-    // TODO
+  	PrintWriter pw = response.getWriter();
+  	String name = baseRequest.getHeader("name");
+  	String pattern = baseRequest.getHeader("pattern");
+  	String startDate = baseRequest.getHeader("startDate");
+  	String endDate = baseRequest.getHeader("endDate");
+  	String rec = baseRequest.getHeader("records");
+  	String smin = baseRequest.getHeader("dmin");
+    String smax = baseRequest.getHeader("dmax");
+  	int records = Integer.MAX_VALUE;
+  	int minDist = 0;
+  	int maxDist = Integer.MAX_VALUE;
+    try {
+      if (rec != null && rec.length() > 0) {
+        records = Integer.parseInt(rec);
+      }
+      if (smin != null && smin.length() > 0) {
+        minDist = Integer.parseInt(smin);
+      }
+      if (smax != null && smax.length() > 0) {
+        maxDist = Integer.parseInt(smax);
+      }
+    } catch (NumberFormatException ignore) {
+      // silent catch
+    }
+    StringBuffer types = new StringBuffer();
+    if ("true".equals(baseRequest.getHeader("run"))) {
+    	types.append("run,");
+    } else if ("true".equals(baseRequest.getHeader("trail"))) {
+    	types.append("trail,");
+    } else if ("true".equals(baseRequest.getHeader("uphill"))) {
+    	types.append("uphill,");
+    } else if ("true".equals(baseRequest.getHeader("hike"))) {
+    	types.append("hike,");
+    } else if ("true".equals(baseRequest.getHeader("walk"))) {
+    	types.append("walk,");
+    } else if ("true".equals(baseRequest.getHeader("other"))) {
+    	types.append("other,");
+    }
+  	try {
+  		String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records);
+  		pw.println(status == null ? "Preset added" : status);
+  	} finally {
+  		pw.flush();
+  	}
+  	response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
   }
   
   private void processRenameFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
-    // TODO
+  	PrintWriter pw = response.getWriter();
+  	try {
+  		String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
+  		pw.println(status == null ? "Preset renamed" : status);
+  	} finally {
+  		pw.flush();
+  	}
+  	response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
   }
   
   private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
-    // TODO
+  	PrintWriter pw = response.getWriter();
+  	try {
+  		String status = rcUtils.removePreset(baseRequest.getHeader("name"));
+  		pw.println(status == null ? "Preset removed" : status);
+  	} finally {
+  		pw.flush();
+  	}
+  	response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
   }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
