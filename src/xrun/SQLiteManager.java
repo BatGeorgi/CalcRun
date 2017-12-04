@@ -178,7 +178,11 @@ public class SQLiteManager {
             data.put("h", 0d);
             data.put("rt", 0d);
             Calendar first = (Calendar) cal.clone();
-            first.add(Calendar.DAY_OF_WEEK, Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK));
+            int diff = Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK);
+            if (diff == -1) {
+              diff = 6;
+            }
+            first.add(Calendar.DAY_OF_WEEK, diff);
             Calendar last = (Calendar) first.clone();
             last.add(Calendar.DAY_OF_YEAR, 6);
             data.put("info", "Week " + week + ": " + first.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[first.get(Calendar.MONTH)] + " - " +
