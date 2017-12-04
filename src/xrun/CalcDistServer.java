@@ -794,7 +794,9 @@ class CalcDistHandler extends AbstractHandler {
       throws IOException, ServletException {
   	PrintWriter pw = response.getWriter();
   	String name = baseRequest.getHeader("name");
+  	String dashboard = baseRequest.getHeader("dashboard");
   	String pattern = baseRequest.getHeader("pattern");
+  	String dateOpt = baseRequest.getHeader("dateOpt");
   	String startDate = baseRequest.getHeader("startDate");
   	String endDate = baseRequest.getHeader("endDate");
   	String rec = baseRequest.getHeader("records");
@@ -831,7 +833,7 @@ class CalcDistHandler extends AbstractHandler {
     	types.append("other,");
     }
   	try {
-  		String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records);
+  		String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records, dashboard);
   		pw.println(status == null ? "Preset added" : status);
   	} finally {
   		pw.flush();

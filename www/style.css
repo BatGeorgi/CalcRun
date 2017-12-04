@@ -239,6 +239,14 @@ tr.border_bottom td {
 	text-shadow: 1px 1px black;
 	text-decoration: underline;
 }
+#presetHeading {
+	margin: auto;
+	text-align: center;
+	color: #6977e0;
+	font-size: 22px;
+	text-shadow: 1px 1px black;
+	text-decoration: underline;
+}
 #bestTotalsBtn {
 	font-weight: bold;
 	color: #1f1f21;

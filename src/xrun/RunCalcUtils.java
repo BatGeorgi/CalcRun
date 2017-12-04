@@ -620,9 +620,10 @@ public class RunCalcUtils {
     return true;
   }
   
-  String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top) {
+  String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
+      String dashboard) {
   	try {
-  		sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top);
+  		sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
   	} catch (SQLException e) {
   		return "Error adding preset " + name + " - db error";
   	} catch (RuntimeException re) {
