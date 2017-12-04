@@ -563,6 +563,64 @@
                     });
                 }
             });
+			$('#presetsDlg').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Save": function() {
+						name = encodeURIComponent($('#newPresetName').val());
+						period = $('input[name=selectPeriod]:checked').attr('id');
+						records = parseInt($('input[name=selectLast]:checked').attr('cap'));
+						ds = $('#dtStart').datepicker('getDate');
+						de = $('#dtEnd').datepicker('getDate');
+						nf = encodeURIComponent($('#searchName').val());
+						$.ajax({
+                            url: 'saveFilter',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'name': name,
+								'run': $('#checkbox-1').prop('checked'),
+								'trail': $('#checkbox-2').prop('checked'),
+								'uphill': $('#checkbox-3').prop('checked'),
+								'hike': $('#checkbox-4').prop('checked'),
+								'walk': $('#checkbox-5').prop('checked'),
+								'other': $('#checkbox-6').prop('checked'),
+								'dateOpt': parseInt(period[period.length - 1]) - 1,
+								'startDate': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
+								'endDate': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
+								'records': records,
+								'pattern': nf,
+								'dmin': $('#spinnerMin').val(),
+								'dmax': $('#spinnerMax').val(),
+								'dashboard': $('#dashboard' + currentDash).attr('name')
+                            },
+                            method: 'POST',
+                            dataType: 'text',
+                            statusCode: {
+                                200: function(resp) {
+									
+									$('#infoDialog').html(resp);
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+                                },
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
+								}
+                            }
+                        });
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 200
+            });
         }
 
         function initSecondaryDialogs() {
@@ -1085,6 +1143,12 @@
             $('#search').click(function() {
                 fetch();
             });
+			$('#savePresets').button();
+			$('#savePresets').click(function() {
+                $('#presetsDlg').html('Preset name&nbsp;<input type="text" id="newPresetName" />');
+				$('#presetsDlg').dialog('option', 'title', 'Save filter preset');
+				$('#presetsDlg').dialog('open');
+            });
             $('#bestTotalsBtn').button();
             $('#mTotalsBtn').button();
 			$('#wTotalsBtn').button();
@@ -1263,7 +1327,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.5</strong></H1>
+        <H1><strong>Activity Tracker 2.6</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -1348,12 +1412,19 @@
                                 <input type="radio" name="selectLast" id="l-inf" cap="-1" checked>
                             </fieldset>
                             <p>
+								<button id="savePresets">Save presets</button>
                                 <button id="search">Search</button>
     </div>
 	<div id="dashboards">
             <div id="dashHeading">Dashboards</div><p>
             <div id="allDash"></div>
     </div>
+	<p>
+	<div id="presets">
+		<div id="presetHeading">Filter presets</div><p>
+        <div id="allPresets"></div>
+		<div id="presetsDlg"></div>
+	</div>
     <div id="activities">
 		
 		<h2>

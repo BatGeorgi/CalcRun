@@ -57,7 +57,7 @@ public class SQLiteManager {
       "(name PRIMARY KEY NOT NULL)";
   private static final String CREATE_STATEMENT_PRESETS_TABLE = "CREATE TABLE IF NOT EXISTS " + PRESETS_TABLE_NAME + 
       "(name text NOT NULL, types text NOT NULL, pattern text NOT NULL, startDate text NOT NULL, endDate text NOT NULL, "
-      + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL)";
+      + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL, dashboard text NOT NULL)";
 
 	private File dbActivities;
 	private File dbCoords;
@@ -327,14 +327,15 @@ public class SQLiteManager {
 		entry.put("dashboards", arr);
 	}
 	
-	synchronized void addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top) throws SQLException {
+	synchronized void addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
+	    int top, String dashboard) throws SQLException {
 		StringBuffer sb = new StringBuffer("INSERT INTO " + PRESETS_TABLE_NAME + " VALUES(");
 		sb.append("'" + name + "', ");
 		sb.append("'" + types + "', ");
 		sb.append("'" + pattern + "', ");
 		sb.append("'" + startDate + "', ");
 		sb.append("'" + endDate + "', ");
-		sb.append(minDist + ", " + maxDist + ", " + top + ')');
+		sb.append(minDist + ", " + maxDist + ", " + top + ", " + dashboard + ')');
 		executeQueryExc(sb.toString(), false);
 	}
 	
