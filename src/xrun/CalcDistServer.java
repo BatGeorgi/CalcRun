@@ -883,6 +883,21 @@ class CalcDistHandler extends AbstractHandler {
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+  
+  private void processGetFilters(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    response.setContentType("application/json");
+    PrintWriter pw = response.getWriter();
+    JSONObject result = new JSONObject();
+    try {
+      result.put("presets", rcUtils.getPresets());
+      pw.println(result.toString());
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
 
   public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
@@ -938,6 +953,8 @@ class CalcDistHandler extends AbstractHandler {
 			  processRenameFilter(baseRequest, response);
 			} else if ("/removeFilter".equalsIgnoreCase(target)) {
         processRemoveFilter(baseRequest, response);
+      } else if ("/getFilters".equalsIgnoreCase(target)) {
+        processGetFilters(baseRequest, response);
       }
 		}
   }

@@ -363,6 +363,7 @@ public class SQLiteManager {
 				preset.put("minDist", rs.getInt("minDist"));
 				preset.put("maxDist", rs.getInt("maxDist"));
 				preset.put("top", rs.getInt("top"));
+				preset.put("dashboard", rs.getString("dashboard"));
 				String types = rs.getString("types");
 				StringTokenizer st = new StringTokenizer(types, ",", false);
 				while (st.hasMoreTokens()) {

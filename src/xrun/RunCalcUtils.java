@@ -244,7 +244,6 @@ public class RunCalcUtils {
     result.put("activities", activities);
     result.put("mtotals", sqLite.getMonthlyTotals());
     result.put("wtotals", sqLite.getWeeklyTotals());
-    result.put("presets", sqLite.getPresets());
     if (activities.length() > 0) {
       for (String key : totals.keySet()) {
         Object value = totals.get(key);
@@ -618,6 +617,10 @@ public class RunCalcUtils {
     }
     activity.put("origData", new JSONObject());
     return true;
+  }
+  
+  JSONArray getPresets() {
+    return sqLite.getPresets();
   }
   
   String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
