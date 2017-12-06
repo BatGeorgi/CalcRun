@@ -832,6 +832,14 @@ class CalcDistHandler extends AbstractHandler {
     } else if ("true".equals(baseRequest.getHeader("other"))) {
     	types.append("other,");
     }
+    try {
+      if (new Integer(dateOpt) < 6) {
+        startDate = dateOpt;
+        endDate = "";
+      }
+    } catch (Exception ignore) {
+      // silent catch
+    }
   	try {
   		String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records, dashboard);
   		pw.println(status == null ? "Preset added" : status);
