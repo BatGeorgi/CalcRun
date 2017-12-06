@@ -335,7 +335,7 @@ public class SQLiteManager {
 		sb.append("'" + pattern + "', ");
 		sb.append("'" + startDate + "', ");
 		sb.append("'" + endDate + "', ");
-		sb.append(minDist + ", " + maxDist + ", " + top + ", " + dashboard + ')');
+		sb.append(minDist + ", " + maxDist + ", " + top + ", '" + dashboard + "')");
 		executeQueryExc(sb.toString(), false);
 	}
 	

@@ -1412,7 +1412,7 @@
                                 <input type="radio" name="selectLast" id="l-inf" cap="-1" checked>
                             </fieldset>
                             <p>
-								<button id="savePresets">Save presets</button>
+								<button id="savePresets">Save preset</button>
                                 <button id="search">Search</button>
     </div>
 	<div id="dashboards">
