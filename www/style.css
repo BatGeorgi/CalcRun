@@ -202,6 +202,20 @@ tr.border_bottom td {
 	text-decoration: none;
 	text-shadow: rgb(61, 118, 138) 0px 1px 0px;
 }
+.presetButton {
+	box-shadow: rgb(39, 104, 115) 0px 10px 14px -7px;
+	background: linear-gradient(rgb(89, 155, 179) 5%, rgb(108, 151, 155) 100%) rgb(89, 155, 179);
+	display: inline-block;
+	cursor: pointer;
+	color: rgb(70, 90, 91);
+	font-family: Arial;
+	font-size: 16px;
+	font-weight: bold;
+	padding: 8px 12px;
+	text-decoration: none;
+	text-shadow: rgb(61, 118, 138) 0px 1px 0px;
+	border-radius: 8px;
+}
 .notSelectedDash {
 	background: linear-gradient(rgb(89, 155, 179) 5%, rgb(64, 140, 153) 100%) rgb(89, 155, 179);
 }
@@ -286,6 +300,9 @@ tr.border_bottom td {
   width: 20%;
 }
 #dashboards {
+	text-align: center;
+}
+#presets {
 	text-align: center;
 }
 #userData {

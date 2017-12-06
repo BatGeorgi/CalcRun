@@ -303,7 +303,10 @@ class CalcDistHandler extends AbstractHandler {
     baseRequest.setHandled(true);
   }
   
-  private String getDateStr(Calendar date) {
+  private String getDateStr(Calendar date, String def) {
+    if (date == null) {
+      return def;
+    }
     StringBuffer sb = new StringBuffer();
     sb.append(date.get(Calendar.DAY_OF_MONTH));
     sb.append(' ');
@@ -367,7 +370,7 @@ class CalcDistHandler extends AbstractHandler {
           startDate.set(Calendar.MONTH, 11);
           startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
         }
-        filterStr.append("after " + getDateStr(startDate));
+        filterStr.append("after " + getDateStr(startDate, ""));
         break;
       case 3: // last 3m
         mt = startDate.get(Calendar.MONTH);
@@ -377,11 +380,11 @@ class CalcDistHandler extends AbstractHandler {
           startDate.set(Calendar.MONTH, mt + 8);
           startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
         }
-        filterStr.append("after " + getDateStr(startDate));
+        filterStr.append("after " + getDateStr(startDate, ""));
         break;
       case 4: // last y
         startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
-        filterStr.append("after " + getDateStr(startDate));
+        filterStr.append("after " + getDateStr(startDate, ""));
         break;
       case 5: // all
         startDate = null;
@@ -389,7 +392,7 @@ class CalcDistHandler extends AbstractHandler {
       case 6: // custom
         startDate = parseDate(baseRequest.getHeader("dtStart"));
         endDate = parseDate(baseRequest.getHeader("dtEnd"));
-        filterStr.append("in period " + getDateStr(startDate) + " - " + getDateStr(endDate));
+        filterStr.append("in period " + getDateStr(startDate, "Begining") + " - " + getDateStr(endDate, "Now"));
     }
     String smin = baseRequest.getHeader("dmin");
     String smax = baseRequest.getHeader("dmax");
@@ -821,15 +824,20 @@ class CalcDistHandler extends AbstractHandler {
     StringBuffer types = new StringBuffer();
     if ("true".equals(baseRequest.getHeader("run"))) {
     	types.append("run,");
-    } else if ("true".equals(baseRequest.getHeader("trail"))) {
+    }
+    if ("true".equals(baseRequest.getHeader("trail"))) {
     	types.append("trail,");
-    } else if ("true".equals(baseRequest.getHeader("uphill"))) {
+    }
+    if ("true".equals(baseRequest.getHeader("uphill"))) {
     	types.append("uphill,");
-    } else if ("true".equals(baseRequest.getHeader("hike"))) {
+    }
+    if ("true".equals(baseRequest.getHeader("hike"))) {
     	types.append("hike,");
-    } else if ("true".equals(baseRequest.getHeader("walk"))) {
+    }
+    if ("true".equals(baseRequest.getHeader("walk"))) {
     	types.append("walk,");
-    } else if ("true".equals(baseRequest.getHeader("other"))) {
+    }
+    if ("true".equals(baseRequest.getHeader("other"))) {
     	types.append("other,");
     }
     try {

@@ -665,6 +665,71 @@
                 }
             });
         }
+		
+		function initPresets(presets) {
+			allPresetsHtml = '';
+			$.each(presets, function(i, item) {
+				allPresetsHtml += '<button class="presetButton" id="preset' + item['name'] + '">' + item['name'] + '</button>';
+			});
+			$('#allPresets').html(allPresetsHtml);
+			$.each(presets, function(i, item) {
+				$('#preset' + item['name']).click(function() {
+					$("button[name^='preset']").addClass('notSelectedDash');
+					$(this).removeClass('notSelectedDash');
+					$(this).addClass('selectedDash');
+					$('#searchName').val(decodeURIComponent(item['pattern']));
+					for (i = 1; i < 7; ++i) {
+						$('#checkbox-' + i).prop('checked', false).change();
+					}
+					if (item['run']) {
+						$('#checkbox-1').prop('checked', true).change();
+					}
+					if (item['trail']) {
+						$('#checkbox-2').prop('checked', true).change();
+					}
+					if (item['uphill']) {
+						$('#checkbox-3').prop('checked', true).change();
+					}
+					if (item['hike']) {
+						$('#checkbox-4').prop('checked', true).change();
+					}
+					if (item['walk']) {
+						$('#checkbox-5').prop('checked', true).change();
+					}
+					if (item['other']) {
+						$('#checkbox-6').prop('checked', true).change();
+					}
+					sd = item['startDate'];
+					if (sd.length > 0) {
+						si = sd.indexOf('/');
+						if (si == -1) {
+							$('#radio-' + (parseInt(sd) + 1)).prop('checked', true).change();
+						} else {
+							$('#radio-7').prop('checked', true).change();
+							$('#dtStart').val(sd);
+						}
+					}
+					$('#dtEnd').val(item['endDate']);
+					if (item['minDist'] > 0) {
+						$('#spinnerMin').val(item['minDist']);
+					} else {
+						$('#spinnerMin').val('');
+					}
+					if (item['maxDist'] < 2147483647) {
+						$('#spinnerMax').val(item['maxDist']);
+					} else {
+						$('#spinnerMax').val('');
+					}
+					rec = item['top'];
+					if (rec == 10 || rec == 20 || rec == 50 || rec == 100) {
+						$('#l-' + rec).prop('checked', true).change();
+					} else {
+						$('#l-inf').prop('checked', true).change();
+					}
+					fetch();
+				});
+			});
+		}
 
         function initContent(data) {
             itemsDS = [];
@@ -682,6 +747,7 @@
             $('#overall').show();
             $('#runs').show();
             $('#ht').html(data['filter'] + '<p>');
+			initPresets(data['presets']);
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Average dist</td><td>' + data['avgDist'] + ' km</td></tr>' + 
 				'<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
