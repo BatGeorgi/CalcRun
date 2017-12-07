@@ -1311,6 +1311,7 @@
             $('#dtStart').datepicker('disable');
             $('#dtEnd').datepicker('disable');
             initDashboards();
+			getPresets();
             fetch();
             $.tablesorter.addWidget({
                 id: "numbering",
@@ -1338,7 +1339,6 @@
 				$('#filters').toggle();
 			});
             getBest();
-			getPresets();
             var months = {
                 'Jan': 0,
                 'Feb': 1,
