@@ -626,16 +626,17 @@ public class RunCalcUtils {
   String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
       String dashboard) {
   	try {
-  		sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
+  		return sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard) ? null :
+  		  "Existing preset overwritten";
   	} catch (SQLException e) {
   		return "Error adding preset " + name + " - db error";
   	} catch (RuntimeException re) {
   		return re.getMessage();
+  	} finally {
+  	  if (drive != null) {
+        drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      }
   	}
-  	if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
-    }
-  	return null;
   }
   
   String renamePreset(String name, String newName) {

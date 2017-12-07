@@ -327,8 +327,13 @@ public class SQLiteManager {
 		entry.put("dashboards", arr);
 	}
 	
-	synchronized void addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
+	synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
 	    int top, String dashboard) throws SQLException {
+	  ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", true);
+	  if (rs != null && rs.next()) {
+	    updatePreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
+	    return false;
+	  }
 		StringBuffer sb = new StringBuffer("INSERT INTO " + PRESETS_TABLE_NAME + " VALUES(");
 		sb.append("'" + name + "', ");
 		sb.append("'" + types + "', ");
@@ -337,9 +342,26 @@ public class SQLiteManager {
 		sb.append("'" + endDate + "', ");
 		sb.append(minDist + ", " + maxDist + ", " + top + ", '" + dashboard + "')");
 		executeQueryExc(sb.toString(), false);
+		return true;
+	}
+	
+	private void updatePreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
+      int top, String dashboard) throws SQLException {
+	  StringBuffer sb = new StringBuffer("UPDATE " + PRESETS_TABLE_NAME + " SET ");
+    sb.append("types='" + types + "', ");
+    sb.append("pattern='" + pattern + "', ");
+    sb.append("startDate='" + startDate + "', ");
+    sb.append("endDate='" + endDate + "', ");
+    sb.append("minDist=" + minDist + ", maxDist=" + maxDist + ", top=" + top + ", dashboard='" + dashboard + "' ");
+    sb.append("WHERE name='" + name + "'");
+    executeQueryExc(sb.toString(), false);
 	}
 	
 	synchronized void renamePreset(String name, String newName) throws SQLException {
+	  ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name='" + newName + "'", true);
+	  if (rs != null && rs.next()) {
+	    throw new IllegalArgumentException("Preset " + newName + " already exists");
+	  }
 		executeQueryExc("UPDATE " + PRESETS_TABLE_NAME + " SET name='" + newName + "' WHERE name='" + name + "'", false);
 	}
 	
