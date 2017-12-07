@@ -632,6 +632,9 @@ public class RunCalcUtils {
   	} catch (RuntimeException re) {
   		return re.getMessage();
   	}
+  	if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
   	return null;
   }
   
@@ -643,6 +646,9 @@ public class RunCalcUtils {
   	} catch (RuntimeException re) {
   		return re.getMessage();
   	}
+  	if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
   	return null;
   }
   
@@ -654,6 +660,9 @@ public class RunCalcUtils {
   	} catch (RuntimeException re) {
   		return re.getMessage();
   	}
+  	if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
   	return null;
   }
 

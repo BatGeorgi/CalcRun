@@ -795,6 +795,11 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processSaveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
   	PrintWriter pw = response.getWriter();
   	String name = baseRequest.getHeader("name");
   	String dashboard = baseRequest.getHeader("dashboard");
@@ -860,6 +865,11 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processRenameFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
   	PrintWriter pw = response.getWriter();
   	try {
   		String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
@@ -873,6 +883,11 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
   	PrintWriter pw = response.getWriter();
   	try {
   		String status = rcUtils.removePreset(baseRequest.getHeader("name"));
@@ -899,7 +914,7 @@ class CalcDistHandler extends AbstractHandler {
     baseRequest.setHandled(true);
   }
 
-  public synchronized void handle(String target, Request baseRequest, HttpServletRequest request,
+  public void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
   	if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
   		if (target.startsWith("/compare")) {
