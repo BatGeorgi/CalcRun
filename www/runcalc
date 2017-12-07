@@ -321,6 +321,9 @@
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
+									$('#infoDialog').html('Activity modified!');
+									$('#infoDialog').dialog('option', 'title', 'Status');
+									$('#infoDialog').dialog('open');
                                     getBest();
                                     fetch();
                                 },
@@ -362,6 +365,9 @@
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
+									$('#infoDialog').html('Activity Modified!');
+									$('#infoDialog').dialog('option', 'title', 'Status');
+									$('#infoDialog').dialog('open');
                                     getBest();
                                     fetch();
                                 },
@@ -407,6 +413,9 @@
                             dataType: 'json',
                             statusCode: {
                                 200: function(xhr) {
+									$('#infoDialog').html('Activity removed!');
+									$('#infoDialog').dialog('option', 'title', 'Status');
+									$('#infoDialog').dialog('open');
                                     getBest();
                                     fetch();
                                 },
@@ -620,6 +629,83 @@
                 },
                 width: 450,
                 height: 200
+            });
+			$('#renamePresetDlg').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Rename": function() {
+						$.ajax({
+                            url: 'renameFilter',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'name': $('#selectPreset').find(':selected').val(),
+								'newName': $('#setPresetName').val()
+                            },
+                            method: 'POST',
+                            dataType: 'text',
+                            statusCode: {
+                                200: function(resp) {
+									$('#infoDialog').html(resp);
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+									getPresets();
+                                },
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
+								}
+                            }
+                        });
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 250
+            });
+			$('#removePresetDlg').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Remove": function() {
+						$.ajax({
+                            url: 'removeFilter',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'name': $('#selectPresetRem').find(':selected').val()
+                            },
+                            method: 'POST',
+                            dataType: 'text',
+                            statusCode: {
+                                200: function(resp) {
+									$('#infoDialog').html(resp);
+                                    $('#infoDialog').dialog('option', 'title', 'Status');
+                                    $('#infoDialog').dialog('open');
+									getPresets();
+                                },
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+                                    $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                                    $('#infoDialog').dialog('open');
+								}
+                            }
+                        });
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 450,
+                height: 250
             });
         }
 
@@ -1228,6 +1314,8 @@
             checkCookieVal();
             $('#selectAll').button();
             $('#search').button();
+			$('#renamePreset').button();
+			$('#removePreset').button();
             $('#search').click(function() {
                 fetch();
             });
@@ -1237,6 +1325,28 @@
 				$('#presetsDlg').dialog('option', 'title', 'Save filter preset');
 				$('#presetsDlg').dialog('open');
             });
+			$('#renamePreset').click(function() {
+				renameOps = '<select id="selectPreset">';
+				$('.presetButton').each(function() {
+					pname = $(this).text();
+					renameOps += '<option value="' + pname + '">' + pname + '</option>';
+				});
+				renameOps += '</select>';
+				$('#renamePresetDlg').html('<table><tbody><tr><td>Choose preset</td><td>' + renameOps + '</td></tr><tr><td>New name</td><td><input type="text" id="setPresetName" /></td></tr></tbody></table>');
+				$('#renamePresetDlg').dialog('option', 'title', 'Rename filter preset');
+				$('#renamePresetDlg').dialog('open');
+			});
+			$('#removePreset').click(function() {
+				removeOps = '<select id="selectPresetRem">';
+				$('.presetButton').each(function() {
+					pname = $(this).text();
+					removeOps += '<option value="' + pname + '">' + pname + '</option>';
+				});
+				removeOps += '</select>';
+				$('#removePresetDlg').html('Choose preset ' + removeOps);
+				$('#removePresetDlg').dialog('option', 'title', 'Remove filter preset');
+				$('#removePresetDlg').dialog('open');
+			});
             $('#bestTotalsBtn').button();
             $('#mTotalsBtn').button();
 			$('#wTotalsBtn').button();
@@ -1511,8 +1621,12 @@
 	<p>
 	<div id="presets">
 		<div id="presetHeading">Filter presets</div><p>
+		<button id="renamePreset">Rename preset</button>
+		<button id="removePreset">Remove preset</button>
         <div id="allPresets"></div>
 		<div id="presetsDlg"></div>
+		<div id="renamePresetDlg"></div>
+		<div id="removePresetDlg"></div>
 	</div>
     <div id="activities">
 		
