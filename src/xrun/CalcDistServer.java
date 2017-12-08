@@ -335,9 +335,9 @@ class CalcDistHandler extends AbstractHandler {
     }
     if (records < 0) {
       records = Integer.MAX_VALUE;
-      filterStr.append("all activities ");
+      filterStr.append("all activities");
     } else {
-      filterStr.append("last " + records + " activities ");
+      filterStr.append("last " + records + " activities");
     }
     Calendar startDate = null;
     Calendar endDate = null;
@@ -355,12 +355,12 @@ class CalcDistHandler extends AbstractHandler {
     switch (dateOpt) {
       case 0: // this month
         startDate.set(Calendar.DAY_OF_MONTH, 1);
-        filterStr.append("for this month");
+        filterStr.append(" for this month");
         break;
       case 1: // this year
         startDate.set(Calendar.DAY_OF_MONTH, 1);
         startDate.set(Calendar.MONTH, 0);
-        filterStr.append("for this year");
+        filterStr.append(" for this year");
         break;
       case 2: // last 30
         mt = startDate.get(Calendar.MONTH);
@@ -370,7 +370,7 @@ class CalcDistHandler extends AbstractHandler {
           startDate.set(Calendar.MONTH, 11);
           startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
         }
-        filterStr.append("after " + getDateStr(startDate, ""));
+        filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 3: // last 3m
         mt = startDate.get(Calendar.MONTH);
@@ -380,11 +380,11 @@ class CalcDistHandler extends AbstractHandler {
           startDate.set(Calendar.MONTH, mt + 8);
           startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
         }
-        filterStr.append("after " + getDateStr(startDate, ""));
+        filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 4: // last y
         startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
-        filterStr.append("after " + getDateStr(startDate, ""));
+        filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 5: // all
         startDate = null;
@@ -392,7 +392,7 @@ class CalcDistHandler extends AbstractHandler {
       case 6: // custom
         startDate = parseDate(baseRequest.getHeader("dtStart"));
         endDate = parseDate(baseRequest.getHeader("dtEnd"));
-        filterStr.append("in period " + getDateStr(startDate, "Begining") + " - " + getDateStr(endDate, "Now"));
+        filterStr.append(" in period " + getDateStr(startDate, "Begining") + " - " + getDateStr(endDate, "Now"));
     }
     String smin = baseRequest.getHeader("dmin");
     String smax = baseRequest.getHeader("dmax");
