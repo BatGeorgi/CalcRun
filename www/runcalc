@@ -1181,22 +1181,24 @@
         }
 
         function getMTable(item) {
-            return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr>' +
+            return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '(' + item['countr'] + ')</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] +
+				+ '(' + '</td></tr>' +
                 '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] +
                 '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
         }
 		
 		function getWTable(item) {
-            return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] + '</td></tr>' +
-                '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] +
-                '</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '</strong></td></tr></tbody></table>';
+            return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '(' + item['countr'] + ')</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] +
+				'(' + item['countt'] + ')</td></tr>' +
+                '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '(' + item['countu'] + ')</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] + '(' + item['counth'] +
+                ')</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '(' + item['countrt'] + ')</strong></td></tr></tbody></table>';
         }
 
         function initMonthlyTotals(data) {
             $('#mTotals').dialog('option', 'title', 'Total distance by month');
             tableHtml = '<table id="mtt" align="center"><tbody>';
             $.each(data, function(i, item) {
-                tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getMTable(item) + '</td></tr>';
+                tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getWTable(item) + '</td></tr>';
             });
             tableHtml += '</tbody></table>';
             $('#mTotals').html(tableHtml);

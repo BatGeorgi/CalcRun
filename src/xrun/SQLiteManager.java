@@ -173,14 +173,19 @@ public class SQLiteManager {
           if (data == null) {
             data = new JSONObject();
             data.put("r", 0d);
+            data.put("countr", 0);
             data.put("t", 0d);
+            data.put("countt", 0);
             data.put("u", 0d);
+            data.put("countu", 0);
             data.put("h", 0d);
+            data.put("counth", 0);
             data.put("rt", 0d);
+            data.put("countrt", 0);
             Calendar first = (Calendar) cal.clone();
             int diff = Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK);
-            if (diff == -1) {
-              diff = 6;
+            if (diff == 1) {
+              diff = -6;
             }
             first.add(Calendar.DAY_OF_WEEK, diff);
             Calendar last = (Calendar) first.clone();
@@ -193,13 +198,19 @@ public class SQLiteManager {
           if (RunCalcUtils.RUNNING.equals(type)) {
             data.put("r", data.getDouble("r") + dist);
             data.put("rt", data.getDouble("rt") + dist);
+            data.put("countr", data.getInt("countr") + 1);
+            data.put("countrt", data.getInt("countrt") + 1);
           } else if (RunCalcUtils.TRAIL.equals(type)) {
             data.put("t", data.getDouble("t") + dist);
             data.put("rt", data.getDouble("rt") + dist);
+            data.put("countt", data.getInt("countt") + 1);
+            data.put("countrt", data.getInt("countrt") + 1);
           } else if (RunCalcUtils.UPHILL.equals(type)) {
             data.put("u", data.getDouble("u") + dist);
+            data.put("countu", data.getInt("countu") + 1);
           } else if (RunCalcUtils.HIKING.equals(type)) {
             data.put("h", data.getDouble("h") + dist);
+            data.put("counth", data.getInt("counth") + 1);
           }
           weekly.put(week, data);
         }
@@ -251,6 +262,7 @@ public class SQLiteManager {
 	        months[j].put("name", CalcDist.MONTHS[j] + ' ' + year);
 	        for (int k = 0; k < 5; ++k) {
 	          months[j].put(acms[k], "0");
+	          months[j].put("count" + acms[k], 0);
 	        }
 	        months[j].put("emp", true);
 	      }
@@ -261,6 +273,12 @@ public class SQLiteManager {
 	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
 	          months[rs.getInt(1)].remove("emp");
 	        }
+	        rs = executeQuery("SELECT month, COUNT(genby) FROM " + RUNS_TABLE_NAME + " WHERE (" + filters[j] +
+              ") AND year=" + years.get(i) + " GROUP BY month", true);
+	        while (rs.next()) {
+            months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
+            months[rs.getInt(1)].remove("emp");
+          }
 	      }
         for (int j = months.length - 1; j >= 0; --j) {
           if (months[j].opt("emp") == null) {
