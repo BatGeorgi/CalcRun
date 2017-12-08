@@ -10,6 +10,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
@@ -427,6 +429,28 @@ class CalcDistHandler extends AbstractHandler {
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
         records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"));
+    if (data.getJSONArray("activities").length() == 0) {
+      List<String> types = new LinkedList<String>();
+      if (run) {
+        types.add(RunCalcUtils.RUNNING);
+      }
+      if (trail) {
+        types.add(RunCalcUtils.TRAIL);
+      }
+      if (uphill) {
+        types.add(RunCalcUtils.UPHILL);
+      }
+      if (hike) {
+        types.add(RunCalcUtils.HIKING);
+      }
+      if (walk) {
+        types.add(RunCalcUtils.WALKING);
+      }
+      if (other) {
+        types.add(RunCalcUtils.OTHER);
+      }
+      filterStr.append(" of type " + types.toString());
+    }
     data.put("filter", filterStr.toString());
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();

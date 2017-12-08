@@ -843,7 +843,8 @@
             $('#dataHolder').html('');
             all = data['activities'];
             if (all.length == 0) {
-                $('#ht').text('No activities found');
+				flt = data['filter'].replace('Showing', 'Looking for');
+                $('#ht').html('No activities found<p>' + flt);
                 $('#runs tbody').html('');
                 $('#runs').trigger('update');
                 $('#runs').tablesorter();
@@ -855,7 +856,7 @@
             $('#runs').show();
             $('#ht').html(data['filter'] + '<p>');
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
-                '<tr><td>Average dist</td><td>' + data['avgDist'] + ' km</td></tr>' + 
+                '<tr><td>Average distance</td><td>' + data['avgDist'] + ' km</td></tr>' + 
 				'<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
 			initWeeklyTotals(data['wtotals']);
