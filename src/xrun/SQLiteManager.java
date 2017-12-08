@@ -742,6 +742,7 @@ public class SQLiteManager {
         executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
       }
     }
+    executeQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + newName + "' WHERE dashboard='" + name + "'", false);
     removeDashboard(name, false);
   }
 
@@ -773,6 +774,7 @@ public class SQLiteManager {
         executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
       }
     }
+    executeQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + MAIN_DASHBOARD + "' WHERE dashboard='" + name + "'", false);
   }
 
   synchronized JSONObject getDashboards() {
