@@ -282,6 +282,7 @@
                                     $('#infoDialog').dialog('open');
                                     $('#loginButton').prop("disabled",true);
                                     $('#loginButton').text("Authorized");
+									$('#loginButton').css({'cursor': 'default'});
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
@@ -1224,6 +1225,7 @@
                     200: function(xhr) {
                         $('#loginButton').prop("disabled",true);
                         $('#loginButton').text('Authorized');
+						$('#loginButton').css({'cursor': 'default'});
                     },
                     401: function(xhr) {
                         $('#loginButton').prop("disabled",false);
