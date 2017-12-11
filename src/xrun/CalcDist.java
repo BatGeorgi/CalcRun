@@ -32,7 +32,7 @@ public class CalcDist {
   static final double DEFAULT_INTERVAL = 100;
   static final double DEFAULT_SPLIT = 1;
   
-  private static final String[] DAYS = new String[] {
+  static final String[] DAYS = new String[] {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
   };
   

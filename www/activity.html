@@ -48,7 +48,7 @@
         }
 
         function init(item) {
-            $('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['date'] + '</strong></h1><hr>');
+            $('#heading').html('<h1><strong>' + decodeURIComponent(item['name']) + ' ' + item['type'] + ' ' + item['startAt'] + '</strong></h1><hr>');
             distr = item['speedDist'];
             tableHtml = '<span class="highlight"><table id="distTable"><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
             $.each(distr, function(i, diap) {

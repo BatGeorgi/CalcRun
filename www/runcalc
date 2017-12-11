@@ -943,7 +943,7 @@
                 if (item['photosLink'] != 'none') {
                     extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input type="image" src="photos-icon.png" width="60" height="60" /></a>';
                 }
-                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['date'] + '</td></tr><tr><td>Distance</td><td>' +
+                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
                     item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
                     '</td></tr><tr><td>Elevation gain</td><td>' +
                     '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
