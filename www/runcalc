@@ -15,6 +15,12 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
+	
+	<style>
+		#sortable li {
+			display: inline-block;
+		}
+	</style>
 
     <script>
         function getOption(val, current) {
@@ -754,15 +760,21 @@
         }
 		
 		function initPresets(presets) {
-			allPresetsHtml = '';
+			allPresetsHtml = '<ul id="sortable">';
 			$.each(presets, function(i, item) {
 				name = decodeURIComponent(item['name']);
-				allPresetsHtml += '<button class="presetButton" id="preset' + name + '">' + name + '</button>';
+				allPresetsHtml += '<li class="presetButton" id="preset' + name + '">' + name + '</li>';
 			});
-			$('#allPresets').html(allPresetsHtml);
+			$('#allPresets').html(allPresetsHtml + '</ul>');
+			$("#sortable").sortable();
+			$("#sortable").disableSelection();
 			$.each(presets, function(i, item) {
 				name = decodeURIComponent(item['name']);
 				$('#preset' + name).click(function() {
+					if ($('#search').button("option", "disabled")) {
+						return;
+					}
+					$(this).addClass('selectedDash');
 					$('#searchName').val(decodeURIComponent(item['pattern']));
 					for (i = 1; i < 7; ++i) {
 						$('#checkbox-' + i).prop('checked', false).change();
@@ -1091,6 +1103,7 @@
                 },
                 statusCode: {
                     200: function(data) {
+						$(".presetButton").removeClass('selectedDash');
                         initContent(data);
                         $('#search').button("option", "disabled", false);
 						for (i = 0; i < dashCount; ++i) {
@@ -1098,6 +1111,7 @@
 						}
                     },
                     400: function(data) {
+						$(".presetButton").removeClass('selectedDash');
                         $('#infoDialog').html('Invalid distance arguments!');
                         $('#infoDialog').dialog('option', 'title', 'Bad data');
                         $('#infoDialog').dialog('open');
@@ -1260,6 +1274,9 @@
 								if (currentDash == i) {
 									return;
 								}
+								if ($('#search').button("option", "disabled")) {
+									return;
+								}
 								currentDash = i;
 								$('#dashboard' + i).addClass('selectedDash');
 								$('#dashboard' + i).removeClass('notSelectedDash');
@@ -1273,6 +1290,15 @@
 								$('#runs').hide();
 								$('#ht').html('Fetching activities...');
 								if (fetchAfterDashClick) {
+									$('#checkbox-1').prop('checked', true).change();
+									$('#checkbox-2').prop('checked', true).change();
+									$('#checkbox-3').prop('checked', true).change();
+									$('#checkbox-4').prop('checked', true).change();
+									$('#radio-6').prop('checked', true).change();
+									$('#spinnerMin').val('');
+									$('#spinnerMax').val('');
+									$('#l-inf').prop('checked', true).change();
+									$('#searchName').val('');
 									fetch();
 								}
 							});
@@ -1314,6 +1340,7 @@
             $('#search').button();
 			$('#renamePreset').button();
 			$('#removePreset').button();
+			$('#saveOrder').button();
             $('#search').click(function() {
                 fetch();
             });
@@ -1333,6 +1360,33 @@
 				$('#renamePresetDlg').html('<table><tbody><tr><td>Choose preset</td><td>' + renameOps + '</td></tr><tr><td>New name</td><td><input type="text" id="setPresetName" /></td></tr></tbody></table>');
 				$('#renamePresetDlg').dialog('option', 'title', 'Rename filter preset');
 				$('#renamePresetDlg').dialog('open');
+			});
+			$('#saveOrder').click(function() {
+				elements = '';
+				$("#sortable li").each(function(idx, li) {
+					elements += $(li).text() + '|||';
+				});
+				$.ajax({
+                    url: 'savePresetOrder',
+                    headers: {
+                        'Content-Type': 'application/json',
+						'elements': elements
+                    },
+                    method: 'POST',
+                    dataType: 'text',
+                    statusCode: {
+                        200: function(resp) {
+							$('#infoDialog').html(resp);
+                            $('#infoDialog').dialog('option', 'title', 'Status');
+                            $('#infoDialog').dialog('open');
+                        },
+						401: function(resp) {
+							$('#infoDialog').html('Please sign in!');
+                            $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                            $('#infoDialog').dialog('open');
+						}
+                    }
+                });
 			});
 			$('#removePreset').click(function() {
 				removeOps = '<select id="selectPresetRem">';
@@ -1520,6 +1574,7 @@
             });
         });
     </script>
+	
 </head>
 
 <body>
@@ -1621,6 +1676,7 @@
 		<div id="presetHeading">Filter presets</div><p>
 		<button id="renamePreset">Rename preset</button>
 		<button id="removePreset">Remove preset</button>
+		<button id="saveOrder">Save order</button>
         <div id="allPresets"></div>
 		<div id="presetsDlg"></div>
 		<div id="renamePresetDlg"></div>

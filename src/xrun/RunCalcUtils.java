@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -620,7 +622,7 @@ public class RunCalcUtils {
   }
   
   JSONArray getPresets() {
-    return sqLite.getPresets();
+    return sqLite.getPresets(null);
   }
   
   String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
@@ -665,6 +667,24 @@ public class RunCalcUtils {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
     }
   	return null;
+  }
+  
+  String reorderPresets(String elements) {
+    int ind = -1;
+    int next = 0;
+    List<String> ordered = new LinkedList<String> ();
+    while (next < elements.length() && (ind = elements.indexOf("|||", next)) != -1) {
+      ordered.add(elements.substring(next, ind));
+      next = ind + 3;
+    }
+    try {
+      sqLite.reorderPresets(ordered);
+    } catch (SQLException e) {
+      return "Error reordering presets - db error";
+    } catch (RuntimeException re) {
+      return re.getMessage();
+    }
+    return null;
   }
 
 }

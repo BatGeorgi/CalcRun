@@ -10,6 +10,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -387,7 +388,7 @@ public class SQLiteManager {
 		executeQueryExc("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", false);
 	}
 	
-	synchronized JSONArray getPresets() {
+	synchronized JSONArray getPresets(Map<String, JSONObject> out) {
 		JSONArray result = new JSONArray();
 		ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME, true);
 		if (rs == null) {
@@ -405,20 +406,45 @@ public class SQLiteManager {
 				preset.put("top", rs.getInt("top"));
 				preset.put("dashboard", rs.getString("dashboard"));
 				String types = rs.getString("types");
-				StringTokenizer st = new StringTokenizer(types, ",", false);
-				while (st.hasMoreTokens()) {
-					String next = st.nextToken().trim();
-					if (next.length() > 0) {
-						preset.put(next, true);
-					}
+				if (out != null) {
+          preset.put("types", types);
+        } else {
+          StringTokenizer st = new StringTokenizer(types, ",", false);
+          while (st.hasMoreTokens()) {
+            String next = st.nextToken().trim();
+            if (next.length() > 0) {
+              preset.put(next, true);
+            }
+          }
+        }
+				if (out != null) {
+				  out.put(preset.getString("name"), preset);
+				} else {
+				  result.put(preset);
 				}
-				result.put(preset);
 			}
 		} catch (Exception e) {
 			System.out.println("Error working with db - getting presets");
       e.printStackTrace();
 		}
 		return result;
+	}
+	
+	synchronized void reorderPresets(List<String> presets) throws SQLException {
+	  Map<String, JSONObject> current = new LinkedHashMap<String, JSONObject>();
+	  getPresets(current);
+	  executeQueryExc("DELETE FROM " + PRESETS_TABLE_NAME, false);
+	  for (String preset : presets) {
+	    JSONObject data = current.remove(preset);
+	    if (data != null) {
+	      addPreset(preset, data.getString("types"), data.getString("pattern"), data.getString("startDate"), data.getString("endDate"),
+	          data.getInt("minDist"), data.getInt("maxDist"), data.getInt("top"), data.getString("dashboard"));
+	    }
+	  }
+	  for (JSONObject data : current.values()) {
+	    addPreset(data.getString("name"), data.getString("types"), data.getString("pattern"), data.getString("startDate"), data.getString("endDate"),
+          data.getInt("minDist"), data.getInt("maxDist"), data.getInt("top"), data.getString("dashboard"));
+	  }
 	}
 	
 	synchronized void addActivity(JSONObject entry) {

@@ -937,6 +937,24 @@ class CalcDistHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+  
+  private void processReorderFilters(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
+    PrintWriter pw = response.getWriter();
+    try {
+      String status = rcUtils.reorderPresets(baseRequest.getHeader("elements"));
+      pw.println(status == null ? "Preset order saved" : status);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
 
   public void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
@@ -994,6 +1012,8 @@ class CalcDistHandler extends AbstractHandler {
         processRemoveFilter(baseRequest, response);
       } else if ("/getFilters".equalsIgnoreCase(target)) {
         processGetFilters(baseRequest, response);
+      } else if ("/savePresetOrder".equalsIgnoreCase(target)) {
+        processReorderFilters(baseRequest, response);
       }
 		}
   }
