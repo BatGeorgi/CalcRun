@@ -21,9 +21,6 @@ import org.json.JSONObject;
 
 public class SQLiteManager {
   
-  private static final long CORRECTION_BG_WINTER = 2 * 3600 * 1000; // 2 hours
-  private static final long CORRECTION_BG_SUMMER = 3 * 3600 * 1000; // 3 hours
-  
   private static final String RUNS_TABLE_NAME = "runs";
   private static final String COOKIES_TABLE_NAME = "cookies";
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
@@ -451,31 +448,6 @@ public class SQLiteManager {
     }
 	}
 	
-	private static void appUnit(StringBuffer sb, int unit) {
-	  if (unit < 10) {
-	    sb.append('0');
-	  }
-	  sb.append(unit);
-	}
-	
-	private static String formatDate(Calendar cal, boolean startTime) {
-	  StringBuffer sb = new StringBuffer();
-	  appUnit(sb, cal.get(Calendar.DAY_OF_MONTH));
-	  sb.append(' ');
-	  sb.append(CalcDist.MONTHS[cal.get(Calendar.MONTH)]);
-	  sb.append(' ');
-	  sb.append(cal.get(Calendar.YEAR));
-    sb.append(' ');
-    if (startTime) {
-      appUnit(sb, cal.get(Calendar.HOUR_OF_DAY));
-      sb.append(':');
-      appUnit(sb, cal.get(Calendar.MINUTE));
-    } else {
-      sb.append(CalcDist.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
-    }
-	  return sb.toString();
-	}
-	
 	private JSONObject readActivity(ResultSet rs) throws JSONException, SQLException {
 	  if (!rs.next()) {
 	    return null;
@@ -505,10 +477,9 @@ public class SQLiteManager {
 	  }
 	  Calendar cal = new GregorianCalendar();
 	  cal.setTimeInMillis(activity.getLong("timeRawMs"));
-	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CORRECTION_BG_SUMMER : CORRECTION_BG_WINTER;
+	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CalcDist.CORRECTION_BG_SUMMER : CalcDist.CORRECTION_BG_WINTER;
 	  cal.setTimeInMillis(activity.getLong("timeRawMs") + corr);
-	  activity.put("date", formatDate(cal, false));
-	  activity.put("startAt", formatDate(cal, true));
+	  activity.put("startAt", CalcDist.formatDate(cal, true));
 	  return activity;
 	}
 	
