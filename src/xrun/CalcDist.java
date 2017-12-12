@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,6 +42,9 @@ public class CalcDist {
   private static final double[] BOUNDS = new double[] {
       0.0, 6.0 * COEF, 7.0 * COEF, 8.0 * COEF, 9.0 * COEF, 10.0 * COEF, 11.0 * COEF, 12.0 * COEF
   }; // m/s
+  
+  static final long CORRECTION_BG_WINTER = 2 * 3600 * 1000; // 2 hours
+  static final long CORRECTION_BG_SUMMER = 3 * 3600 * 1000; // 3 hours
   
   private File file;
   private double minRunningSpeed; // m/s
@@ -213,25 +217,37 @@ public class CalcDist {
     }
   }
   
-  private static String getUserFriendlyDate(String timeStart, Object[] ret) {
-    StringTokenizer st = new StringTokenizer(timeStart, "-", false);
-    String year = st.nextToken();
-    String month = st.nextToken();
-    String date = st.nextToken();
+  private static void appUnit(StringBuffer sb, int unit) {
+    if (unit < 10) {
+      sb.append('0');
+    }
+    sb.append(unit);
+  }
+  
+  static String formatDate(Calendar cal, boolean startTime) {
     StringBuffer sb = new StringBuffer();
-    sb.append(date);
+    appUnit(sb, cal.get(Calendar.DAY_OF_MONTH));
     sb.append(' ');
-    sb.append(MONTHS[Integer.parseInt(month) - 1]);
+    sb.append(CalcDist.MONTHS[cal.get(Calendar.MONTH)]);
     sb.append(' ');
-    sb.append(year);
-    Calendar cal = new GregorianCalendar();
-    cal.set(Calendar.YEAR, Integer.parseInt(year));
-    cal.set(Calendar.DATE, Integer.parseInt(date));
-    cal.set(Calendar.MONTH, Integer.parseInt(month) - 1);
-    ret[0] = cal;
+    sb.append(cal.get(Calendar.YEAR));
     sb.append(' ');
-    sb.append(DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
+    if (startTime) {
+      appUnit(sb, cal.get(Calendar.HOUR_OF_DAY));
+      sb.append(':');
+      appUnit(sb, cal.get(Calendar.MINUTE));
+    } else {
+      sb.append(CalcDist.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
+    }
     return sb.toString();
+  }
+  
+  private String getDateWithCorrection(long timeRawMs) {
+    Calendar cal = new GregorianCalendar();
+    cal.setTimeInMillis(timeRawMs);
+    long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CORRECTION_BG_SUMMER : CORRECTION_BG_WINTER;
+    cal.setTimeInMillis(timeRawMs + corr);
+    return formatDate(cal, false);
   }
   
   private void process(JSONObject data) throws Exception {
@@ -309,13 +325,11 @@ public class CalcDist {
         }
         times.put(cal.getTimeInMillis() - stt);
         if (i == 0) {
-          Object[] ret = new Object[1];
-          data.put("date", getUserFriendlyDate(timeStart, ret));
-          Calendar cc = (Calendar) ret[0];
-          data.put("year", cc.get(Calendar.YEAR));
-          data.put("month", cc.get(Calendar.MONTH));
-          data.put("day", cc.get(Calendar.DAY_OF_MONTH));
+          data.put("year", cal.get(Calendar.YEAR));
+          data.put("month", cal.get(Calendar.MONTH));
+          data.put("day", cal.get(Calendar.DAY_OF_MONTH));
           data.put("timeRawMs", cal.getTimeInMillis());
+          data.put("date", getDateWithCorrection(cal.getTimeInMillis()));
         }
         if (i > 0) {
           double tempDist = distance(prev[0], lat, prev[1], lon);
