@@ -93,6 +93,19 @@
         }
 
         $(document).ready(function() {
+			if (navigator.userAgent.indexOf("Firefox") > 0) {
+				$('#dist1').addClass('ftime');
+				$('#dist2').addClass('ftime');
+			} else {
+				$('#dist1').addClass('odometer');
+				od = new Odometer({
+					el: document.querySelector('#dist1')
+				});
+				$('#dist2').addClass('odometer');
+				od = new Odometer({
+					el: document.querySelector('#dist2')
+				});
+			}
             $('#trace').button();
             $('#tres').button();
 			$('#map').css('height', $(window).height() * 0.65);
@@ -140,8 +153,8 @@
                 <div id="mapHolder">
 					<table id="meas">
 							<tbody>
-								<tr><td><span class="fdist1">Distance A</span></td><td><div class="odometer" id="dist1">0</div></td></tr>
-								<tr><td><span class="fdist2">Distance B</span></td><td><div class="odometer" id="dist2">0</div></td></tr>
+								<tr><td><span class="fdist1">Distance A</span></td><td><div id="dist1">0</div></td></tr>
+								<tr><td><span class="fdist2">Distance B</span></td><td><div id="dist2">0</div></td></tr>
 								<tr><td><span class="ftime">Time</span></td><td><div class="ftime" id="ctime">00:00:00</div></td></tr>
 							</tbody>
 					</table>

@@ -89,6 +89,14 @@
         }
 
         $(document).ready(function() {
+			if (navigator.userAgent.indexOf("Firefox") > 0) {
+				$('#dist').addClass('ftime');
+			} else {
+				$('#dist').addClass('odometer');
+				od = new Odometer({
+					el: document.querySelector('#dist')
+				});
+			}
             $('#trace').button();
             $('#tres').button();
             $('#toggle').checkboxradio();
@@ -124,7 +132,7 @@
             <div class="col-sm-6">
 				<table id="meas">
 					<tbody>
-						<tr><td><span class="fdist">Distance </span></td><td><div class="odometer" id="dist">0</div></td></tr>
+						<tr><td><span class="fdist">Distance </span></td><td><div id="dist">0</div></td></tr>
 						<tr><td><span class="ftime">Time</span></td><td><div class="ftime" id="ctime">00:00:00</div></td></tr>
 					</tbody>
 				</table>
@@ -456,7 +464,7 @@
 				}
 				currentDist = (percA / 100.0) * parseFloat($("#totDist").val());
 				currentTime = elapsedPerc * times[times.length - 1];
-				$('#dist').text(currentDist);
+				$('#dist').text(currentDist.toFixed(3));
 				$('#ctime').text(formatTime(currentTime));
                 var icons = line.get('icons');
                 icons[0].offset = percA + '%';
