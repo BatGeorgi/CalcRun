@@ -920,7 +920,7 @@
                 var isMod = item['isModified'] == 'y';
 				dateStr = item['date'];
 				if (compactDate) {
-					dateStr = item['day'] + '.' + item['month'] + '.' + (item['year'] - 2000);
+					dateStr = item['day'] + '.' + (item['month'] + 1) + '.' + (item['year'] - 2000);
 				}
                 runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div class="runitem" id="item' + i + '">' + decodeURIComponent(item['name']) + (isMod ? '*' : '') +
                     '</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
@@ -1589,7 +1589,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.7</strong></H1>
+        <H1><strong>Activity Tracker 2.71</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
