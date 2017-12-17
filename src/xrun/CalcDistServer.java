@@ -54,6 +54,14 @@ public class CalcDistServer {
         throw new IllegalArgumentException("Client secret file " + args[2] + " does not exist");
       }
     }
+    List<String> allowedRefs = null;
+    if (args.length > 3) {
+    	allowedRefs = new LinkedList<String>();
+    	StringTokenizer st = new StringTokenizer(args[3], ",", false);
+    	while(st.hasMoreTokens()) {
+    		allowedRefs.add(st.nextToken());
+    	}
+    }
     System.out.println("Current time is " + new GregorianCalendar(TimeZone.getDefault()).getTime());
     ResourceHandler resourceHandler = new ResourceHandler();
     resourceHandler.setDirAllowed(false);
@@ -63,7 +71,7 @@ public class CalcDistServer {
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
     final CalcDistHandler cdHandler = new CalcDistHandler(tracksBase, clientSecret, new File(resourceHandler.getBaseResource().getFile(), "activity.html"),
-    		new File(resourceHandler.getBaseResource().getFile(), "comparison.html"));
+    		new File(resourceHandler.getBaseResource().getFile(), "comparison.html"), allowedRefs);
     handlers.setHandlers(new Handler[] { new MultipartConfigInjectionHandler(), resourceHandler, cdHandler });
     server.setHandler(handlers);
     server.start();
@@ -128,12 +136,19 @@ class CalcDistHandler extends AbstractHandler {
   private long compTempLastMod = Long.MIN_VALUE;
   private String activityTemplate = "Not loaded :(";
   private String comparisonTemplate = "Not loaded :(";
+  private List<String> allowedRefs;
 
-  public CalcDistHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile) throws IOException {
+  public CalcDistHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile, List<String> allowedRefs)
+  		throws IOException {
     rcUtils = new RunCalcUtils(tracksBase, clientSecret);
     this.activityTemplateFile = activityTemplateFile;
     this.comparisonTemplateFile = comparisonTemplateFile;
+    this.allowedRefs = allowedRefs;
     System.out.println("Initialize finished!");
+  }
+  
+  private boolean isAllowed(String refIP) {
+  	return allowedRefs == null || allowedRefs.contains(refIP);
   }
   
   private String getActivityTemplate() {
@@ -955,9 +970,40 @@ class CalcDistHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+  
+	private boolean isAllowed(Request baseRequest) {
+		String origin = baseRequest.getHeader("Origin");
+		if (origin == null) {
+			origin = baseRequest.getHeader("Referer");
+		}
+		if (origin == null) {
+			return false;
+		}
+		int start = -1;
+		for (int i = 5; i < origin.length(); ++i) {
+			if (origin.charAt(i) != '/') {
+				start = i;
+				break;
+			}
+		}
+		if (start == -1) {
+			return false;
+		}
+		for (int i = start + 1; i < origin.length(); ++i) {
+			if (origin.charAt(i) == ':' || origin.charAt(i) == '/') {
+				return isAllowed(origin.substring(start, i));
+			}
+		}
+		return false;
+	}
 
   public void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
+  	if (!isAllowed(baseRequest)) {
+  		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+  		baseRequest.setHandled(true);
+  		return;
+  	}
   	if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
   		if (target.startsWith("/compare")) {
   			processGetComparison(baseRequest, response);
