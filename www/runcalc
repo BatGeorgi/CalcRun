@@ -1316,7 +1316,8 @@
         }
 
         function checkWidth() {
-            if ($(window).width() < 1200) {
+			wid = $(window).width();
+            if (wid < 1200) {
                 initSecondaryDialogs();
                 $('#bestOfWrap').append('<button id="bestOfBtn">Best achievements</button>');
                 $('#bestOfBtn').button();
@@ -1333,8 +1334,17 @@
                 $('#titleTotals').remove();
                 $('#titleBest').remove();
             }
-			if ($(window).width() < 1800) {
+			if (wid < 1800) {
 				compactDate = true;
+				if (wid >= 1600) {
+					$('#runs').css({'width': '85%'});
+				}
+			}
+			if (wid >= 1400 && wid < 1600) {
+				$('#runs').css({'width': '90%'});
+			}
+			if (wid < 1400) {
+				$('#runs').css({'width': '95%'});
 			}
         }
 
@@ -1589,7 +1599,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.71</strong></H1>
+        <H1><strong>Activity Tracker 2.72</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
