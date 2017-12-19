@@ -1157,6 +1157,7 @@
                         var farthest = data['longest'];
                         var fastest = data['fastest'];
                         var maxAsc = data['maxAsc'];
+                        var maxRun = data['maxRun'];
                         var k1 = data['1K'];
                         var k25 = data['2K5'];
                         var k5 = data['5K'];
@@ -1167,6 +1168,7 @@
                         $('#bestOf tbody').html('<tr><td>Farthest</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
                             '<tr><td>Fastest</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
                             '<tr><td>Max ascent</td><td>' + getStat(maxAsc, 'ach') + '</td><td>' + getStat(maxAsc, 'when') + '</td></tr>' +
+							'<tr><td>Max running distance</td><td>' + getStat(maxRun, 'ach') + '</td><td>' + getStat(maxRun, 'when') + '</td></tr>' +
                             '<tr><td>1K</td><td>' + getStat(k1, 'ach') + '</td><td>' + getStat(k1, 'when') + '</td></tr>' +
                             '<tr><td>2.5K</td><td>' + getStat(k25, 'ach') + '</td><td>' + getStat(k25, 'when') + '</td></tr>' +
                             '<tr><td>5K</td><td>' + getStat(k5, 'ach') + '</td><td>' + getStat(k5, 'when') + '</td></tr>' +
@@ -1599,7 +1601,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.72</strong></H1>
+        <H1><strong>Activity Tracker 2.73</strong></H1>
 		<hr>
     </div>
 	<div id="controls">

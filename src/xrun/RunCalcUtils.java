@@ -386,6 +386,7 @@ public class RunCalcUtils {
     result.put("longest", getBest("distRaw", "km"));
     result.put("fastest", getBest("avgSpeedRaw", "km/h"));
     result.put("maxAsc", getBest("eleTotalPos", "m"));
+    result.put("maxRun", getBest("distRunningRaw", "km"));
     result.put("1K", getBest(0.99, 1.1));
     result.put("2K5", getBest(2.49, 2.55));
     result.put("5K", getBest(4.99, 5.2));
