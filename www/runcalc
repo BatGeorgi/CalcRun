@@ -488,7 +488,7 @@
 									if (f2.endsWith(".gpx")) {
 										f2 = f2.substring(0, f2.length - 4);
 									}
-                                    var extLinkComp = '<hr><a href="compare?a1=' + f1 + '&a2=' + f2 + '" target="_blank"><input type="image" src="extview-icon.png" width="60" height="60" /></a>';
+                                    var extLinkComp = '<hr><a href="compare?a1=' + f1 + '&a2=' + f2 + '" target="_blank"><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" /></a>';
                                     $('#compareResults').html(extLinkComp + '<hr><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
                                         '<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
                                         '<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
@@ -952,15 +952,15 @@
                     $('#ui' + i).dialog('open');
                 });
                 var origData = item['origData'];
-                var extLinks = '<a href="' + filename + '" target="_blank"><input type="image" src="extview-icon.png" width="60" height="60" /></a>';
+                var extLinks = '<a href="' + filename + '" target="_blank"><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" /></a>';
                 if (item['garminLink'] != 'none') {
-                    extLinks += '<a href="' + item['garminLink'] + '" target="_blank"><input type="image" src="garmin-icon.png" width="60" height="60" /></a>';
+                    extLinks += '<a href="' + item['garminLink'] + '" target="_blank"><input class="hovs" type="image" src="garmin-icon.png" width="60" height="60" /></a>';
                 }
                 if (item['ccLink'] != 'none') {
-                    extLinks += '<a href="' + decodeURIComponent(item['ccLink']) + '" target="_blank"><input type="image" src="relivecc-icon.png" width="60" height="60" /></a>';
+                    extLinks += '<a href="' + decodeURIComponent(item['ccLink']) + '" target="_blank"><input class="hovs" type="image" src="relivecc-icon.png" width="60" height="60" /></a>';
                 }
                 if (item['photosLink'] != 'none') {
-                    extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input type="image" src="photos-icon.png" width="60" height="60" /></a>';
+                    extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input class="hovs" type="image" src="photos-icon.png" width="60" height="60" /></a>';
                 }
                 $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
                     item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
@@ -1229,7 +1229,7 @@
             $.each(data, function(i, item) {
 				intData = item['data'];
 				wy = item['year'];
-				buttonHtml += i > 0 ? '<a href="#shortcut' + wy + '"><button id=wy"' + wy + '">' + wy + '</button></a>' : '';
+				buttonHtml += i > 0 ? '<a href="#shortcut' + wy + '"><button class="hovs" id=wy"' + wy + '">' + wy + '</button></a>' : '';
 				firstEl = i > 0 ? '<div id="shortcut' + wy + '"/>' : '';
 				$.each(intData, function(j, wdata) {
 					tableHtml += '<tr class="border_bottom"><td>' + firstEl + wy + ' ' + wdata['info'] + '</td><td>' + getWTable(wdata) + '</td></tr>';
@@ -1601,7 +1601,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.73</strong></H1>
+        <H1><strong>Activity Tracker 2.74</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
