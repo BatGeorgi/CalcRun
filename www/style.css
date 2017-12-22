@@ -311,3 +311,12 @@ tr.border_bottom td {
   flex-wrap: nowrap;
   justify-content: space-around;
 }
+#importButton:hover {
+    cursor: pointer;
+}
+#rescanButton:hover {
+    cursor: pointer;
+}
+.hovs:hover {
+    cursor: pointer;
+}
