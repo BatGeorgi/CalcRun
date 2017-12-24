@@ -1209,7 +1209,8 @@
             return '<table class="innermtt"><tbody><tr><td>Running&nbsp;</td><td>' + item['r'] + '(' + item['countr'] + ')</td></tr><tr><td>Trail&nbsp;</td><td>' + item['t'] +
 				'(' + item['countt'] + ')</td></tr>' +
                 '<tr><td>Uphill&nbsp;</td><td>' + item['u'] + '(' + item['countu'] + ')</td></tr><tr><td>Hiking&nbsp;</td><td>' + item['h'] + '(' + item['counth'] +
-                ')</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '(' + item['countrt'] + ')</strong></td></tr></tbody></table>';
+                ')</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '(' + item['countrt'] + ')</strong></td></tr>' +
+				'<tr><td><strong>Denivelation+</strong></td><td><strong>' + item['totalPositiveEl'] + '</strong></td></tr></tbody></table>';
         }
 
         function initMonthlyTotals(data) {
