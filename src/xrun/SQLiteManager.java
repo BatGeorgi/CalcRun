@@ -183,6 +183,7 @@ public class SQLiteManager {
             data.put("counth", 0);
             data.put("rt", 0d);
             data.put("countrt", 0);
+            data.put("totalPositiveEl", 0);
             Calendar first = (Calendar) cal.clone();
             int diff = Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK);
             if (diff == 1) {
@@ -278,20 +279,24 @@ public class SQLiteManager {
 	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
 	          months[rs.getInt(1)].remove("emp");
 	        }
-	        rs = executeQuery("SELECT month, COUNT(genby) FROM " + RUNS_TABLE_NAME + " WHERE (" + filters[j] +
-              ") AND year=" + years.get(i) + " GROUP BY month", true);
-	        while (rs.next()) {
-	        	months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
-            	months[rs.getInt(1)].remove("emp");
-	        }
+					rs = executeQuery("SELECT month, COUNT(genby) FROM "
+							+ RUNS_TABLE_NAME + " WHERE (" + filters[j] + ") AND year="
+							+ years.get(i) + " GROUP BY month", true);
+					while (rs.next()) {
+						months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
+						months[rs.getInt(1)].put("totalPositiveEl", 0);
+						months[rs.getInt(1)].remove("emp");
+					}
 	      }
-        rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM "  + RUNS_TABLE_NAME + " WHERE year=" +
+        rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
                 years.get(i) + " GROUP BY month", true);
-        int totalPositiveEl = rs.getInt(2);
-        if (totalPositiveEl > 0) {
-        	months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
-        	months[rs.getInt(1)].remove(emp);
-        }
+				while (rs.next()) {
+					int totalPositiveEl = rs.getInt(2);
+					if (totalPositiveEl > 0) {
+						months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
+						months[rs.getInt(1)].remove("emp");
+					}
+				}
         for (int j = months.length - 1; j >= 0; --j) {
           if (months[j].opt("emp") == null) {
             result.put(months[j]);
