@@ -162,7 +162,7 @@ public class SQLiteManager {
       rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
       Collections.sort(years);
       for (int i = years.size() - 1; i >= 0; --i) {
-        rs = executeQuery("SELECT timeRawMs, type, distRaw FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
+        rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         JSONArray wArr = new JSONArray();
         while (rs.next()) {
@@ -212,6 +212,10 @@ public class SQLiteManager {
           } else if (RunCalcUtils.HIKING.equals(type)) {
             data.put("h", data.getDouble("h") + dist);
             data.put("counth", data.getInt("counth") + 1);
+          }
+          int totalPositiveEl = rs.getInt("eleTotalPos");
+          if (totalPositiveEl > 0) {
+        	  data.put("totalPositiveEl", data.getInt("totalPositiveEl") + totalPositiveEl);
           }
           weekly.put(week, data);
         }
@@ -277,10 +281,17 @@ public class SQLiteManager {
 	        rs = executeQuery("SELECT month, COUNT(genby) FROM " + RUNS_TABLE_NAME + " WHERE (" + filters[j] +
               ") AND year=" + years.get(i) + " GROUP BY month", true);
 	        while (rs.next()) {
-            months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
-            months[rs.getInt(1)].remove("emp");
-          }
+	        	months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
+            	months[rs.getInt(1)].remove("emp");
+	        }
 	      }
+        rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM "  + RUNS_TABLE_NAME + " WHERE year=" +
+                years.get(i) + " GROUP BY month", true);
+        int totalPositiveEl = rs.getInt(2);
+        if (totalPositiveEl > 0) {
+        	months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
+        	months[rs.getInt(1)].remove(emp);
+        }
         for (int j = months.length - 1; j >= 0; --j) {
           if (months[j].opt("emp") == null) {
             result.put(months[j]);
