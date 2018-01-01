@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
@@ -333,6 +335,15 @@ class CalcDistHandler extends AbstractHandler {
     return sb.toString();
   }
   
+  private static final int[] MT_LEN = new int[] {31, -1, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  
+  private static int getMonthLen(int month, int year) {
+  	if (month != 1) {
+  		return MT_LEN[month];
+  	}
+  	return year % 4 == 0 ? 29 : 28;
+  }
+  
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     boolean run = "true".equals(baseRequest.getHeader("run"));
     boolean trail = "true".equals(baseRequest.getHeader("trail"));
@@ -368,39 +379,53 @@ class CalcDistHandler extends AbstractHandler {
       // silent catch
     }
     startDate = new GregorianCalendar(TimeZone.getDefault());
+    Calendar currentDate = new GregorianCalendar();
     int mt = 0;
+    int periodLen = 0;
     switch (dateOpt) {
       case 0: // this month
         startDate.set(Calendar.DAY_OF_MONTH, 1);
+        periodLen = currentDate.get(Calendar.DAY_OF_MONTH);
         filterStr.append(" for this month");
         break;
       case 1: // this year
         startDate.set(Calendar.DAY_OF_MONTH, 1);
         startDate.set(Calendar.MONTH, 0);
+        periodLen = currentDate.get(Calendar.DAY_OF_YEAR);
         filterStr.append(" for this year");
         break;
       case 2: // last 30
+      	startDate.add(Calendar.DAY_OF_MONTH, 1);
         mt = startDate.get(Calendar.MONTH);
         if (mt > 0) {
           startDate.set(Calendar.MONTH, mt - 1);
+          periodLen = getMonthLen(mt - 1, startDate.get(Calendar.YEAR));
         } else {
           startDate.set(Calendar.MONTH, 11);
           startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+          periodLen = 31;
         }
         filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 3: // last 3m
+      	startDate.add(Calendar.DAY_OF_MONTH, 1);
         mt = startDate.get(Calendar.MONTH);
-        if (mt > 3) {
+        if (mt >= 3) {
           startDate.set(Calendar.MONTH, mt - 3);
+          int year = startDate.get(Calendar.YEAR);
+          periodLen = getMonthLen(mt - 3, year) + getMonthLen(mt - 2, year) + getMonthLen(mt - 1, year);
         } else {
-          startDate.set(Calendar.MONTH, mt + 8);
+          startDate.set(Calendar.MONTH, mt + 9);
           startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+          int year = startDate.get(Calendar.YEAR);
+          periodLen = getMonthLen(mt + 9, year) + getMonthLen((mt + 9) % 12, year) + getMonthLen((mt + 10) % 12, year);
         }
         filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 4: // last y
         startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+        int year = startDate.get(Calendar.YEAR);
+        periodLen = year % 4 == 0 ? 366 : 365;
         filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 5: // all
@@ -409,6 +434,9 @@ class CalcDistHandler extends AbstractHandler {
       case 6: // custom
         startDate = parseDate(baseRequest.getHeader("dtStart"));
         endDate = parseDate(baseRequest.getHeader("dtEnd"));
+        ZonedDateTime zd1 = ZonedDateTime.of(startDate.get(Calendar.YEAR), startDate.get(Calendar.MONTH) + 1, startDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
+        ZonedDateTime zd2 = ZonedDateTime.of(endDate.get(Calendar.YEAR), endDate.get(Calendar.MONTH) + 1, endDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
+        periodLen =  (int) Duration.between(zd1, zd2).toDays() + 1;
         filterStr.append(" in period " + getDateStr(startDate, "Begining") + " - " + getDateStr(endDate, "Now"));
     }
     String smin = baseRequest.getHeader("dmin");
@@ -443,7 +471,7 @@ class CalcDistHandler extends AbstractHandler {
       filterStr.append(", matching the name regex");
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
-        records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"));
+        records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen);
     if (data.getJSONArray("activities").length() == 0) {
       List<String> types = new LinkedList<String>();
       if (run) {
@@ -624,6 +652,13 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private boolean isLoggedIn(Request baseRequest) {
+  	if(!isAllowed(baseRequest)) {
+  		return false;
+  	}
+  	return isLoggedIn0(baseRequest);
+  }
+  
+  private boolean isLoggedIn0(Request baseRequest) {
     Cookie[] cookies = baseRequest.getCookies();
     if (cookies == null) {
       return false;
@@ -637,7 +672,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void checkCookie(Request baseRequest, HttpServletResponse response) {
-    if (isLoggedIn(baseRequest)) {
+    if (isLoggedIn0(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_OK);
     } else {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -999,11 +1034,6 @@ class CalcDistHandler extends AbstractHandler {
 
   public void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-  	if (!isAllowed(baseRequest)) {
-  		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-  		baseRequest.setHandled(true);
-  		return;
-  	}
   	if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
   		if (target.startsWith("/compare")) {
   			processGetComparison(baseRequest, response);

@@ -870,8 +870,12 @@
             $('#overall').show();
             $('#runs').show();
             $('#ht').html(data['filter'] + '<p>');
+			averageData = '';
+			if (data['avgDaily'] != '') {
+				averageData = '<tr><td>Average daily</td><td>' + data['avgDaily'] + ' km</td></tr><tr><td>Average weekly</td><td>' + data['avgWeekly'] + ' km</td></tr><tr><td>Average monthly</td><td>' + data['avgMonthly'] + ' km</td></tr>';
+			}
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
-                '<tr><td>Average distance</td><td>' + data['avgDist'] + ' km</td></tr>' + 
+                '<tr><td>Average distance</td><td>' + data['avgDist'] + ' km</td></tr>' + averageData +
 				'<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
             initMonthlyTotals(data['mtotals']);
 			initWeeklyTotals(data['wtotals']);
@@ -1606,7 +1610,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.74</strong></H1>
+        <H1><strong>Activity Tracker 2.75</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -1652,7 +1656,7 @@
                     <input type="radio" name="selectPeriod" id="radio-1">
                     <label for="radio-2">This year</label>
                     <input type="radio" name="selectPeriod" id="radio-2">
-                    <label for="radio-3">Last 30 days</label>
+                    <label for="radio-3">Last month</label>
                     <input type="radio" name="selectPeriod" id="radio-3">
                     <label for="radio-4">Last 3 months</label>
                     <input type="radio" name="selectPeriod" id="radio-4">

@@ -207,7 +207,7 @@ public class RunCalcUtils {
   }
   
   JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other, int records,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen) {
     if (dashboard == null || dashboard.trim().length() == 0) {
       dashboard = SQLiteManager.MAIN_DASHBOARD;
     }
@@ -245,6 +245,18 @@ public class RunCalcUtils {
     result.put("activities", activities);
     result.put("mtotals", sqLite.getMonthlyTotals());
     result.put("wtotals", sqLite.getWeeklyTotals());
+		if (totals != null) {
+			if (periodLen > 0) {
+				double avgDaily = totals.getDouble("totalDistance") / (double) periodLen;
+				totals.put("avgDaily", String.format("%.3f", avgDaily));
+				totals.put("avgWeekly", String.format("%.3f", 7 * avgDaily));
+				totals.put("avgMonthly", String.format("%.3f", (365 / 12.0) * avgDaily));
+			} else {
+				totals.put("avgDaily", "");
+				totals.put("avgWeekly", "");
+				totals.put("avgMonthly", "");
+			}
+		}
     if (activities.length() > 0) {
       for (String key : totals.keySet()) {
         Object value = totals.get(key);
@@ -650,7 +662,7 @@ public class RunCalcUtils {
   }
   
   JSONObject fetchDashboard(String dashboardName) {
-  	return filter(null, true, true, true, true, false, false, Integer.MAX_VALUE, null, null, 0, Integer.MAX_VALUE, dashboardName); // default settings
+  	return filter(null, true, true, true, true, false, false, Integer.MAX_VALUE, null, null, 0, Integer.MAX_VALUE, dashboardName, 0); // default settings
   }
   
   String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
