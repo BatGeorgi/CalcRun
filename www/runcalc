@@ -1106,7 +1106,8 @@
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
                     'dmax': $('#spinnerMax').val(),
-					'dashboard': $('#dashboard' + currentDash).attr('name')
+					'dashboard': $('#dashboard' + currentDash).attr('name'),
+					'changeDash': changeDash
                 },
                 statusCode: {
                     200: function(data) {
@@ -1262,6 +1263,7 @@
 		var dashCount = 0;
 		var currentDash = 0;
 		var fetchAfterDashClick = true;
+		var changeDash = '';
 
         function initDashboards() {
             $.ajax({
@@ -1309,7 +1311,9 @@
 									$('#spinnerMax').val('');
 									$('#l-inf').prop('checked', true).change();
 									$('#searchName').val('');
+									changeDash = 'true';
 									fetch();
+									changeDash = '';
 								}
 							});
                         });

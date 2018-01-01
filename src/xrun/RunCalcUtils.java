@@ -625,6 +625,34 @@ public class RunCalcUtils {
     return sqLite.getPresets(null);
   }
   
+  JSONObject fetchPreset(String presetName) {
+  	JSONObject preset = sqLite.getPresetData(presetName);
+  	if (preset == null) {
+  		return null;
+  	}
+  	/* preset.put("startDate", rs.getString("startDate"));
+			preset.put("endDate", rs.getString("endDate"));
+			preset.put("minDist", rs.getInt("minDist"));
+			preset.put("maxDist", rs.getInt("maxDist"));
+			preset.put("top", rs.getInt("top"));
+			preset.put("dashboard", rs.getString("dashboard"));
+  	return filter(preset.getBoolean("run"), preset.getBoolean("trail"), preset.getBoolean("uphill"), preset.getBoolean("hike"), preset.getBoolean("walk"),
+  			preset.getBoolean("other"), null, null, preset.getInt("minDist"), preset.getInt("maxDist"), preset.getInt("maxCount"));*/
+  	return null;
+  }
+  
+  List<String> getPresetNames() {
+  	return sqLite.getPresetNames();
+  }
+  
+  List<String> getDashboardNames() {
+  	return sqLite.getDashboardNames();
+  }
+  
+  JSONObject fetchDashboard(String dashboardName) {
+  	return filter(null, true, true, true, true, false, false, Integer.MAX_VALUE, null, null, 0, Integer.MAX_VALUE, dashboardName); // default settings
+  }
+  
   String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
       String dashboard) {
   	try {
