@@ -1310,6 +1310,8 @@
 									$('#checkbox-2').prop('checked', true).change();
 									$('#checkbox-3').prop('checked', true).change();
 									$('#checkbox-4').prop('checked', true).change();
+									$('#checkbox-5').prop('checked', false).change();
+									$('#checkbox-6').prop('checked', false).change();
 									$('#radio-6').prop('checked', true).change();
 									$('#spinnerMin').val('');
 									$('#spinnerMax').val('');
