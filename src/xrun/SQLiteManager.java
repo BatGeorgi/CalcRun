@@ -404,6 +404,71 @@ public class SQLiteManager {
 		executeQueryExc("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", false);
 	}
 	
+	synchronized JSONObject getPresetData(String name) {
+		ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME
+				+ " WHERE name='" + name + "'", true);
+		try {
+			if (rs == null || !rs.next()) {
+				return null;
+			}
+			JSONObject preset = new JSONObject();
+			preset.put("name", rs.getString("name"));
+			preset.put("pattern", rs.getString("pattern"));
+			preset.put("startDate", rs.getString("startDate"));
+			preset.put("endDate", rs.getString("endDate"));
+			preset.put("minDist", rs.getInt("minDist"));
+			preset.put("maxDist", rs.getInt("maxDist"));
+			preset.put("top", rs.getInt("top"));
+			preset.put("dashboard", rs.getString("dashboard"));
+			String types = rs.getString("types");
+			StringTokenizer st = new StringTokenizer(types, ",", false);
+			while (st.hasMoreTokens()) {
+				String next = st.nextToken().trim();
+				if (next.length() > 0) {
+					preset.put(next, true);
+				}
+			}
+			return preset;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	synchronized List<String> getPresetNames() {
+		List<String> result = new ArrayList<String>();
+		ResultSet rs = executeQuery("SELECT name FROM " + PRESETS_TABLE_NAME, true);
+		if (rs == null) {
+			return result;
+		}
+		try {
+			while (rs.next()) {
+				result.add(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	synchronized List<String> getDashboardNames() {
+		List<String> result = new ArrayList<String>();
+		ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
+		if (rs == null) {
+			executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('"
+					+ MAIN_DASHBOARD + "')", false);
+			rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
+		}
+		try {
+			while (rs.next()) {
+				result.add(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
 	synchronized JSONArray getPresets(Map<String, JSONObject> out) {
 		JSONArray result = new JSONArray();
 		ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME, true);
@@ -830,6 +895,7 @@ public class SQLiteManager {
       ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
       if (rs == null) {
         executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + MAIN_DASHBOARD + "')", false);
+        rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
       }
       while (rs.next()) {
         arr.put(rs.getString(1));
