@@ -872,7 +872,13 @@
             $('#ht').html(data['filter'] + '<p>');
 			averageData = '';
 			if (data['avgDaily'] != '') {
-				averageData = '<tr><td>Average daily</td><td>' + data['avgDaily'] + ' km</td></tr><tr><td>Average weekly</td><td>' + data['avgWeekly'] + ' km</td></tr><tr><td>Average monthly</td><td>' + data['avgMonthly'] + ' km</td></tr>';
+				averageData = '<tr><td>Average daily</td><td>' + data['avgDaily'] + ' km</td></tr>';
+			}
+			if (data['avgWeekly'] != '') {
+				averageData += '<tr><td>Average weekly</td><td>' + data['avgWeekly'] + ' km</td></tr>';
+			}
+			if (data['avgMonthly'] != '') {
+				averageData += '<tr><td>Average monthly</td><td>' + data['avgMonthly'] + ' km</td></tr>';
 			}
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Average distance</td><td>' + data['avgDist'] + ' km</td></tr>' + averageData +
@@ -1608,7 +1614,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.75</strong></H1>
+        <H1><strong>Activity Tracker 2.76</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
