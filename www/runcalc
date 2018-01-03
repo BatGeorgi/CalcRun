@@ -1110,8 +1110,7 @@
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
                     'dmax': $('#spinnerMax').val(),
-					'dashboard': $('#dashboard' + currentDash).attr('name'),
-					'changeDash': changeDashFlag
+					'dashboard': $('#dashboard' + currentDash).attr('name')
                 },
                 statusCode: {
                     200: function(data) {
@@ -1267,7 +1266,6 @@
 		var dashCount = 0;
 		var currentDash = 0;
 		var fetchAfterDashClick = true;
-		var changeDashFlag = '';
 
         function initDashboards() {
             $.ajax({
@@ -1317,9 +1315,7 @@
 									$('#spinnerMax').val('');
 									$('#l-inf').prop('checked', true).change();
 									$('#searchName').val('');
-									changeDashFlag = 'true';
 									fetch();
-									changeDashFlag = '';
 								}
 							});
                         });
