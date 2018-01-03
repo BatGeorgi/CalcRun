@@ -245,18 +245,21 @@ public class RunCalcUtils {
     result.put("activities", activities);
     result.put("mtotals", sqLite.getMonthlyTotals());
     result.put("wtotals", sqLite.getWeeklyTotals());
-		if (totals != null) {
-			if (periodLen > 0) {
-				double avgDaily = totals.getDouble("totalDistance") / (double) periodLen;
-				totals.put("avgDaily", String.format("%.3f", avgDaily));
-				totals.put("avgWeekly", String.format("%.3f", 7 * avgDaily));
-				totals.put("avgMonthly", String.format("%.3f", (365 / 12.0) * avgDaily));
-			} else {
-				totals.put("avgDaily", "");
-				totals.put("avgWeekly", "");
-				totals.put("avgMonthly", "");
-			}
-		}
+    if (totals != null) {
+      totals.put("avgDaily", "");
+      totals.put("avgWeekly", "");
+      totals.put("avgMonthly", "");
+      if (periodLen > 0) {
+        double avgDaily = totals.getDouble("totalDistance") / (double) periodLen;
+        totals.put("avgDaily", String.format("%.3f", avgDaily));
+        if (periodLen >= 7) {
+          totals.put("avgWeekly", String.format("%.3f", 7 * avgDaily));
+        }
+        if (periodLen >= 28) {
+          totals.put("avgMonthly", String.format("%.3f", (365 / 12.0) * avgDaily));
+        }
+      }
+    }
     if (activities.length() > 0) {
       for (String key : totals.keySet()) {
         Object value = totals.get(key);
