@@ -16,6 +16,9 @@
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
 	
+	<script type="text/javascript" src="fusioncharts.js"></script>
+	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
+	
 	<style>
 		#sortable li {
 			display: inline-block;
@@ -552,7 +555,7 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min(400, $(window).width() * 0.8),
+                width: Math.min(800, $(window).width() * 0.8),
                 height: Math.min($(window).height() * 0.85, 900),
                 create: function(event) {
                     $(event.target).parent().css({
@@ -1222,15 +1225,84 @@
                 ')</td></tr><tr><td><strong>Run&Trail&nbsp;</strong></td><td><strong>' + item['rt'] + '(' + item['countrt'] + ')</strong></td></tr>' +
 				'<tr><td><strong>Denivelation+</strong></td><td><strong>' + item['totalPositiveEl'] + '</strong></td></tr></tbody></table>';
         }
+		
+		function getChart(caption, subcap, xname, yname, suff, data) {
+			return {
+					type: "column2d",
+					width: "700",
+					height: "300",
+					dataFormat: "json",
+					dataSource: {
+						"chart": {
+							"caption": caption,
+							"subCaption": subcap,
+							"xAxisName": xname,
+							"yAxisName": yname,
+							"exportEnabled" : "1",
+							"numberSuffix": suff,
+							"theme": "fint"
+						},
+						data: data
+					}
+				}
+		}
+		
+		function getYearData(data, type) {
+			result = [];
+			$.each(data, function(i, item) {
+				mdata = item['data'];
+				result.push({
+					"label": item['month'],
+					"value": mdata[type]
+				});
+			});
+			return result;
+		}
+		
+		function genContainerHTML(year) {
+			return '<div id="mtContainerR' + year + '"></div>' + '<div id="mtContainerT' + year + '"></div>' + '<div id="mtContainerU' + year + '"></div>' +
+				'<div id="mtContainerH' + year + '"></div>' + '<div id="mtContainerRT' + year + '"></div>' + '<div id="mtContainerD' + year + '"></div>';
+		}
+		
+		function showContainer(year) {
+			$("div[id^=mtContainer]").hide();
+			$("#mtContainerR" + year).show();
+			$("#mtContainerT" + year).show();
+			$("#mtContainerU" + year).show();
+			$("#mtContainerH" + year).show();
+			$("#mtContainerRT" + year).show();
+			$("#mtContainerD" + year).show();
+		}
 
         function initMonthlyTotals(data) {
             $('#mTotals').dialog('option', 'title', 'Total distance by month');
-            tableHtml = '<table id="mtt" align="center"><tbody>';
+			menuHtml = '<strong>Select year</strong>';
+			buttonHtml = '';
+			containerHtml = '<p><strong>Stats for <div id="ycap"></div></strong><p>';
             $.each(data, function(i, item) {
-                tableHtml += '<tr class="border_bottom"><td>' + item['name'] + '</td><td>' + getWTable(item) + '</td></tr>';
+				buttonHtml += '<button id="ymtot' + item['year'] + '">' + item['year'] + '</button>'; 
+				containerHtml += genContainerHTML(item['year']);
             });
-            tableHtml += '</tbody></table>';
-            $('#mTotals').html(tableHtml);
+            $('#mTotals').html(menuHtml + '<p>' + buttonHtml + '<hr/>' + containerHtml);
+			$("div[id^=mtContainer]").hide();
+			$.each(data, function(i, item) {
+				ydata = item['data'];
+				year = item['year'];
+				$("#mtContainerR" + year).insertFusionCharts(getChart("Running", "By month", "Month", "Distance", "km", getYearData(ydata, 'r')));
+				$("#mtContainerT" + year).insertFusionCharts(getChart("Trail running", "By month", "Month", "Distance", "km", getYearData(ydata, 't')));
+				$("#mtContainerU" + year).insertFusionCharts(getChart("Uphill climbing", "By month", "Month", "Distance", "km", getYearData(ydata, 'u')));
+				$("#mtContainerH" + year).insertFusionCharts(getChart("Hiking", "By month", "Month", "Distance", "km", getYearData(ydata, 'h')));
+				$("#mtContainerRT" + year).insertFusionCharts(getChart("Running&Trail", "By month", "Month", "Distance", "km", getYearData(ydata, 'rt')));
+				$("#mtContainerD" + year).insertFusionCharts(getChart("Positive denivelation", "By month", "Month", "Denivelation", "m", getYearData(ydata, 'totalPositiveEl')));
+				$("#ymtot" + year).click(function () {
+					$('#ycap').text(item['year']);
+					showContainer(item['year']);
+				});
+				if (i == 0) {
+					$('#ycap').text(year);
+					showContainer(year);
+				}
+			});
         }
 		
 		function initWeeklyTotals(data) {
