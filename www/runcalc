@@ -1251,17 +1251,19 @@
 			result = [];
 			$.each(data, function(i, item) {
 				mdata = item['data'];
+				ckey = 'count' + type;
+				cval = mdata.hasOwnProperty(ckey) ? '(' + mdata[ckey] + ')' : '';
 				result.push({
-					"label": item['month'],
-					"value": mdata[type]
+					"label": item['month'] + cval,
+					"value": parseFloat(mdata[type]).toFixed(1)
 				});
 			});
 			return result;
 		}
 		
 		function genContainerHTML(year) {
-			return '<div id="mtContainerR' + year + '"></div>' + '<div id="mtContainerT' + year + '"></div>' + '<div id="mtContainerU' + year + '"></div>' +
-				'<div id="mtContainerH' + year + '"></div>' + '<div id="mtContainerRT' + year + '"></div>' + '<div id="mtContainerD' + year + '"></div>';
+			return '<div id="mtContainerRT' + year + '"></div>' + '<div id="mtContainerR' + year + '"></div>' + '<div id="mtContainerT' + year + '"></div>' +
+				'<div id="mtContainerU' + year + '"></div>' + '<div id="mtContainerH' + year + '"></div>' + '<div id="mtContainerD' + year + '"></div>';
 		}
 		
 		function showContainer(year) {
@@ -1278,7 +1280,7 @@
             $('#mTotals').dialog('option', 'title', 'Total distance by month');
 			menuHtml = '<strong>Select year</strong>';
 			buttonHtml = '';
-			containerHtml = '<p><strong>Stats for <div id="ycap"></div></strong><p>';
+			containerHtml = '';
             $.each(data, function(i, item) {
 				buttonHtml += '<button id="ymtot' + item['year'] + '">' + item['year'] + '</button>'; 
 				containerHtml += genContainerHTML(item['year']);
@@ -1288,18 +1290,16 @@
 			$.each(data, function(i, item) {
 				ydata = item['data'];
 				year = item['year'];
-				$("#mtContainerR" + year).insertFusionCharts(getChart("Running", "By month", "Month", "Distance", "km", getYearData(ydata, 'r')));
-				$("#mtContainerT" + year).insertFusionCharts(getChart("Trail running", "By month", "Month", "Distance", "km", getYearData(ydata, 't')));
-				$("#mtContainerU" + year).insertFusionCharts(getChart("Uphill climbing", "By month", "Month", "Distance", "km", getYearData(ydata, 'u')));
-				$("#mtContainerH" + year).insertFusionCharts(getChart("Hiking", "By month", "Month", "Distance", "km", getYearData(ydata, 'h')));
-				$("#mtContainerRT" + year).insertFusionCharts(getChart("Running&Trail", "By month", "Month", "Distance", "km", getYearData(ydata, 'rt')));
-				$("#mtContainerD" + year).insertFusionCharts(getChart("Positive denivelation", "By month", "Month", "Denivelation", "m", getYearData(ydata, 'totalPositiveEl')));
+				$("#mtContainerR" + year).insertFusionCharts(getChart("Running " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'r')));
+				$("#mtContainerT" + year).insertFusionCharts(getChart("Trail running " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 't')));
+				$("#mtContainerU" + year).insertFusionCharts(getChart("Uphill climbing " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'u')));
+				$("#mtContainerH" + year).insertFusionCharts(getChart("Hiking " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'h')));
+				$("#mtContainerRT" + year).insertFusionCharts(getChart("Running&Trail " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'rt')));
+				$("#mtContainerD" + year).insertFusionCharts(getChart("Positive denivelation " + item['year'], "By month", "Month", "Denivelation", "m", getYearData(ydata, 'totalPositiveEl')));
 				$("#ymtot" + year).click(function () {
-					$('#ycap').text(item['year']);
 					showContainer(item['year']);
 				});
 				if (i == 0) {
-					$('#ycap').text(year);
 					showContainer(year);
 				}
 			});
