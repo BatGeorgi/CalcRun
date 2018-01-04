@@ -261,6 +261,7 @@ public class SQLiteManager {
 	        "r", "t", "u", "h", "rt"
 	    };
 	    for (int i = years.size() - 1; i >= 0; --i) {
+	      JSONArray yearData = new JSONArray();
 	      int year = years.get(i);
 	      JSONObject[] months = new JSONObject[12];
 	      for (int j = 0; j < 12; ++j) {
@@ -270,7 +271,6 @@ public class SQLiteManager {
 	          months[j].put(acms[k], "0");
 	          months[j].put("count" + acms[k], 0);
 	        }
-	        months[j].put("emp", true);
 	      }
         for (int j = 0; j < filters.length; ++j) {
           rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE (" + filters[j] +
@@ -294,14 +294,18 @@ public class SQLiteManager {
 					int totalPositiveEl = rs.getInt(2);
 					if (totalPositiveEl > 0) {
 						months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
-						months[rs.getInt(1)].remove("emp");
 					}
 				}
-        for (int j = months.length - 1; j >= 0; --j) {
-          if (months[j].opt("emp") == null) {
-            result.put(months[j]);
-          }
+        for (int j = 0; j < months.length; ++j) {
+          JSONObject monthData = new JSONObject();
+          monthData.put("month", CalcDist.MONTHS[j]);
+          monthData.put("data", months[j]);
+          yearData.put(monthData);
         }
+        JSONObject yearObj = new JSONObject();
+        yearObj.put("year", year);
+        yearObj.put("data", yearData);
+        result.put(yearObj);
 	    }
 	  } catch (Exception e) {
 	    e.printStackTrace();
