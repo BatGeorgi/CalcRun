@@ -161,19 +161,6 @@ tr.border_bottom td {
 #wTotals {
 	text-align: center;
 }
-#mtt { 
-    border-collapse: collapse; 
-	text-align: center;
-}
-.innermtt tr td{
-	border-bottom: none;
-	border-collapse: collapse; 
-	text-align: center;
-}
-#wtt { 
-    border-collapse: collapse; 
-	text-align: center;
-}
 #titleBest {
 	color:#2a6cd6;
 	text-shadow: 1px 1px black;
