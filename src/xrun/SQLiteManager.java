@@ -167,7 +167,7 @@ public class SQLiteManager {
       for (int i = years.size() - 1; i >= 0; --i) {
         rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
-        int lim = 54;
+        int lim = 53;
         if (years.get(i) == currentYear) {
           lim = currentWeek + 1;
         }
