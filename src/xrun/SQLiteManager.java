@@ -161,9 +161,32 @@ public class SQLiteManager {
       }
       rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
       Collections.sort(years);
+      Calendar current = new GregorianCalendar(TimeZone.getDefault());
+      int currentYear = current.get(Calendar.YEAR);
+      int currentWeek = current.get(Calendar.WEEK_OF_YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
         rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
+        int lim = 54;
+        if (years.get(i) == currentYear) {
+          lim = currentWeek + 1;
+        }
+        for (int w = 1; w < lim; ++w) {
+          JSONObject data = new JSONObject();
+          data.put("r", 0d);
+          data.put("countr", 0);
+          data.put("t", 0d);
+          data.put("countt", 0);
+          data.put("u", 0d);
+          data.put("countu", 0);
+          data.put("h", 0d);
+          data.put("counth", 0);
+          data.put("rt", 0d);
+          data.put("countrt", 0);
+          data.put("totalPositiveEl", 0);
+          data.put("info", "Week " + w);
+          weekly.put(w, data);
+        }
         JSONArray wArr = new JSONArray();
         while (rs.next()) {
           Calendar cal = new GregorianCalendar();
@@ -171,7 +194,7 @@ public class SQLiteManager {
           cal.setFirstDayOfWeek(Calendar.MONDAY);
           int week = cal.get(Calendar.WEEK_OF_YEAR);
           JSONObject data = weekly.get(week);
-          if (data == null) {
+          /*if (data == null) {
             data = new JSONObject();
             data.put("r", 0d);
             data.put("countr", 0);
@@ -194,7 +217,7 @@ public class SQLiteManager {
             last.add(Calendar.DAY_OF_YEAR, 6);
             data.put("info", "Week " + week + ": " + first.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[first.get(Calendar.MONTH)] + " - " +
                 last.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[last.get(Calendar.MONTH)]);
-          }
+          }*/
           String type = rs.getString("type");
           double dist = rs.getDouble("distRaw");
           if (RunCalcUtils.RUNNING.equals(type)) {

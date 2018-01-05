@@ -158,6 +158,9 @@ tr.border_bottom td {
 #mTotals {
 	text-align: center;
 }
+#wTotals {
+	text-align: center;
+}
 #mtt { 
     border-collapse: collapse; 
 	text-align: center;
