@@ -1327,8 +1327,15 @@
 			result = [];
 			$.each(data, function(i, item) {
 				if (i >= fr && i < to) {
+					ckey = 'count' + type;
+					cval = item.hasOwnProperty(ckey) ? '(' + item[ckey] + ')' : '';
+					info = item['info'];
+					if (item.hasOwnProperty(ckey) && item[ckey] == 0) {
+						cval = '';
+						info = 'Empty Week';
+					}
 					result.push({
-						"label": item['info'],
+						"label": info + cval,
 						"value": parseFloat(item[type]).toFixed(1)
 					});
 				}
