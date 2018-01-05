@@ -184,7 +184,7 @@ public class SQLiteManager {
           data.put("rt", 0d);
           data.put("countrt", 0);
           data.put("totalPositiveEl", 0);
-          data.put("info", "Week " + w);
+          data.put("info", "Empty week");
           weekly.put(w, data);
         }
         JSONArray wArr = new JSONArray();
@@ -194,18 +194,7 @@ public class SQLiteManager {
           cal.setFirstDayOfWeek(Calendar.MONDAY);
           int week = cal.get(Calendar.WEEK_OF_YEAR);
           JSONObject data = weekly.get(week);
-          /*if (data == null) {
-            data = new JSONObject();
-            data.put("r", 0d);
-            data.put("countr", 0);
-            data.put("t", 0d);
-            data.put("countt", 0);
-            data.put("u", 0d);
-            data.put("countu", 0);
-            data.put("h", 0d);
-            data.put("counth", 0);
-            data.put("rt", 0d);
-            data.put("countrt", 0);
+          if ("Empty week".equals(data.getString("info"))) {
             data.put("totalPositiveEl", 0);
             Calendar first = (Calendar) cal.clone();
             int diff = Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK);
@@ -217,7 +206,7 @@ public class SQLiteManager {
             last.add(Calendar.DAY_OF_YEAR, 6);
             data.put("info", "Week " + week + ": " + first.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[first.get(Calendar.MONTH)] + " - " +
                 last.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[last.get(Calendar.MONTH)]);
-          }*/
+          }
           String type = rs.getString("type");
           double dist = rs.getDouble("distRaw");
           if (RunCalcUtils.RUNNING.equals(type)) {
