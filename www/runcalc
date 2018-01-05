@@ -1348,7 +1348,7 @@
 		
 		function initWeeklyTotals(data) {
 			$('#wTotals').dialog('option', 'title', 'Total distance by week');
-			radioHtml = '<strong>Choose type</strong><fieldset>' + genRadioT('rt', 'Run&Trail', true) + genRadioT('r', 'Run') + genRadioT('t', 'Trail') + genRadioT('u', 'Uphill')
+			radioHtml = '<strong>Choose type</strong><p><fieldset>' + genRadioT('rt', 'Run&Trail', true) + genRadioT('r', 'Run') + genRadioT('t', 'Trail') + genRadioT('u', 'Uphill')
 				+ genRadioT('h', 'Hike') + genRadioT('d', 'Denivelation+') + '</fieldset>';
 			menuHtml = '<strong>Choose year</strong>';
 			buttonHtml = '';
