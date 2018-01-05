@@ -1290,12 +1290,12 @@
 			$.each(data, function(i, item) {
 				ydata = item['data'];
 				year = item['year'];
-				$("#mtContainerR" + year).insertFusionCharts(getChart("Running " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'r')));
-				$("#mtContainerT" + year).insertFusionCharts(getChart("Trail running " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 't')));
-				$("#mtContainerU" + year).insertFusionCharts(getChart("Uphill climbing " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'u')));
-				$("#mtContainerH" + year).insertFusionCharts(getChart("Hiking " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'h')));
-				$("#mtContainerRT" + year).insertFusionCharts(getChart("Running&Trail " + item['year'], "By month", "Month", "Distance", "km", getYearData(ydata, 'rt')));
-				$("#mtContainerD" + year).insertFusionCharts(getChart("Positive denivelation " + item['year'], "By month", "Month", "Denivelation", "m", getYearData(ydata, 'totalPositiveEl')));
+				$("#mtContainerRT" + year).insertFusionCharts(getChart("Running&Trail " + item['year'], "Year report", "Month", "Distance", "km", getYearData(ydata, 'rt')));
+				$("#mtContainerR" + year).insertFusionCharts(getChart("Running " + item['year'], "Year report", "Month", "Distance", "km", getYearData(ydata, 'r')));
+				$("#mtContainerT" + year).insertFusionCharts(getChart("Trail running " + item['year'], "Year report", "Month", "Distance", "km", getYearData(ydata, 't')));
+				$("#mtContainerU" + year).insertFusionCharts(getChart("Uphill climbing " + item['year'], "Year report", "Month", "Distance", "km", getYearData(ydata, 'u')));
+				$("#mtContainerH" + year).insertFusionCharts(getChart("Hiking " + item['year'], "Year report", "Month", "Distance", "km", getYearData(ydata, 'h')));
+				$("#mtContainerD" + year).insertFusionCharts(getChart("Positive denivelation " + item['year'], "Year report", "Month", "Denivelation", "m", getYearData(ydata, 'totalPositiveEl')));
 				$("#ymtot" + year).click(function () {
 					showContainer(item['year']);
 				});
