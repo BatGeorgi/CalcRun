@@ -163,15 +163,16 @@ public class SQLiteManager {
       Collections.sort(years);
       Calendar current = new GregorianCalendar(TimeZone.getDefault());
       int currentYear = current.get(Calendar.YEAR);
-      int currentWeek = current.get(Calendar.WEEK_OF_YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
         rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
-        int lim = 53;
+        int maxWeek = 100;
         if (years.get(i) == currentYear) {
-          lim = currentWeek + 1;
+          maxWeek = WeekCalc.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR))[0];
+        } else {
+        	maxWeek = WeekCalc.getWeekCount(years.get(i));
         }
-        for (int w = 1; w < lim; ++w) {
+        for (int w = 1; w <= maxWeek; ++w) {
           JSONObject data = new JSONObject();
           data.put("r", 0d);
           data.put("countr", 0);
@@ -191,21 +192,11 @@ public class SQLiteManager {
         while (rs.next()) {
           Calendar cal = new GregorianCalendar();
           cal.setTimeInMillis(rs.getLong("timeRawMs"));
-          cal.setFirstDayOfWeek(Calendar.MONDAY);
-          int week = cal.get(Calendar.WEEK_OF_YEAR);
+          int[] idf = WeekCalc.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
+          int week = idf[0];
           JSONObject data = weekly.get(week);
           if ("Empty week".equals(data.getString("info"))) {
-            data.put("totalPositiveEl", 0);
-            Calendar first = (Calendar) cal.clone();
-            int diff = Calendar.MONDAY - first.get(Calendar.DAY_OF_WEEK);
-            if (diff == 1) {
-              diff = -6;
-            }
-            first.add(Calendar.DAY_OF_WEEK, diff);
-            Calendar last = (Calendar) first.clone();
-            last.add(Calendar.DAY_OF_YEAR, 6);
-            data.put("info", "Week " + week + ": " + first.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[first.get(Calendar.MONTH)] + " - " +
-                last.get(Calendar.DAY_OF_MONTH) + " " + CalcDist.MONTHS[last.get(Calendar.MONTH)]);
+            data.put("info", "Week " + week + ": " + idf[1] + " " + CalcDist.MONTHS[idf[2] - 1]);
           }
           String type = rs.getString("type");
           double dist = rs.getDouble("distRaw");
