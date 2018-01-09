@@ -1,8 +1,5 @@
 package xrun;
 
-import org.json.JSONObject;
-
-
 public class WeekCalc {
 	
 	private static final int[] LENS = new int[] {

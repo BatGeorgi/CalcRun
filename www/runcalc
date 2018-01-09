@@ -1271,26 +1271,25 @@
 			return gcnDiv('rt', weekInd) + gcnDiv('r', weekInd) + gcnDiv('t', weekInd) + gcnDiv('u', weekInd) + gcnDiv('h', weekInd) + gcnDiv('d', weekInd);
 		}
 		
-		function showContainer(year) {
+		function showContainer(type) {
 			$("div[id^=mtContainer]").hide();
-			$("#mtContainerR" + year).show();
-			$("#mtContainerT" + year).show();
-			$("#mtContainerU" + year).show();
-			$("#mtContainerH" + year).show();
-			$("#mtContainerRT" + year).show();
-			$("#mtContainerD" + year).show();
+			$("div[id^=mtContainer" + type + "2]").show();
+		}
+		
+		function genRadioM(type, name, checked) {
+			ch = (checked ? ' checked' : '');
+			return '<input type="radio" name="selectTypeM" value="' + type + '" ' + ch + '>' + name + '</input>';
 		}
 
         function initMonthlyTotals(data) {
             $('#mTotals').dialog('option', 'title', 'Total distance by month');
-			menuHtml = '<strong>Choose year</strong>';
-			buttonHtml = '';
+			radioHtml = '<strong>Choose type</strong><p><fieldset>' + genRadioM('RT', 'Run&Trail', true) + genRadioM('R', 'Run') + genRadioM('T', 'Trail') + genRadioM('U', 'Uphill')
+				+ genRadioM('H', 'Hike') + genRadioM('D', 'Denivelation+') + '</fieldset>';
 			containerHtml = '';
             $.each(data, function(i, item) {
-				buttonHtml += '<button id="ymtot' + item['year'] + '">' + item['year'] + '</button>'; 
 				containerHtml += genContainerHTML(item['year']);
             });
-            $('#mTotals').html(menuHtml + '<p>' + buttonHtml + '<hr/>' + containerHtml);
+            $('#mTotals').html(radioHtml + '<hr/>' + containerHtml);
 			$("div[id^=mtContainer]").hide();
 			$.each(data, function(i, item) {
 				ydata = item['data'];
@@ -1301,11 +1300,11 @@
 				$("#mtContainerU" + year).insertFusionCharts(getChart("Uphill climbing " + item['year'], "Year monthly report", "Month", "Distance", "km", getYearData(ydata, 'u')));
 				$("#mtContainerH" + year).insertFusionCharts(getChart("Hiking " + item['year'], "Year monthly report", "Month", "Distance", "km", getYearData(ydata, 'h')));
 				$("#mtContainerD" + year).insertFusionCharts(getChart("Positive denivelation " + item['year'], "Year monthly report", "Month", "Denivelation", "m", getYearData(ydata, 'totalPositiveEl')));
-				$("#ymtot" + year).click(function () {
-					showContainer(item['year']);
+				$('input[name=selectTypeM]').change(function () {
+					showContainer($('input[name=selectTypeM]:checked').val());
 				});
 				if (i == 0) {
-					showContainer(year);
+					showContainer("RT");
 				}
 			});
         }
@@ -1313,6 +1312,11 @@
 		function genRadioT(type, name, checked) {
 			ch = (checked ? ' checked' : '');
 			return '<input type="radio" name="selectTypeW" value="' + type + '"' + ch + ' hrn="' + name + '">' + name + '</input>';
+		}
+		
+		function genRadioYear(year, ind, checked) {
+			ch = (checked ? ' checked' : '');
+			return '<input type="radio" name="selectYearW" value="' + year + '" ind="' + ind + '" ' + ch + '>' + year + '</input>';
 		}
 		
 		function getWeekData(data, type, fr, to) {
@@ -1343,40 +1347,22 @@
 			radioHtml = '<strong>Choose type</strong><p><fieldset>' + genRadioT('rt', 'Run&Trail', true) + genRadioT('r', 'Run') + genRadioT('t', 'Trail') + genRadioT('u', 'Uphill')
 				+ genRadioT('h', 'Hike') + genRadioT('d', 'Denivelation+') + '</fieldset>';
 			menuHtml = '<strong>Choose year</strong>';
-			buttonHtml = '';
+			yearSelectHtml = '<fieldset>';
             containerHtml = '';
 			$.each(data, function(i, item) {
-				buttonHtml += '<button id="wmtot' + item['year'] + '">' + item['year'] + '</button>'; 
+				yearSelectHtml += genRadioYear(item['year'], i, i == 0);
             });
+			yearSelectHtml += '</fieldset>';
 			for (j = 1; j <= 4; ++j) {
 				containerHtml += genContainerHTML2(j);
 			}
-            $('#wTotals').html(radioHtml + '<p>' + menuHtml + '<p>' + buttonHtml + '<hr>' + containerHtml);
+            $('#wTotals').html(radioHtml + '<p>' + menuHtml + '<p>' + yearSelectHtml + '<hr>' + containerHtml);
 			wtotals = data;
 			$.each(wtotals, function(i, item) {
 				ydata = item['data'];
 				year = item['year'];
-				$("#wmtot" + year).click(function () {
-					currentYearInd = i;
-					for (j = 1; j <= 4; ++j) {
-						fr = 13 * (j - 1);
-						to = (j < 4 ? 13 * j : 100);
-						optType = $('input[name=selectTypeW]:checked').val();
-						optText = $('input[name=selectTypeW]:checked').attr('hrn') + ' ' + item['year'];
-						chart = getChartFromId('wid' + j);
-						if (chart !== undefined) {
-							chart.dispose();
-						}
-						ftype = optType !== 'd' ? optType : 'totalPositiveEl';
-						meas = optType !== 'd' ? 'km' : 'm';
-						yax = optType !== 'd' ? 'Distance' : 'Denivelation';
-						wd = getWeekData(wtotals[i]['data'], ftype, fr, to);
-						if (wd.length > 0) {
-							$('#' + gcn(optType, j)).insertFusionCharts(getChart(optText, "Year weekly report", "Week", yax, meas, wd, 'wid' + j));
-						}
-					}
-				});
-				$('input[name=selectTypeW]').change(function () {
+				f = function () {
+					currentYearInd = parseInt($('input[name=selectYearW]:checked').attr('ind'));
 					for (j = 1; j <= 4; ++j) {
 						fr = 13 * (j - 1);
 						to = (j < 4 ? 13 * j : 100);
@@ -1394,9 +1380,12 @@
 							$('#' + gcn(optType, j)).insertFusionCharts(getChart(optText, "Year weekly report", "Week", yax, meas, wd, 'wid' + j));
 						}
 					}
-				});
+				};
+				$('input[name=selectTypeW],[name=selectYearW]').change(f);
+				if (i == 0) {
+				  f.call();
+				}
 			});
-			$("#wmtot" + wtotals[0]['year']).click();
 		}
 
         function checkCookieVal(cookieVal) {
@@ -1762,7 +1751,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.77</strong></H1>
+        <H1><strong>Activity Tracker 2.78</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
