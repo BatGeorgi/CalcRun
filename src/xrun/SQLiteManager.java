@@ -115,7 +115,6 @@ public class SQLiteManager {
         if (!rs.next()) {
           connDB2.createStatement().executeUpdate("INSERT INTO " + COORDS_TABLE_NAME + " VALUES ('" + id + "', '" + str + "')");
         } else {
-        	System.out.println("update with data " + str);
           connDB2.createStatement().executeUpdate("UPDATE " + COORDS_TABLE_NAME + " SET data='" + str + "' WHERE id='" + id + "'");
         }
       }
@@ -185,6 +184,8 @@ public class SQLiteManager {
           data.put("rt", 0d);
           data.put("countrt", 0);
           data.put("totalPositiveEl", 0);
+          data.put("a", 0d);
+          data.put("counta", 0);
           data.put("info", "Empty week");
           weekly.put(w, data);
         }
@@ -218,6 +219,8 @@ public class SQLiteManager {
             data.put("h", data.getDouble("h") + dist);
             data.put("counth", data.getInt("counth") + 1);
           }
+          data.put("a", data.getDouble("a") + dist);
+          data.put("counta", data.getInt("counta") + 1);
           int totalPositiveEl = rs.getInt("eleTotalPos");
           if (totalPositiveEl > 0) {
         	  data.put("totalPositiveEl", data.getInt("totalPositiveEl") + totalPositiveEl);
@@ -232,6 +235,7 @@ public class SQLiteManager {
             data.put("u", String.format("%.3f", data.getDouble("u")));
             data.put("h", String.format("%.3f", data.getDouble("h")));
             data.put("rt", String.format("%.3f", data.getDouble("rt")));
+            data.put("a", String.format("%.3f", data.getDouble("a")));
             wArr.put(data);
           }
         }
@@ -259,10 +263,11 @@ public class SQLiteManager {
 	        "type='" + RunCalcUtils.TRAIL + '\'',
 	        "type='" + RunCalcUtils.UPHILL + '\'',
 	        "type='" + RunCalcUtils.HIKING + '\'',
-	        "type='" + RunCalcUtils.RUNNING + "' OR type='" + RunCalcUtils.TRAIL + '\''
+	        "type='" + RunCalcUtils.RUNNING + "' OR type='" + RunCalcUtils.TRAIL + '\'',
+	        null
 	    };
 	    String[] acms = new String[] {
-	        "r", "t", "u", "h", "rt"
+	        "r", "t", "u", "h", "rt", "a"
 	    };
 	    for (int i = years.size() - 1; i >= 0; --i) {
 	      JSONArray yearData = new JSONArray();
@@ -271,20 +276,21 @@ public class SQLiteManager {
 	      for (int j = 0; j < 12; ++j) {
 	        months[j] = new JSONObject();
 	        months[j].put("name", CalcDist.MONTHS[j] + ' ' + year);
-	        for (int k = 0; k < 5; ++k) {
+	        for (int k = 0; k < acms.length; ++k) {
 	          months[j].put(acms[k], "0");
 	          months[j].put("count" + acms[k], 0);
 	        }
 	      }
         for (int j = 0; j < filters.length; ++j) {
-          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE (" + filters[j] +
-              ") AND year=" + years.get(i) + " GROUP BY month", true);
+          String typeFilter = (filters[j] != null ? ("(" + filters[j] + ") AND ") : "");
+          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
+              "year=" + years.get(i) + " GROUP BY month", true);
 	        while (rs.next()) {
 	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
 	          months[rs.getInt(1)].remove("emp");
 	        }
 					rs = executeQuery("SELECT month, COUNT(genby) FROM "
-							+ RUNS_TABLE_NAME + " WHERE (" + filters[j] + ") AND year="
+							+ RUNS_TABLE_NAME + " WHERE " + typeFilter + " year="
 							+ years.get(i) + " GROUP BY month", true);
 					while (rs.next()) {
 						months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
