@@ -237,7 +237,7 @@
                                 200: function(resp) {
 									currentDash = 0;
 									initDashboards();
-									fetch();
+									fetch(false);
 									$('#infoDialog').html(resp);
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
@@ -338,7 +338,7 @@
 									$('#infoDialog').dialog('option', 'title', 'Status');
 									$('#infoDialog').dialog('open');
                                     getBest();
-                                    fetch();
+                                    fetch(true);
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
@@ -382,7 +382,7 @@
 									$('#infoDialog').dialog('option', 'title', 'Status');
 									$('#infoDialog').dialog('open');
                                     getBest();
-                                    fetch();
+                                    fetch(true);
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
@@ -430,7 +430,7 @@
 									$('#infoDialog').dialog('option', 'title', 'Status');
 									$('#infoDialog').dialog('open');
                                     getBest();
-                                    fetch();
+                                    fetch(true);
                                 },
                                 401: function(xhr) {
                                     $('#infoDialog').html('Please sign in!');
@@ -835,7 +835,7 @@
 					fetchAfterDashClick = false;
 					$('button[name="' + item['dashboard'] + '"]').click();
 					fetchAfterDashClick = true;
-					fetch();
+					fetch(false);
 				});
 			});
 		}
@@ -886,8 +886,10 @@
             $('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
                 '<tr><td>Average distance</td><td>' + data['avgDist'] + ' km</td></tr>' + averageData +
 				'<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Running distance(>9km/h)</td><td>' + data['totalRunDist'] + ' km</td></tr>');
-            initMonthlyTotals(data['mtotals']);
-			initWeeklyTotals(data['wtotals']);
+			if (data['WMT'] != 'none') {
+				initMonthlyTotals(data['mtotals']);
+				initWeeklyTotals(data['wtotals']);
+			}
             runsHtml = '';
             optsAll = '';
             var dialog = {
@@ -1083,7 +1085,7 @@
                     statusCode: {
                         200: function(data) {
                             getBest();
-                            fetch();
+                            fetch(true);
                             $('#infoDialog').html('Rescan completed!');
                             $('#infoDialog').dialog('option', 'title', 'Action finished');
                             $('#infoDialog').dialog('open');
@@ -1093,7 +1095,7 @@
             });
         }
 
-        function fetch() {
+        function fetch(getWMTotals) {
             var period = $('input[name=selectPeriod]:checked').attr('id');
             var records = parseInt($('input[name=selectLast]:checked').attr('cap'));
             var ds = $('#dtStart').datepicker('getDate');
@@ -1119,7 +1121,8 @@
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
                     'dmax': $('#spinnerMax').val(),
-					'dashboard': $('#dashboard' + currentDash).attr('name')
+					'dashboard': $('#dashboard' + currentDash).attr('name'),
+					'getWMTotals': getWMTotals
                 },
                 statusCode: {
                     200: function(data) {
@@ -1458,7 +1461,7 @@
 									$('#spinnerMax').val('');
 									$('#l-inf').prop('checked', true).change();
 									$('#searchName').val('');
-									fetch();
+									fetch(false);
 								}
 							});
                         });
@@ -1514,7 +1517,7 @@
 			$('#removePreset').button();
 			$('#saveOrder').button();
             $('#search').click(function() {
-                fetch();
+                fetch(false);
             });
 			$('#savePresets').button();
 			$('#savePresets').click(function() {
@@ -1646,7 +1649,7 @@
             $('#dtEnd').datepicker('disable');
             initDashboards();
 			getPresets();
-            fetch();
+            fetch(true);
             $.tablesorter.addWidget({
                 id: "numbering",
                 format: function(table) {
@@ -1751,7 +1754,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.78</strong></H1>
+        <H1><strong>Activity Tracker 2.79</strong></H1>
 		<hr>
     </div>
 	<div id="controls">

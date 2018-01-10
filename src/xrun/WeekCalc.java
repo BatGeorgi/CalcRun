@@ -13,9 +13,10 @@ public class WeekCalc {
 		5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2
 	};
 	
-	static final int[] identifyWeek(int day, int month, int year) { // result - week number, week start day, week start month
+	static final int[] identifyWeek(int day, int month, int year, String[] out) { // result - week number, week start day, week start month
 		int firstMondayNumber = (7 - STARTS[year - START_YEAR]) % 7 + 1;
 		if (month == 1 && day < firstMondayNumber) {
+		  out[0] = "1-" + (firstMondayNumber - 1) + " Jan";
 			return new int[] {1, 1, 1};
 		}
 		boolean isLeap = year % 4 == 0 && year != 2100;
@@ -27,21 +28,26 @@ public class WeekCalc {
 		int diff = dayNumber - firstMondayNumber;
 		weekNumber += diff / 7;
 		diff = diff % 7;
-		while (diff > 0) {
-			if (day == 1) {
-				if (month == 1) {
-					break;
-				}
-				--month;
-				day = (isLeap && month == 2 ? 29 : LENS[month - 1]);
-			} else {
-				--day;
-			}
-			--diff;
+		if (day > diff) {
+		  out[0] = formatWeek(day - diff, month, year);
+		  return new int[] {weekNumber, day - diff, month};
 		}
-		return new int[] {weekNumber, day, month};
+		int[] res = new int[] {weekNumber, (isLeap && month == 3 ? 29 : LENS[month - 2]) - (diff - day), month - 1};
+		out[0] = formatWeek(res[1], res[2], year);
+		return res;
 	}
 	
+	private static String formatWeek(int dayBegin, int month, int year) {
+	  int len = month == 2 && year % 4 == 0 && year != 2100 ? 29 : LENS[month - 1];
+	  if (dayBegin + 7 <= len) {
+	    return dayBegin + "-" + (dayBegin + 6) + " " + CalcDist.MONTHS[month - 1];
+	  }
+	  if (month == 12) {
+	    return dayBegin + "-31 Dec";
+	  }
+	  return dayBegin + " " + CalcDist.MONTHS[month - 1] + "-" + (6 - len + dayBegin) + " " + CalcDist.MONTHS[month];
+	}
+
 	static int getWeekCount(int year) {
 		int firstMondayNumber = (7 - STARTS[year - START_YEAR]) % 7 + 1;
 		boolean isLeap = year % 4 == 0 && year != 2100;
