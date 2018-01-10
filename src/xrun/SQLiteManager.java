@@ -197,7 +197,7 @@ public class SQLiteManager {
           int week = idf[0];
           JSONObject data = weekly.get(week);
           if ("Empty week".equals(data.getString("info"))) {
-            data.put("info", "Week " + week + ": " + formatted[0]);
+            data.put("info", "W" + week + " " + formatted[0]);
           }
           String type = rs.getString("type");
           double dist = rs.getDouble("distRaw");
