@@ -168,7 +168,7 @@ public class SQLiteManager {
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
         if (years.get(i) == currentYear) {
-          maxWeek = WeekCalc.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR))[0];
+          maxWeek = WeekCalc.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
         } else {
         	maxWeek = WeekCalc.getWeekCount(years.get(i));
         }
@@ -192,11 +192,12 @@ public class SQLiteManager {
         while (rs.next()) {
           Calendar cal = new GregorianCalendar();
           cal.setTimeInMillis(rs.getLong("timeRawMs"));
-          int[] idf = WeekCalc.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR));
+          String[] formatted = new String[1];
+          int[] idf = WeekCalc.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), formatted);
           int week = idf[0];
           JSONObject data = weekly.get(week);
           if ("Empty week".equals(data.getString("info"))) {
-            data.put("info", "Week " + week + ": " + idf[1] + " " + CalcDist.MONTHS[idf[2] - 1]);
+            data.put("info", "Week " + week + ": " + formatted[0]);
           }
           String type = rs.getString("type");
           double dist = rs.getDouble("distRaw");
@@ -440,40 +441,6 @@ public class SQLiteManager {
 			e.printStackTrace();
 			return null;
 		}
-	}
-	
-	synchronized List<String> getPresetNames() {
-		List<String> result = new ArrayList<String>();
-		ResultSet rs = executeQuery("SELECT name FROM " + PRESETS_TABLE_NAME, true);
-		if (rs == null) {
-			return result;
-		}
-		try {
-			while (rs.next()) {
-				result.add(rs.getString(1));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return result;
-	}
-	
-	synchronized List<String> getDashboardNames() {
-		List<String> result = new ArrayList<String>();
-		ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
-		if (rs == null) {
-			executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('"
-					+ MAIN_DASHBOARD + "')", false);
-			rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
-		}
-		try {
-			while (rs.next()) {
-				result.add(rs.getString(1));
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return result;
 	}
 	
 	synchronized JSONArray getPresets(Map<String, JSONObject> out) {

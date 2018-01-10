@@ -345,6 +345,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    boolean getWMT = "true".equals(baseRequest.getHeader("getWMTotals"));
     boolean run = "true".equals(baseRequest.getHeader("run"));
     boolean trail = "true".equals(baseRequest.getHeader("trail"));
     boolean uphill = "true".equals(baseRequest.getHeader("uphill"));
@@ -471,7 +472,7 @@ class CalcDistHandler extends AbstractHandler {
       filterStr.append(", matching the name regex");
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
-        records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen);
+        records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen, getWMT);
     if (data.getJSONArray("activities").length() == 0) {
       List<String> types = new LinkedList<String>();
       if (run) {

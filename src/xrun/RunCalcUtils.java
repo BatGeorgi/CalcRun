@@ -207,7 +207,7 @@ public class RunCalcUtils {
   }
   
   JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other, int records,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen, boolean getWMT) {
     if (dashboard == null || dashboard.trim().length() == 0) {
       dashboard = SQLiteManager.MAIN_DASHBOARD;
     }
@@ -243,8 +243,12 @@ public class RunCalcUtils {
       activities.put(matched.get(i));
     }
     result.put("activities", activities);
-    result.put("mtotals", sqLite.getMonthlyTotals());
-    result.put("wtotals", sqLite.getWeeklyTotals());
+    if (getWMT) {
+      result.put("mtotals", sqLite.getMonthlyTotals());
+      result.put("wtotals", sqLite.getWeeklyTotals());
+    } else {
+      result.put("WMT", "none");
+    }
     if (totals != null) {
       totals.put("avgDaily", "");
       totals.put("avgWeekly", "");
@@ -645,27 +649,7 @@ public class RunCalcUtils {
   	if (preset == null) {
   		return null;
   	}
-  	/* preset.put("startDate", rs.getString("startDate"));
-			preset.put("endDate", rs.getString("endDate"));
-			preset.put("minDist", rs.getInt("minDist"));
-			preset.put("maxDist", rs.getInt("maxDist"));
-			preset.put("top", rs.getInt("top"));
-			preset.put("dashboard", rs.getString("dashboard"));
-  	return filter(preset.getBoolean("run"), preset.getBoolean("trail"), preset.getBoolean("uphill"), preset.getBoolean("hike"), preset.getBoolean("walk"),
-  			preset.getBoolean("other"), null, null, preset.getInt("minDist"), preset.getInt("maxDist"), preset.getInt("maxCount"));*/
   	return null;
-  }
-  
-  List<String> getPresetNames() {
-  	return sqLite.getPresetNames();
-  }
-  
-  List<String> getDashboardNames() {
-  	return sqLite.getDashboardNames();
-  }
-  
-  JSONObject fetchDashboard(String dashboardName) {
-  	return filter(null, true, true, true, true, false, false, Integer.MAX_VALUE, null, null, 0, Integer.MAX_VALUE, dashboardName, 0); // default settings
   }
   
   String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
