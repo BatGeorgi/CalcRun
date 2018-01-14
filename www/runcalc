@@ -323,6 +323,41 @@
                 width: 300,
                 height: 200
             });
+			$('#rescanDialog').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Rescan": function() {
+                        $.ajax({
+						url: 'rescanActivities',
+						method: 'POST',
+						dataType: 'json',
+						statusCode: {
+                        200: function(data) {
+                            getBest();
+                            fetch(true);
+                            $('#infoDialog').html('Rescan completed!');
+                            $('#infoDialog').dialog('option', 'title', 'Action finished');
+                            $('#infoDialog').dialog('open');
+						},
+						401: function(resp) {
+							$('#infoDialog').html('Please sign in!');
+							$('#infoDialog').dialog('option', 'title', 'Not authorized');
+							$('#infoDialog').dialog('open');
+							}
+						}
+						});
+						$(this).dialog("close");
+                    },
+					"Cancel": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 300,
+                height: 200
+            });
             $('#login').dialog({
                 autoOpen: false,
                 modal: true,
@@ -1137,20 +1172,9 @@
                 $('#runs tr:eq(' + (i + 1) + ') td:not(:last-child)').click(itemsDS[i]);
             }
             $('#rescanButton').click(function() {
-                $.ajax({
-                    url: 'rescanActivities',
-                    method: 'POST',
-                    dataType: 'json',
-                    statusCode: {
-                        200: function(data) {
-                            getBest();
-                            fetch(true);
-                            $('#infoDialog').html('Rescan completed!');
-                            $('#infoDialog').dialog('option', 'title', 'Action finished');
-                            $('#infoDialog').dialog('open');
-                        }
-                    }
-                });
+                $('#rescanDialog').html('Really rescan remote folder for activities?');
+                $('#rescanDialog').dialog('option', 'title', 'Potentially unsafe operation');
+                $('#rescanDialog').dialog('open');
             });
         }
 
@@ -1815,7 +1839,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.8</strong></H1>
+        <H1><strong>Activity Tracker 2.81</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -1976,6 +2000,7 @@
     </div>
     <div id="infoDialog"></div>
     <div id="login" />
+	<div id="rescanDialog"></div>
 </body>
 
 </html>
