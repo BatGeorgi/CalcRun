@@ -627,6 +627,11 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void processRescan(Request baseRequest, HttpServletResponse response) {
+  	if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
     rcUtils.rescan();
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
