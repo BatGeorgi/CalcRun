@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity Tracker</title>
     <link href="style.css" type="text/css" rel="stylesheet" />
+	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
@@ -15,6 +16,8 @@
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
+	<script src="js/jquery.tablesorter.pager.js"></script>
+	<script src="js/pager-custom-controls.js"></script>
 	
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
@@ -1809,6 +1812,25 @@
                 },
                 type: 'numeric'
             });
+			var $table = $('#runs');
+		    var $pager = $('.pager');
+
+  $.tablesorter.customPagerControls({
+    table          : $table,                   // point at correct table (string or jQuery object)
+    pager          : $pager,                   // pager wrapper (string or jQuery object)
+    pageSize       : '.left a',                // container for page sizes
+    currentPage    : '.right a',               // container for page selectors
+    ends           : 2,                        // number of pages to show of either end
+    aroundCurrent  : 1,                        // number of pages surrounding the current page
+    link           : '<a href="#">{page}</a>', // page element; use {page} to include the page number
+    currentClass   : 'current',                // current page class name
+    adjacentSpacer : '<span> | </span>',       // spacer for page numbers next to each other
+    distanceSpacer : '<span> &#133; <span>',   // spacer for page numbers away from each other (ellipsis = &#133;)
+    addKeyboard    : true,                     // use left,right,up,down,pageUp,pageDown,home, or end to change current page
+    pageKeyStep    : 20                        // page step to use for pageUp and pageDown
+  });
+
+  
             $('#runs').tablesorter({
                 headers: {
                     0: {
@@ -1831,7 +1853,12 @@
                     }
                 },
                 widgets: ['numbering']
-            });
+            }).tablesorterPager({
+      // target the pager markup - see the HTML block below
+      container: $pager,
+      size: 20,
+      output: 'showing: {startRow} to {endRow} ({filteredRows})'
+    });
         });
     </script>
 	
@@ -1947,7 +1974,7 @@
 		<h2>
             <div id="ht">Fetching activities...</div>
         </h2>
-        <table class="tablesorter highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
+        <table class="tablesorter tablesorter-pager highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
             <thead>
                 <tr>
                     <th>#</th>
@@ -1962,6 +1989,25 @@
                     <th>Actions</th>
                 </tr>
             </thead>
+			<tfoot>
+				<div class="pager">
+			<nav class="left">
+            # per page:
+            <a href="#">10</a> |
+            <a href="#" class="current">20</a> |
+            <a href="#">50</a>
+          </nav>
+          <nav class="right">
+            <span class="prev">
+              <img src="prev.png" /> Prev&nbsp;
+            </span>
+            <span class="pagecount"></span>
+            &nbsp;<span class="next">Next
+              <img src="next.png" />
+            </span>
+          </nav>
+        </div>
+			</tfoot>
             <tbody />
         </table>
     </div>
