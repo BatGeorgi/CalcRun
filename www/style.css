@@ -173,6 +173,14 @@ tr.border_bottom td {
 	color:#1c9e45;
 	text-shadow: 1px 1px black;
 }
+.pagerOpt {
+	color:#1c9e45;
+	text-shadow: 1px 1px black;
+	font-size: 1.5em;
+}
+.current {
+    color: red;
+}
 #search {
 	width: 140px;
 }

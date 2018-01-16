@@ -1845,7 +1845,6 @@
                 },
                 widgets: ['numbering', 'pager']
             }).tablesorterPager({
-				// target the pager markup - see the HTML block below
 				container: $pager,
 				size: 20,
 				output: 'showing: {startRow} to {endRow} ({filteredRows})'
@@ -1988,19 +1987,18 @@
             </thead>
 			<tfoot>
 				<div class="pager">
-					<nav class="left">
+					<nav class="left pagerOpt">
 						Actvities per page:
 						<a href="#">10</a> |
 						<a href="#" class="current">20</a> |
 						<a href="#">50</a>
 					</nav>
-					<nav class="right">
+					<nav class="right pagerOpt">
 						<span class="prev">
-							<img src="prev.png" /> Prev&nbsp;
+							<img src="prev.png" />
 						</span>
 						<span class="pagecount"></span>
-						&nbsp;
-						<span class="next">Next
+						<span class="next">
 							<img src="next.png" />
 						</span>
 					</nav>
