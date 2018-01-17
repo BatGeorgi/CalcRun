@@ -4,11 +4,11 @@
 #heading {
 	text-align: center;
 	margin-bottom: 3em;
-	text-shadow: 2px 2px black;
+	text-shadow: 1px 1px black;
 	color: #1c9e45;
 }
 body {
-	background-image: url("img_250451.jpg");
+	background-image: url("Rain.png");
 }
 h2 {
     display: block;

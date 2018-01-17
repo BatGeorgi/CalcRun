@@ -1113,6 +1113,7 @@
             $('#ht').append(happc + appc);
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
+			$('#runs').trigger('pageSize', 20);
             $('#runs').trigger("sorton", [
                 [
                     [1, 'dates']
@@ -1812,7 +1813,7 @@
 				pager          : $pager,                   // pager wrapper (string or jQuery object)
 				pageSize       : '.left a',                // container for page sizes
 				currentPage    : '.right a',               // container for page selectors
-				ends           : 2,                        // number of pages to show of either end
+				ends           : 1,                        // number of pages to show of either end
 				aroundCurrent  : 1,                        // number of pages surrounding the current page
 				link           : '<a href="#">{page}</a>', // page element; use {page} to include the page number
 				currentClass   : 'current',                // current page class name
@@ -1846,8 +1847,7 @@
                 widgets: ['numbering', 'pager']
             }).tablesorterPager({
 				container: $pager,
-				size: 20,
-				output: 'showing: {startRow} to {endRow} ({filteredRows})'
+				size: 20
 			}).bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c){
 				i = 1;
 				$table.find("tr:gt(0)").each(function(){
@@ -1855,14 +1855,15 @@
 					i++;
 				});
 			});
-}); 
+			$('#runs').trigger('pageSize', 20);
+	}); 
     </script>
 	
 </head>
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.81</strong></H1>
+        <H1><strong>Activity Tracker 2.9</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -1988,9 +1989,10 @@
 			<tfoot>
 				<div class="pager">
 					<nav class="left pagerOpt">
-						Actvities per page:
+						Per page
 						<a href="#">10</a> |
 						<a href="#" class="current">20</a> |
+						<a href="#">30</a> |
 						<a href="#">50</a>
 					</nav>
 					<nav class="right pagerOpt">
