@@ -5,6 +5,19 @@
 	<classpathentry kind="lib" path="jetty-all-9.4.6.v20170531-uber.jar"/>
 	<classpathentry kind="lib" path="commons-fileupload-1.3.3.jar"/>
 	<classpathentry kind="lib" path="commons-io-1.3.2.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_141"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="sqlite-jdbc-3.20.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-api-client-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-api-client-java6-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-api-services-drive-v3-rev81-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-http-client-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-http-client-jackson2-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-oauth-client-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-oauth-client-java6-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/google-oauth-client-jetty-1.22.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/jackson-core-2.9.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/javax.servlet-api-3.1.0.jar"/>
+	<classpathentry kind="lib" path="drive_deps/jetty-6.1.26.jar"/>
+	<classpathentry kind="lib" path="drive_deps/jetty-util-6.1.26.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
