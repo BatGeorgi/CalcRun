@@ -571,7 +571,7 @@ public class SQLiteManager {
 	}
 	
 	synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
 	  List<JSONObject> result = new ArrayList<JSONObject>();
 	  StringBuffer selectClause = new StringBuffer();
 	  StringBuffer whereClause = new StringBuffer();
@@ -632,9 +632,6 @@ public class SQLiteManager {
     }
 	  selectClause.append(' ' + whereClause.toString());
 	  selectClause.append(" ORDER BY timeRawMs DESC");
-    if (maxCount != Integer.MAX_VALUE) {
-      selectClause.append(" LIMIT " + maxCount);
-    }
     StringBuffer aggQuery = new StringBuffer();
     aggQuery.append("SELECT SUM(distRaw), SUM(timeTotalRaw), SUM(eleTotalPos), SUM(eleTotalNeg), SUM(distRunningRaw)");
     aggQuery.append("FROM (" + selectClause + ')');

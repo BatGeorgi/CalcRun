@@ -172,10 +172,10 @@ tr.border_bottom td {
 #ht {
 	color:#1c9e45;
 	text-shadow: 1px 1px black;
+	text-align: center;
 }
 .pagerOpt {
-	color:#1c9e45;
-	text-shadow: 1px 1px black;
+	color:grey;
 	font-size: 1.5em;
 }
 .current {
@@ -317,4 +317,24 @@ tr.border_bottom td {
 }
 .hovs:hover {
     cursor: pointer;
+}
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+	margin: auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+#typesDistr {
+	color:#1c9e45;
+	text-decoration: underline;
+	text-align: center;
+	cursor: pointer;
 }

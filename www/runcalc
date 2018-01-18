@@ -675,6 +675,26 @@
                     });
                 }
             });
+			$('#typesDialog').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Close": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: Math.min(800, $(window).width() * 0.8),
+                height: Math.min($(window).height() * 0.7, 500),
+                create: function(event) {
+                    $(event.target).parent().css({
+                        'position': 'fixed',
+                        "left": 50,
+                        "top": 150
+                    });
+                }
+            });
 			$('#presetsDlg').dialog({
                 autoOpen: false,
                 modal: true,
@@ -684,7 +704,6 @@
                     "Save": function() {
 						name = $('#newPresetName').val();
 						period = $('input[name=selectPeriod]:checked').attr('id');
-						records = parseInt($('input[name=selectLast]:checked').attr('cap'));
 						ds = $('#dtStart').datepicker('getDate');
 						de = $('#dtEnd').datepicker('getDate');
 						nf = encodeURIComponent($('#searchName').val());
@@ -923,15 +942,16 @@
 					} else {
 						$('#spinnerMax').val('');
 					}
-					rec = item['top'];
-					if (rec == 10 || rec == 20 || rec == 50 || rec == 100) {
-						$('#l-' + rec).prop('checked', true).change();
-					} else {
-						$('#l-inf').prop('checked', true).change();
-					}
 					fetchAfterDashClick = false;
 					$('button[name="' + item['dashboard'] + '"]').click();
 					fetchAfterDashClick = true;
+					$('#runs').hide();
+					$('#ht').html('<div class="loader"></div>');
+					$('#runs').trigger('pagerUpdate', 1);
+					$('#runs').trigger('pageSize', 20);
+					$('a').removeClass('current');
+					$('#defPage').addClass('current');
+					$('#pagerMenu').hide();
 					fetch(false);
 				});
 			});
@@ -958,18 +978,25 @@
             $('#dataHolder').html('');
             all = data['activities'];
             if (all.length == 0) {
-				flt = data['filter'].replace('Showing', 'Looking for');
+				flt = data['filter'].replace('Activities', 'Looking for activities ');
                 $('#ht').html('No activities found<p>' + flt);
                 $('#runs tbody').html('');
                 $('#runs').trigger('update');
                 $('#runs').tablesorter();
                 $('#runs').hide();
                 $('#overall').hide();
+				$('#overallLoader').html('');
                 return false;
             }
             $('#overall').show();
+			$('#overallLoader').html('');
             $('#runs').show();
-            $('#ht').html(data['filter'] + '<p>');
+			$('#pagerMenu').show();
+			if ("Activities" !== data['filter']) {
+				$('#ht').html(data['filter'] + '<p>');
+			} else {
+				$('#ht').html('');
+			}
 			averageData = '';
 			if (data['avgDaily'] != '') {
 				averageData = '<tr><td>Average daily</td><td>' + data['avgDaily'] + ' km</td></tr>';
@@ -1087,30 +1114,52 @@
                     '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
                     '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
-			var happc = all.length + (all.length != 1 ? ' matches' : ' match');
-            var appc = '';
+			var happc = '<div id="typesDistr">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div>';
+			var actTypesData = [];
             if (crun > 0) {
-                appc += 'Running: ' + crun;
+                actTypesData.push({
+					"label": 'Running',
+					"value": crun
+				});
             }
             if (ctrail > 0) {
-                appc += (appc.length > 0 ? ', ' : '') + 'Trail: ' + ctrail;
+                actTypesData.push({
+					"label": 'Trail',
+					"value": ctrail
+				});
             }
             if (cup > 0) {
-                appc += (appc.length > 0 ? ', ' : '') + 'Uphill: ' + cup;
+                actTypesData.push({
+					"label": 'Uphill',
+					"value": cup
+				});
             }
             if (chike > 0) {
-                appc += (appc.length > 0 ? ', ' : '') + 'Hiking: ' + chike;
+                actTypesData.push({
+					"label": 'Hiking',
+					"value": chike
+				});
             }
             if (cwalk > 0) {
-                appc += (appc.length > 0 ? ', ' : '') + 'Walking: ' + cwalk;
+                actTypesData.push({
+					"label": 'Walking',
+					"value": cwalk
+				});
             }
             if (coth > 0) {
-                appc += (appc.length > 0 ? ', ' : '') + 'Other: ' + coth;
+                actTypesData.push({
+					"label": 'Other',
+					"value": coth
+				});
             }
-            if (appc.length > 0) {
-                appc = ' |' + appc + '|';
+			$('#ht').append(happc);
+            if (actTypesData.length > 0) {
+                $('#typesDistr').click(function() {
+					$('#typesDialog').insertFusionCharts(getChart("Distribution", "By type", "Type", "Count", "", actTypesData));
+					$('#typesDialog').dialog('option', 'title', 'Results');
+					$('#typesDialog').dialog('open');
+				});
             }
-            $('#ht').append(happc + appc);
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
 			$('#runs').trigger('pageSize', 20);
@@ -1184,11 +1233,12 @@
 
         function fetch(getWMTotals) {
             var period = $('input[name=selectPeriod]:checked').attr('id');
-            var records = parseInt($('input[name=selectLast]:checked').attr('cap'));
             var ds = $('#dtStart').datepicker('getDate');
             var de = $('#dtEnd').datepicker('getDate');
             var nf = encodeURIComponent($('#searchName').val());
             $('#search').button("option", "disabled", true);
+			$('#overall').hide();
+			$('#overallLoader').html('<div class="loader"></div>');
             $.ajax({
                 url: 'fetch',
                 method: 'POST',
@@ -1204,7 +1254,6 @@
                     'dateOpt': parseInt(period[period.length - 1]) - 1,
                     'dtStart': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
                     'dtEnd': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
-                    'records': records,
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
                     'dmax': $('#spinnerMax').val(),
@@ -1248,6 +1297,8 @@
 
         function getBest() {
             initSplitsBest();
+			$('#bestOf').hide();
+			$('#bestOfLoader').html('<div class="loader"></div>');
             $.ajax({
                 url: 'best',
                 method: 'POST',
@@ -1279,6 +1330,8 @@
                             '<tr><td>Half-marathon</td><td>' + getStat(semi, 'ach') + '</td><td>' + getStat(semi, 'when') + '</td></tr>' +
                             '<tr><td>30K</td><td>' + getStat(k30, 'ach') + '</td><td>' + getStat(k30, 'when') + '</td></tr>' +
                             '<tr><td>Marathon</td><td>' + getStat(marathon, 'ach') + '</td><td>' + getStat(marathon, 'when') + '</td></tr>');
+						$('#bestOf').show();
+						$('#bestOfLoader').html('');
                     }
                 }
             });
@@ -1537,7 +1590,12 @@
 									}
 								}
 								$('#runs').hide();
-								$('#ht').html('Fetching activities...');
+								$('#ht').html('<div class="loader"></div>');
+								$('#pagerMenu').hide();
+								$('#runs').trigger('pagerUpdate', 1);
+								$('#runs').trigger('pageSize', 20);
+								$('a').removeClass('current');
+								$('#defPage').addClass('current');
 								if (fetchAfterDashClick) {
 									$('#checkbox-1').prop('checked', true).change();
 									$('#checkbox-2').prop('checked', true).change();
@@ -1548,7 +1606,6 @@
 									$('#radio-6').prop('checked', true).change();
 									$('#spinnerMin').val('');
 									$('#spinnerMax').val('');
-									$('#l-inf').prop('checked', true).change();
 									$('#searchName').val('');
 									fetch(false);
 								}
@@ -1667,7 +1724,6 @@
             $('#mTotalsBtn').button();
 			$('#wTotalsBtn').button();
             $('input[name=selectPeriod]').checkboxradio();
-            $('input[name=selectLast]').checkboxradio();
             $('#checkbox-1').checkboxradio();
             $('#checkbox-2').checkboxradio();
             $('#checkbox-3').checkboxradio();
@@ -1854,7 +1910,9 @@
 					$(this).find("td:eq(0)").text(i);
 					i++;
 				});
+				$('#pagerOut').html('Range ' + c.startRow + ' - ' + c.endRow);
 			});
+			$('#runs').trigger('pagerUpdate', 1);
 			$('#runs').trigger('pageSize', 20);
 	}); 
     </script>
@@ -1863,7 +1921,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.9</strong></H1>
+        <H1><strong>Activity Tracker 2.93</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -1934,22 +1992,8 @@
                             <input id="spinnerMax" name="dmax" />
                         </fieldset>
                         <p>
-                            <fieldset>
-                                <legend class="legend-cap">Most recent activities(in period)</legend>
-                                <label for="l-10">Last 10</label>
-                                <input type="radio" name="selectLast" id="l-10" cap="10">
-                                <label for="l-20">Last 20</label>
-                                <input type="radio" name="selectLast" id="l-20" cap="20">
-                                <label for="l-50">Last 50</label>
-                                <input type="radio" name="selectLast" id="l-50" cap="50">
-                                <label for="l-100">Last 100</label>
-                                <input type="radio" name="selectLast" id="l-100" cap="100">
-                                <label for="l-inf">All</label>
-                                <input type="radio" name="selectLast" id="l-inf" cap="-1" checked>
-                            </fieldset>
-                            <p>
-								<button id="savePresets">Save preset</button>
-                                <button id="search">Search</button>
+							<button id="savePresets">Save preset</button>
+                            <button id="search">Search</button>
     </div>
 	<div id="dashboards">
             <div id="dashHeading">Dashboards</div><p>
@@ -1969,7 +2013,7 @@
     <div id="activities">
 		
 		<h2>
-            <div id="ht">Fetching activities...</div>
+            <div id="ht"><div class="loader"></div></div>
         </h2>
         <table class="tablesorter tablesorter-pager highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
             <thead>
@@ -1987,11 +2031,12 @@
                 </tr>
             </thead>
 			<tfoot>
+				<div id="pagerMenu" style="display:none">
 				<div class="pager">
 					<nav class="left pagerOpt">
 						Per page
 						<a href="#">10</a> |
-						<a href="#" class="current">20</a> |
+						<a id="defPage" href="#" class="current">20</a> |
 						<a href="#">30</a> |
 						<a href="#">50</a>
 					</nav>
@@ -2004,6 +2049,8 @@
 							<img src="next.png" />
 						</span>
 					</nav>
+					<div id="pagerOut" class="pagerOpt"></div>
+				</div>
 				</div>
 			</tfoot>
             <tbody />
@@ -2018,6 +2065,7 @@
             <div id="titleTotals">
                 <h2>Totals</h2>
             </div>
+			<div id="overallLoader"></div>
             <table id="overall">
                 <tbody></tbody>
             </table>
@@ -2026,6 +2074,7 @@
             <div id="titleBest">
                 <h2>Best</h2>
             </div>
+			<div id="bestOfLoader"></div>
             <table id="bestOf">
                 <tbody></tbody>
             </table>
@@ -2045,6 +2094,7 @@
     <div id="infoDialog"></div>
     <div id="login" />
 	<div id="rescanDialog"></div>
+	<div id="typesDialog"></div>
 </body>
 
 </html>
