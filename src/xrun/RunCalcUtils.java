@@ -202,11 +202,11 @@ public class RunCalcUtils {
   }
   
   private List<JSONObject> filter(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, int maxCount) {
-    return sqLite.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance, maxCount);
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+    return sqLite.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance);
   }
   
-  JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other, int records,
+  JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen, boolean getWMT) {
     if (dashboard == null || dashboard.trim().length() == 0) {
       dashboard = SQLiteManager.MAIN_DASHBOARD;
@@ -214,7 +214,7 @@ public class RunCalcUtils {
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
     List<JSONObject> matched = filter(run, trail, uphill, hike, walk, other, startDate, endDate,
-        minDistance, maxDistance, records);
+        minDistance, maxDistance);
     Iterator<JSONObject> it = matched.iterator();
     JSONObject totals = null;
     if (it.hasNext()) {

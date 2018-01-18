@@ -352,22 +352,7 @@ class CalcDistHandler extends AbstractHandler {
     boolean hike = "true".equals(baseRequest.getHeader("hike"));
     boolean walk = "true".equals(baseRequest.getHeader("walk"));
     boolean other = "true".equals(baseRequest.getHeader("other"));
-    StringBuffer filterStr = new StringBuffer("Showing ");
-    int records = Integer.MAX_VALUE;
-    String rec = baseRequest.getHeader("records");
-    try {
-      if (rec != null) {
-        records = Integer.parseInt(rec);
-      }
-    } catch (NumberFormatException ignore) {
-      // silent catch
-    }
-    if (records < 0) {
-      records = Integer.MAX_VALUE;
-      filterStr.append("all activities");
-    } else {
-      filterStr.append("last " + records + " activities");
-    }
+    StringBuffer filterStr = new StringBuffer("Activities");
     Calendar startDate = null;
     Calendar endDate = null;
     int dateOpt = -1;
@@ -472,7 +457,7 @@ class CalcDistHandler extends AbstractHandler {
       filterStr.append(", matching the name regex");
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
-        records, startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen, getWMT);
+        startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen, getWMT);
     if (data.getJSONArray("activities").length() == 0) {
       List<String> types = new LinkedList<String>();
       if (run) {
