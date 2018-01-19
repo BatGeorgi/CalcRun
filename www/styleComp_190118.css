@@ -1,8 +1,10 @@
 #leftStats {
-	color: #5bba25;
+	color: #1bb51d;
+	font-weight: bold;
 }
 #rightStats {
-	color: #b7b521;
+	color: #d1a00e;
+	font-weight: bold;
 }
 #meas {
 	margin: auto;
