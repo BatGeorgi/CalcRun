@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import javax.servlet.http.Cookie;
@@ -243,6 +244,7 @@ public class RunCalcUtils {
       activities.put(matched.get(i));
     }
     result.put("activities", activities);
+    fillInResultCharts(result);
     if (getWMT) {
       result.put("mtotals", sqLite.getMonthlyTotals());
       result.put("wtotals", sqLite.getWeeklyTotals());
@@ -275,6 +277,137 @@ public class RunCalcUtils {
       }
     }
     return result;
+  }
+  
+  private void fillInResultCharts(JSONObject result) {
+    JSONArray activities = result.getJSONArray("activities");
+    JSONObject byType = new JSONObject();
+    JSONObject byDist = new JSONObject();
+    JSONObject bySpeed = new JSONObject();
+    JSONObject byEle = new JSONObject();
+    JSONObject byRun = new JSONObject();
+    JSONObject byTime = new JSONObject();
+    JSONObject byDay = new JSONObject();
+    JSONObject byHour = new JSONObject();
+    for (int i = 0; i < activities.length(); ++i) {
+      JSONObject activity = activities.getJSONObject(i);
+      fillInType(byType, activity.getString("type"));
+      fillInDist(byDist, activity.getDouble("distRaw"));
+      fillInSpeed(bySpeed, activity.getDouble("avgSpeedRaw"));
+      fillInEle(byEle, activity.getLong("eleRunningPos"));
+      fillInRun(byRun, activity.getDouble("distRunningRaw"));
+      fillInTime(byTime, activity.getDouble("timeTotalRaw"));
+      fillInDay(byDay, activity.getString("date"));
+      fillInHour(byHour, activity.getString("startAt"));
+    }
+    result.put("byCount", byType);
+    result.put("byDist", byDist);
+    result.put("bySpeed", bySpeed);
+    result.put("byEle", byEle);
+    result.put("byRun", byRun);
+    result.put("byTime", byTime);
+    result.put("byDay", byDay);
+    result.put("byHour", byHour);
+  }
+  
+  private void fillInType(JSONObject byType, String type) {
+    String[] types = new String[] {RUNNING, TRAIL, UPHILL, HIKING, WALKING, OTHER};
+    for (int i = 0; i < types.length; ++i) {
+      if (types[i].equals(type)) {
+        byType.put(types[i], byType.optInt(types[i]) + 1);
+      }
+    }
+  }
+
+  private void fillInDist(JSONObject byDist, double dist) {
+    int[] bounds = new int[] {0, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30, 40, 50};
+    for (int i = bounds.length - 1; i >= 0; --i) {
+      if (dist >= bounds[i]) {
+        String key = new StringBuffer().append(bounds[i])
+            .append(i < bounds.length - 1 ? (" - " + String.valueOf(bounds[i + 1])) : "+").toString();
+        byDist.put(key, byDist.optInt(key) + 1);
+        break;
+      }
+    }
+  }
+
+  private void fillInSpeed(JSONObject bySpeed, double speed) {
+    double [] bounds = new double[] {0, 4, 5, 6, 9, 10, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15, 16};
+    for (int i = bounds.length - 1; i >= 0; --i) {
+      if (speed >= bounds[i]) {
+        String key = new StringBuffer().append(bounds[i])
+            .append(i < bounds.length - 1 ? (" - " + String.valueOf(bounds[i + 1])) : "+").toString();
+        bySpeed.put(key, bySpeed.optInt(key) + 1);
+        break;
+      }
+    }
+  }
+
+  private void fillInEle(JSONObject byEle, double ele) {
+    int[] bounds = new int[] {0, 250, 500, 1000, 1300, 1500, 1800, 2000, 2500, 3000};
+    for (int i = bounds.length - 1; i >= 0; --i) {
+      if (ele >= bounds[i]) {
+        String key = new StringBuffer().append(bounds[i])
+            .append(i < bounds.length - 1 ? (" - " + String.valueOf(bounds[i + 1])) : "+").toString();
+        byEle.put(key, byEle.optInt(key) + 1);
+        break;
+      }
+    }
+  }
+
+  private void fillInRun(JSONObject byRun, double run) {
+    int[] bounds = new int[] {0, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30, 40, 50};
+    for (int i = bounds.length - 1; i >= 0; --i) {
+      if (run >= bounds[i]) {
+        String key = new StringBuffer().append(bounds[i])
+            .append(i < bounds.length - 1 ? (" - " + String.valueOf(bounds[i + 1])) : "+").toString();
+        byRun.put(key, byRun.optInt(key) + 1);
+        break;
+      }
+    }
+  }
+
+  private void fillInTime(JSONObject byTime, double duration) {
+    double toHours = duration / 3600;
+    double[] bounds = new double[] {0, 0.25, 0.5, 0.66, 0.83333, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10};
+    for (int i = bounds.length - 1; i >= 0; --i) {
+      if (toHours >= bounds[i]) {
+        String key = new StringBuffer().append(getDuration(bounds[i]))
+            .append(i < bounds.length - 1 ? (" - " + getDuration(bounds[i + 1])) : "+").toString();
+        byTime.put(key, byTime.optInt(key) + 1);
+        break;
+      }
+    }
+  }
+  
+  private void fillInDay(JSONObject byDay, String date) {
+    StringTokenizer st = new StringTokenizer(date, " " , false);
+    st.nextToken(); // day
+    st.nextToken(); // month
+    st.nextToken(); // year
+    String day = st.nextToken();
+    byDay.put(day, byDay.optInt(day) + 1);
+  }
+  
+  private void fillInHour(JSONObject byHour, String startAt) {
+    StringTokenizer st = new StringTokenizer(startAt, " :", false);
+    st.nextToken(); // day
+    st.nextToken(); // month
+    st.nextToken(); // year
+    int hour = Integer.valueOf(st.nextToken());
+    int[] bounds = new int[] {0, 8, 9, 10, 12, 15, 18, 19, 20};
+    for (int i = bounds.length - 1; i >= 0; --i) {
+      if (hour >= bounds[i]) {
+        String key = new StringBuffer().append(bounds[i])
+            .append(i < bounds.length - 1 ? (" - " + String.valueOf(bounds[i + 1])) : "+").toString();
+        byHour.put(key, byHour.optInt(key) + 1);
+        break;
+      }
+    }
+  }
+  
+  private String getDuration(double hours) {
+    return (hours >= 1.0 ? (hours + "h") : (Math.round(hours * 60) + "m"));
   }
   
   JSONObject getActivity(String fileName) {
