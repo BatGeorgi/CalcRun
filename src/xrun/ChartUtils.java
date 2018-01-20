@@ -39,46 +39,74 @@ class ChartUtils {
       fillInType(typesCnt, activity.getString("type"));
       fillInDist(distCnt, activity.getDouble("distRaw"));
       fillInSpeed(speedCnt, activity.getDouble("avgSpeedRaw"));
-      fillInEle(eleCnt, activity.getLong("eleRunningPos"));
+      fillInEle(eleCnt, activity.getLong("eleTotalPos"));
       fillInRun(rundistCnt, activity.getDouble("distRunningRaw"));
       fillInDuration(durationCnt, activity.getDouble("timeTotalRaw"));
       fillInDay(dayCnt, activity.getString("date"));
       fillInHour(hourCnt, activity.getString("startAt"));
     }
-    result.put("byType", toJSON(typesCnt, TYPES));
-    result.put("byDist", toJSON(distCnt, BOUNDS_DIST));
-    result.put("bySpeed", toJSON(speedCnt, BOUNDS_SPEED));
-    result.put("byEle", toJSON(eleCnt, BOUNDS_ELE));
-    result.put("byRun", toJSON(rundistCnt, BOUNDS_RUNDIST));
-    result.put("byDay", toJSON(dayCnt, CalcDist.DAYS));
-    result.put("byHour", toJSON(hourCnt, BOUNDS_HOUR));
+    result.put("byType", toJSONArray(typesCnt, TYPES));
+    result.put("byDist", toJSONArray(distCnt, BOUNDS_DIST));
+    result.put("bySpeed", toJSONArray(speedCnt, BOUNDS_SPEED));
+    result.put("byEle", toJSONArray(eleCnt, BOUNDS_ELE));
+    result.put("byRun", toJSONArray(rundistCnt, BOUNDS_RUNDIST));
+    JSONArray byDay = toJSONArray(dayCnt, CalcDist.DAYS, true);
+    JSONObject sun = byDay.getJSONObject(0);
+    for (int i = 0; i < 6; ++i) {
+    	byDay.put(i, byDay.getJSONObject(i + 1));
+    }
+    byDay.put(6, sun);
+    result.put("byDay", byDay);
+    result.put("byHour", toJSONArray(hourCnt, BOUNDS_HOUR));
     String[] DUR = new String[BOUNDS_DURATION.length];
     for (int i = 0; i < BOUNDS_DURATION.length; ++i) {
     	double di = BOUNDS_DURATION[i];
     	double di1 = i < BOUNDS_DURATION.length - 1 ? BOUNDS_DURATION[i + 1] : -1;
-    	DUR[i] = di >= 0 ? (getDuration(di) + "-" + getDuration(di1)) : (getDuration(di) + "+");
+    	DUR[i] = di1 >= 0 ? (getDuration(di) + "-" + getDuration(di1)) : (getDuration(di) + "+");
     }
-    result.put("byDuration", toJSON(durationCnt, DUR));
+    result.put("byDuration", toJSONArray(durationCnt, DUR));
     return result;
   }
 	
-	private static JSONArray toJSON(int[] cnt, Object bounds) {
+	private static String formatBounds(Number fr, Number to) {
+		StringBuffer sb = new StringBuffer();
+		if (Math.abs(fr.doubleValue() - Math.round(fr.doubleValue())) < 1e-3) {
+			sb.append(Math.round(fr.doubleValue()));
+		} else {
+			sb.append(String.format("%.1f", fr.doubleValue()));
+		}
+		if (to == null) {
+			sb.append("+");
+		} else if (Math.abs(to.doubleValue() - Math.round(to.doubleValue())) < 1e-3) {
+			sb.append('-');
+			sb.append(Math.round(to.doubleValue()));
+		} else {
+			sb.append('-');
+			sb.append(String.format("%.1f", to.doubleValue()));
+		}
+		return sb.toString();
+	}
+	
+	private static JSONArray toJSONArray(int[] cnt, Object bounds) {
+		return toJSONArray(cnt, bounds, false);
+	}
+	
+	private static JSONArray toJSONArray(int[] cnt, Object bounds, boolean includeEmpty) {
 		boolean isInt = bounds instanceof int[];
 		boolean isString = bounds instanceof String[];
 		JSONArray result = new JSONArray();
 		int len = cnt.length;
 		for (int i = 0; i < len; ++i) {
-			if (cnt[i] == 0) {
+			if (!includeEmpty && cnt[i] == 0) {
 				continue;
 			}
 			String key = null;
 			if (isString) {
 				key = (String) Array.get(bounds, i);
 			} else {
-				Number bi = (isInt ? Array.getInt(bounds, i) : Array.getDouble(bounds, i));
-				Number bi1 = (i < len - 1 ? (isInt ? Array.getInt(bounds, i + 1) : Array.getDouble(bounds, i + 1)) : -1);
-				String upper = (bi1.doubleValue() >= 0 ? ("-" + String.valueOf(bi1)) : "+");
-				key = String.valueOf(bi) + upper;
+				Number fr = (isInt ? Array.getInt(bounds, i) : Array.getDouble(bounds, i));
+				Number to = (i < len - 1 ? (isInt ? Array.getInt(bounds, i + 1) : Array.getDouble(bounds, i + 1)) : null);
+				key = formatBounds(fr, to);
 			}
 			JSONObject current = new JSONObject();
 			current.put("info", key);
@@ -107,8 +135,8 @@ class ChartUtils {
   }
 
   private static void fillInSpeed(int[] cnt, double speed) {
-    for (int i = BOUNDS_HOUR.length - 1; i >= 0; --i) {
-      if (speed >= BOUNDS_HOUR[i]) {
+    for (int i = BOUNDS_SPEED.length - 1; i >= 0; --i) {
+      if (speed >= BOUNDS_SPEED[i]) {
         ++cnt[i];
         break;
       }
@@ -116,8 +144,8 @@ class ChartUtils {
   }
 
   private static void fillInEle(int[] cnt, double ele) {
-    for (int i = BOUNDS_HOUR.length - 1; i >= 0; --i) {
-      if (ele >= BOUNDS_HOUR[i]) {
+    for (int i = BOUNDS_ELE.length - 1; i >= 0; --i) {
+      if (ele >= BOUNDS_ELE[i]) {
         ++cnt[i];
         break;
       }
@@ -125,8 +153,8 @@ class ChartUtils {
   }
 
   private static void fillInRun(int[] cnt, double run) {
-    for (int i = BOUNDS_HOUR.length - 1; i >= 0; --i) {
-      if (run >= BOUNDS_HOUR[i]) {
+    for (int i = BOUNDS_RUNDIST.length - 1; i >= 0; --i) {
+      if (run >= BOUNDS_RUNDIST[i]) {
        ++cnt[i];
         break;
       }
@@ -135,8 +163,8 @@ class ChartUtils {
 
   private static void fillInDuration(int[] cnt, double duration) {
     double toHours = duration / 3600;
-    for (int i = BOUNDS_HOUR.length - 1; i >= 0; --i) {
-      if (toHours >= BOUNDS_HOUR[i]) {
+    for (int i = BOUNDS_DURATION.length - 1; i >= 0; --i) {
+      if (toHours >= BOUNDS_DURATION[i]) {
         ++cnt[i];
         break;
       }
