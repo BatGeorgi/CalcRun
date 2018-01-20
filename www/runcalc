@@ -686,7 +686,7 @@
                     }
                 },
                 width: Math.min(800, $(window).width() * 0.8),
-                height: Math.min($(window).height() * 0.7, 500),
+                height: Math.min($(window).height() * 0.7, 550),
                 create: function(event) {
                     $(event.target).parent().css({
                         'position': 'fixed',
@@ -1043,19 +1043,6 @@
             var cwalk = 0;
             var coth = 0;
             $.each(all, function(i, item) {
-                if (item['type'] == 'Running') {
-                    ++crun;
-                } else if (item['type'] == 'Trail') {
-                    ++ctrail;
-                } else if (item['type'] == 'Uphill') {
-                    ++cup;
-                } else if (item['type'] == 'Hiking') {
-                    ++chike;
-                } else if (item['type'] == 'Walking') {
-                    ++cwalk;
-                } else if (item['type'] == 'Other') {
-                    ++coth;
-                }
                 var isMod = item['isModified'] == 'y';
 				dateStr = item['date'];
 				if (compactDate) {
@@ -1115,51 +1102,37 @@
                     '</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
             });
 			var happc = '<div id="typesDistr">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div>';
-			var actTypesData = [];
-            if (crun > 0) {
-                actTypesData.push({
-					"label": 'Running',
-					"value": crun
-				});
-            }
-            if (ctrail > 0) {
-                actTypesData.push({
-					"label": 'Trail',
-					"value": ctrail
-				});
-            }
-            if (cup > 0) {
-                actTypesData.push({
-					"label": 'Uphill',
-					"value": cup
-				});
-            }
-            if (chike > 0) {
-                actTypesData.push({
-					"label": 'Hiking',
-					"value": chike
-				});
-            }
-            if (cwalk > 0) {
-                actTypesData.push({
-					"label": 'Walking',
-					"value": cwalk
-				});
-            }
-            if (coth > 0) {
-                actTypesData.push({
-					"label": 'Other',
-					"value": coth
-				});
-            }
 			$('#ht').append(happc);
-            if (actTypesData.length > 0) {
-                $('#typesDistr').click(function() {
-					$('#typesDialog').insertFusionCharts(getChart("Distribution", "By type", "Type", "Count", "", actTypesData));
+			charts = data['charts'];
+            $('#typesDistr').click(function() {
+					$('#typesDialog').html('<strong>Choose type</strong><p><fieldset><input type="radio" name="selectChart" value="byType" checked="">Type' +
+						'<input type="radio" name="selectChart" value="byDist">Distance' +
+						'<input type="radio" name="selectChart" value="bySpeed">Speed' +
+						'<input type="radio" name="selectChart" value="byEle">Denivelation+' +
+						'<input type="radio" name="selectChart" value="byRun">Running distance' +
+						'<input type="radio" name="selectChart" value="byDuration">Duration' +
+						'<input type="radio" name="selectChart" value="byDay">Day' +
+						'<input type="radio" name="selectChart" value="byHour">Hour</fieldset><hr>' +
+						'<div id="byType"></div><div id="byDist"></div><div id="bySpeed"></div><div id="byEle"></div><div id="byRun"></div>' +
+						'<div id="byDuration"></div><div id="byDay"></div><div id="byHour"></div>');
+					$('#byType').insertFusionCharts(getChart("Distribution", "By type", "Type", "Count", "", getChartData(charts['byType'])));
+					$('#byDist').insertFusionCharts(getChart("Distribution", "By distance", "KM", "Count", "", getChartData(charts['byDist'])));
+					$('#bySpeed').insertFusionCharts(getChart("Distribution", "By speed", "KM/H", "Count", "", getChartData(charts['bySpeed'])));
+					$('#byEle').insertFusionCharts(getChart("Distribution", "By positive denivelation", "Meters gained", "Count", "", getChartData(charts['byEle'])));
+					$('#byRun').insertFusionCharts(getChart("Distribution", "By running distance", "KM", "Count", "", getChartData(charts['byRun'])));
+					$('#byDuration').insertFusionCharts(getChart("Distribution", "By duration", "Time", "Count", "", getChartData(charts['byDuration'])));
+					$('#byDay').insertFusionCharts(getChart("Distribution", "By day of week", "Day of week", "Count", "", getChartData(charts['byDay'])));
+					$('#byHour').insertFusionCharts(getChart("Distribution", "By starting hour", "Period of day", "Count", "", getChartData(charts['byHour'])));
+					$('input[name=selectChart]').change(function () {
+						chid = $('input[name=selectChart]:checked').val();
+						$("div[id^=by]").hide();
+						$('#' + chid).show();
+					});
+					$("div[id^=by]").hide();
+					$('#byType').show();
 					$('#typesDialog').dialog('option', 'title', 'Results');
 					$('#typesDialog').dialog('open');
-				});
-            }
+			});
             $('#runs tbody').html(runsHtml);
             $('#runs').trigger('update');
 			$('#runs').trigger('pageSize', 20);
@@ -1381,6 +1354,17 @@
 						data: data
 					}
 				}
+		}
+		
+		function getChartData(chart) {
+			result = [];
+			$.each(chart, function(i, item) {
+				result.push({
+					"label": item['info'],
+					"value": item['data']
+				});
+			});
+			return result;
 		}
 		
 		function getYearData(data, type) {
@@ -1921,7 +1905,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.94</strong></H1>
+        <H1><strong>Activity Tracker 2.95</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
