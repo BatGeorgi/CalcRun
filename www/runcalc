@@ -728,7 +728,6 @@
 								'dateOpt': parseInt(period[period.length - 1]) - 1,
 								'startDate': ds ? (ds.getMonth() + 1) + '/' + ds.getDate() + '/' + ds.getFullYear() : '',
 								'endDate': de ? (de.getMonth() + 1) + '/' + de.getDate() + '/' + de.getFullYear() : '',
-								'records': records,
 								'pattern': nf,
 								'dmin': $('#spinnerMin').val(),
 								'dmax': $('#spinnerMax').val(),
@@ -1905,7 +1904,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.95</strong></H1>
+        <H1><strong>Activity Tracker 2.96</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
