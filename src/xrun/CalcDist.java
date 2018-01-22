@@ -242,12 +242,12 @@ public class CalcDist {
     return sb.toString();
   }
   
-  private String getDateWithCorrection(long timeRawMs) {
+  static Calendar getDateWithCorrection(long timeRawMs) {
     Calendar cal = new GregorianCalendar();
     cal.setTimeInMillis(timeRawMs);
     long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CORRECTION_BG_SUMMER : CORRECTION_BG_WINTER;
     cal.setTimeInMillis(timeRawMs + corr);
-    return formatDate(cal, false);
+    return cal;
   }
   
   private void process(JSONObject data) throws Exception {
@@ -325,11 +325,12 @@ public class CalcDist {
         }
         times.put(cal.getTimeInMillis() - stt);
         if (i == 0) {
-          data.put("year", cal.get(Calendar.YEAR));
-          data.put("month", cal.get(Calendar.MONTH));
-          data.put("day", cal.get(Calendar.DAY_OF_MONTH));
           data.put("timeRawMs", cal.getTimeInMillis());
-          data.put("date", getDateWithCorrection(cal.getTimeInMillis()));
+          Calendar corrected = getDateWithCorrection(cal.getTimeInMillis());
+          data.put("date", formatDate(corrected, false));
+          data.put("year", corrected.get(Calendar.YEAR));
+          data.put("month", corrected.get(Calendar.MONTH));
+          data.put("day", corrected.get(Calendar.DAY_OF_MONTH));
         }
         if (i > 0) {
           double tempDist = distance(prev[0], lat, prev[1], lon);
