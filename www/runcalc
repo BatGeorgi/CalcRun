@@ -1210,7 +1210,9 @@
             var nf = encodeURIComponent($('#searchName').val());
             $('#search').button("option", "disabled", true);
 			$('#overall').hide();
-			$('#overallLoader').html('<div class="loader"></div>');
+			if ($('#overallBtn').length == 0) {
+				$('#overallLoader').html('<div class="loader"></div>');
+			}
             $.ajax({
                 url: 'fetch',
                 method: 'POST',
@@ -1270,7 +1272,9 @@
         function getBest() {
             initSplitsBest();
 			$('#bestOf').hide();
-			$('#bestOfLoader').html('<div class="loader"></div>');
+			if ($('#bestOfBtn').length == 0) {
+				$('#bestOfLoader').html('<div class="loader"></div>');
+			}
             $.ajax({
                 url: 'best',
                 method: 'POST',
@@ -1904,7 +1908,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.96</strong></H1>
+        <H1><strong>Activity Tracker 2.97</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
