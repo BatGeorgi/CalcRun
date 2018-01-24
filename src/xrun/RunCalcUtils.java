@@ -56,7 +56,11 @@ public class RunCalcUtils {
   }
   
   Cookie generateCookie() {
-    return cookieHandler.generateCookie();
+    Cookie cookie = cookieHandler.generateCookie();
+    if (cookie != null && drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
+    return cookie;
   }
   
   boolean isValidCookie(Cookie cookie) {
