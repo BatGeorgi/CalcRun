@@ -685,7 +685,7 @@
                         $(this).dialog("close");
                     }
                 },
-                width: Math.min(800, $(window).width() * 0.8),
+                width: Math.min(900, $(window).width() * 0.85),
                 height: Math.min($(window).height() * 0.7, 550),
                 create: function(event) {
                     $(event.target).parent().css({
@@ -1110,16 +1110,20 @@
 						'<input type="radio" name="selectChart" value="byEle">Denivelation+' +
 						'<input type="radio" name="selectChart" value="byRun">Running distance' +
 						'<input type="radio" name="selectChart" value="byDuration">Duration' +
+						'<input type="radio" name="selectChart" value="byMonth">Month' +
+						'<input type="radio" name="selectChart" value="byYear">Year' +
 						'<input type="radio" name="selectChart" value="byDay">Day' +
 						'<input type="radio" name="selectChart" value="byHour">Hour</fieldset><hr>' +
 						'<div id="byType"></div><div id="byDist"></div><div id="bySpeed"></div><div id="byEle"></div><div id="byRun"></div>' +
-						'<div id="byDuration"></div><div id="byDay"></div><div id="byHour"></div>');
+						'<div id="byDuration"></div><div id="byMonth"></div><div id="byYear"></div><div id="byDay"></div><div id="byHour"></div>');
 					$('#byType').insertFusionCharts(getChart("Distribution", "By type", "Type", "Count", "", getChartData(charts['byType'])));
 					$('#byDist').insertFusionCharts(getChart("Distribution", "By distance", "KM", "Count", "", getChartData(charts['byDist'])));
 					$('#bySpeed').insertFusionCharts(getChart("Distribution", "By speed", "KM/H", "Count", "", getChartData(charts['bySpeed'])));
 					$('#byEle').insertFusionCharts(getChart("Distribution", "By positive denivelation", "Meters gained", "Count", "", getChartData(charts['byEle'])));
 					$('#byRun').insertFusionCharts(getChart("Distribution", "By running distance", "KM", "Count", "", getChartData(charts['byRun'])));
 					$('#byDuration').insertFusionCharts(getChart("Distribution", "By duration", "Time", "Count", "", getChartData(charts['byDuration'])));
+					$('#byMonth').insertFusionCharts(getChart("Distribution", "By month", "Month", "Count", "", getChartData(charts['byMonth'])));
+					$('#byYear').insertFusionCharts(getChart("Distribution", "By year", "Year", "Count", "", getChartData(charts['byYear'])));
 					$('#byDay').insertFusionCharts(getChart("Distribution", "By day of week", "Day of week", "Count", "", getChartData(charts['byDay'])));
 					$('#byHour').insertFusionCharts(getChart("Distribution", "By starting hour", "Period of day", "Count", "", getChartData(charts['byHour'])));
 					$('input[name=selectChart]').change(function () {
@@ -1363,7 +1367,7 @@
 			result = [];
 			$.each(chart, function(i, item) {
 				result.push({
-					"label": item['info'],
+					"label": item['info'].toString(),
 					"value": item['data']
 				});
 			});
@@ -1908,7 +1912,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 2.97</strong></H1>
+        <H1><strong>Activity Tracker 3.0</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -2028,6 +2032,7 @@
 						<a href="#">50</a>
 					</nav>
 					<nav class="right pagerOpt">
+						Page
 						<span class="prev">
 							<img src="prev.png" />
 						</span>
