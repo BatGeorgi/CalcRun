@@ -410,6 +410,7 @@ class CalcDistHandler extends AbstractHandler {
         break;
       case 4: // last y
         startDate.set(Calendar.YEAR, startDate.get(Calendar.YEAR) - 1);
+        startDate.add(Calendar.DAY_OF_MONTH, 1);
         int year = startDate.get(Calendar.YEAR);
         periodLen = year % 4 == 0 ? 366 : 365;
         filterStr.append(" after " + getDateStr(startDate, ""));

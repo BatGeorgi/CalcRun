@@ -1,7 +1,9 @@
 package xrun;
 
 import java.lang.reflect.Array;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,6 +36,8 @@ class ChartUtils {
     int[] durationCnt = new int[BOUNDS_DURATION.length];
     int[] dayCnt = new int[7];
     int[] hourCnt = new int[BOUNDS_HOUR.length];
+    int[] monthCnt = new int[12];
+    Map<Integer, Integer> yearCnt = new TreeMap<Integer, Integer>();
     for (int i = 0; i < activities.length(); ++i) {
       JSONObject activity = activities.getJSONObject(i);
       fillInType(typesCnt, activity.getString("type"));
@@ -44,6 +48,10 @@ class ChartUtils {
       fillInDuration(durationCnt, activity.getDouble("timeTotalRaw"));
       fillInDay(dayCnt, activity.getString("date"));
       fillInHour(hourCnt, activity.getString("startAt"));
+      ++monthCnt[activity.getInt("month")];
+      int year = activity.getInt("year");
+      Integer val = yearCnt.get(year);
+      yearCnt.put(year, val != null ? val.intValue() + 1 : 1);
     }
     result.put("byType", toJSONArray(typesCnt, TYPES));
     result.put("byDist", toJSONArray(distCnt, BOUNDS_DIST));
@@ -65,6 +73,15 @@ class ChartUtils {
     	DUR[i] = di1 >= 0 ? (getDuration(di) + "-" + getDuration(di1)) : (getDuration(di) + "+");
     }
     result.put("byDuration", toJSONArray(durationCnt, DUR));
+    result.put("byMonth", toJSONArray(monthCnt, CalcDist.MONTHS, true));
+    JSONArray byYear = new JSONArray();
+    for (Integer key : yearCnt.keySet()) {
+      JSONObject current = new JSONObject();
+      current.put("info", key);
+      current.put("data", String.valueOf(yearCnt.get(key)));
+      byYear.put(current);
+    }
+    result.put("byYear", byYear);
     return result;
   }
 	
@@ -184,7 +201,7 @@ class ChartUtils {
     	}
     }
   }
-  
+
   private static void fillInHour(int[] cnt, String startAt) {
     StringTokenizer st = new StringTokenizer(startAt, " :", false);
     st.nextToken(); // day

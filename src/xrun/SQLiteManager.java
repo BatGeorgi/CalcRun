@@ -813,7 +813,7 @@ public class SQLiteManager {
     }
     rs = executeQueryExc("SELECT genby FROM " + RUNS_TABLE_NAME, true);
     
-    addDashboard(newName);
+    executeQuery("UPDATE " + DASHBOARDS_TABLE_NAME + " SET name='" + newName + "' WHERE name='" + name + "'", false);
     rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
@@ -832,10 +832,9 @@ public class SQLiteManager {
       }
     }
     executeQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + newName + "' WHERE dashboard='" + name + "'", false);
-    removeDashboard(name, false);
   }
 
-  synchronized void removeDashboard(String name, boolean fixActivities) throws SQLException {
+  synchronized void removeDashboard(String name) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
@@ -843,9 +842,6 @@ public class SQLiteManager {
       throw new IllegalArgumentException("Cannot remove main dashboard");
     }
     executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + name + "'", false);
-    if (!fixActivities) {
-      return;
-    }
     ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);

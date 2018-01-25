@@ -531,7 +531,7 @@ public class RunCalcUtils {
   
   String removeDashboard(String name) {
     try {
-      sqLite.removeDashboard(name, true);
+      sqLite.removeDashboard(name);
     } catch (SQLException e) {
       return "Error removing dashboard " + name + " - db error";
     } catch (RuntimeException re) {
