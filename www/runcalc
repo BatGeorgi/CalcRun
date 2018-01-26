@@ -1104,7 +1104,7 @@
 			$('#ht').append(happc);
 			charts = data['charts'];
             $('#typesDistr').click(function() {
-					$('#typesDialog').html('<strong>Choose type</strong><p><fieldset><input type="radio" name="selectChart" value="byType" checked="">Type' +
+					$('#typesDialog').html('<strong>Count by</strong><p><fieldset><input type="radio" name="selectChart" value="byType" checked="">Type' +
 						'<input type="radio" name="selectChart" value="byDist">Distance' +
 						'<input type="radio" name="selectChart" value="bySpeed">Speed' +
 						'<input type="radio" name="selectChart" value="byEle">Denivelation+' +
