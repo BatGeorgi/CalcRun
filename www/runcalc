@@ -1912,7 +1912,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.0</strong></H1>
+        <H1><strong>Activity Tracker 3.01</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -2029,7 +2029,8 @@
 						<a href="#">10</a> |
 						<a id="defPage" href="#" class="current">20</a> |
 						<a href="#">30</a> |
-						<a href="#">50</a>
+						<a href="#">50</a> |
+						<a href="#">All</a>
 					</nav>
 					<nav class="right pagerOpt">
 						Page
