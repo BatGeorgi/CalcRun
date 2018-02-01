@@ -459,28 +459,27 @@ class CalcDistHandler extends AbstractHandler {
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
         startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen, getWMT);
-    if (data.getJSONArray("activities").length() == 0) {
-      List<String> types = new LinkedList<String>();
-      if (run) {
-        types.add(RunCalcUtils.RUNNING);
-      }
-      if (trail) {
-        types.add(RunCalcUtils.TRAIL);
-      }
-      if (uphill) {
-        types.add(RunCalcUtils.UPHILL);
-      }
-      if (hike) {
-        types.add(RunCalcUtils.HIKING);
-      }
-      if (walk) {
-        types.add(RunCalcUtils.WALKING);
-      }
-      if (other) {
-        types.add(RunCalcUtils.OTHER);
-      }
-      filterStr.append(" of type " + types.toString());
+    List<String> types = new LinkedList<String>();
+    if (run) {
+      types.add(RunCalcUtils.RUNNING);
     }
+    if (trail) {
+      types.add(RunCalcUtils.TRAIL);
+    }
+    if (uphill) {
+      types.add(RunCalcUtils.UPHILL);
+    }
+    if (hike) {
+      types.add(RunCalcUtils.HIKING);
+    }
+    if (walk) {
+      types.add(RunCalcUtils.WALKING);
+    }
+    if (other) {
+      types.add(RunCalcUtils.OTHER);
+    }
+    String typesStr = types.toString().replace(" ", " ").replace('[', '|').replace(']', '|');
+    filterStr.append(" of type " + typesStr);
     data.put("filter", filterStr.toString());
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();
