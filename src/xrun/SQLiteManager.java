@@ -709,8 +709,17 @@ public class SQLiteManager {
 	
 	synchronized JSONObject getBestActivities(String columnName) {
     try {
-      return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE " + columnName +
-          "=(SELECT MAX(" + columnName + ") FROM " + RUNS_TABLE_NAME + ')', true));
+      ResultSet rs = executeQuery("SELECT date, genby, " + columnName + " FROM " + RUNS_TABLE_NAME +
+          " WHERE " + columnName +
+          "=(SELECT MAX(" + columnName + ") FROM " + RUNS_TABLE_NAME + ')', true);
+      if (rs == null || !rs.next()) {
+        return null;
+      }
+      JSONObject result = new JSONObject();
+      result.put("date", rs.getString("date"));
+      result.put("genby", rs.getString("genby"));
+      result.put(columnName, rs.getObject(columnName));
+      return result;
     } catch (Exception e) {
       System.out.println("Error reading activities");
       e.printStackTrace();
@@ -720,8 +729,16 @@ public class SQLiteManager {
 	
 	synchronized JSONObject getBestActivities(double distMin, double distMax) {
 	  try {
-      return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME +
-          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw LIMIT 1", true));
+	    ResultSet rs = executeQuery("SELECT genby, date, timeTotal FROM " + RUNS_TABLE_NAME +
+          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw LIMIT 1", true);
+	    if (rs == null || !rs.next()) {
+        return null;
+      }
+      JSONObject result = new JSONObject();
+      result.put("date", rs.getString("date"));
+      result.put("genby", rs.getString("genby"));
+      result.put("timeTotal", rs.getString("timeTotal"));
+      return result;
     } catch (Exception e) {
       System.out.println("Error reading activities");
       e.printStackTrace();
