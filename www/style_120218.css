@@ -317,6 +317,9 @@ tr.border_bottom td {
 .hovs:hover {
     cursor: pointer;
 }
+#bestSplitsTable td:hover {
+    cursor: pointer;
+}
 .loader {
     border: 16px solid #f3f3f3; /* Light grey */
     border-top: 16px solid #3498db; /* Blue */

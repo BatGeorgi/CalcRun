@@ -731,7 +731,7 @@ public class SQLiteManager {
 	
 	synchronized JSONArray getActivitySplits() {
 	  JSONArray result = new JSONArray();
-	  ResultSet rs = executeQuery("SELECT name, date, splits FROM " + RUNS_TABLE_NAME +
+	  ResultSet rs = executeQuery("SELECT name, date, splits, genby FROM " + RUNS_TABLE_NAME +
 	      " WHERE (type='Running' OR type='Trail')", true);
 	  try {
       while (rs.next()) {
@@ -739,6 +739,7 @@ public class SQLiteManager {
         crnt.put("name", rs.getString(1));
         crnt.put("date", rs.getString(2));
         crnt.put("splits", new JSONArray(rs.getString(3)));
+        crnt.put("genby", rs.getString(4));
         result.put(crnt);
       }
     } catch (SQLException e) {

@@ -441,7 +441,7 @@ public class RunCalcUtils {
         Long currentBest = best.get(rounded);
         if (currentBest == null || totalTimeRaw < currentBest.longValue()) {
           best.put(rounded, totalTimeRaw);
-          bestAttrs.put(rounded, new String[] {crnt.getString("name"), crnt.getString("date")});
+          bestAttrs.put(rounded, new String[] {crnt.getString("name"), crnt.getString("date"), crnt.getString("genby")});
         }
       }
     }
@@ -453,6 +453,7 @@ public class RunCalcUtils {
       ach.put("point", entry.getKey());
       ach.put("name", ba[0]);
       ach.put("date", ba[1]);
+      ach.put("genby", ba[2].endsWith(".gpx") ? ba[2].substring(0, ba[2].length() - 4) : ba[2]);
       long seconds = entry.getValue();
       ach.put("ach", CalcDist.formatTime(seconds, true));
       ach.put("speed", String.format("%.3f", entry.getKey() / (seconds / 3600.0)));
