@@ -1272,6 +1272,20 @@
             }
             return opt == 'ach' ? 'Locked' : '---';
         }
+		
+		function linkAchToActivity(ind, data, opt) {
+			if (data[opt]) {
+				$('#bestOf tr:eq(' + ind + ')').click(function() {
+					window.open(data['genby'], '_blank');
+				});
+			} else {
+				$('#bestOf tr:eq(' + ind + ')').click(function() {
+					$('#infoDialog').html('Achievement not unlocked!');
+					$('#infoDialog').dialog('option', 'title', 'No data');
+					$('#infoDialog').dialog('open');
+				});
+			}
+		}
 
         function getBest() {
             initSplitsBest();
@@ -1312,6 +1326,17 @@
                             '<tr><td>Marathon</td><td>' + getStat(marathon, 'ach') + '</td><td>' + getStat(marathon, 'when') + '</td></tr>');
 						$('#bestOf').show();
 						$('#bestOfLoader').html('');
+						linkAchToActivity(0, farthest, 'ach');
+						linkAchToActivity(1, fastest, 'ach');
+						linkAchToActivity(2, maxAsc, 'ach');
+						linkAchToActivity(3, maxRun, 'ach');
+						linkAchToActivity(4, k1, 'ach');
+						linkAchToActivity(5, k25, 'ach');
+						linkAchToActivity(6, k5, 'ach');
+						linkAchToActivity(7, k10, 'ach');
+						linkAchToActivity(8, semi, 'ach');
+						linkAchToActivity(9, k30, 'ach');
+						linkAchToActivity(10, marathon, 'ach');
                     }
                 }
             });
@@ -1917,7 +1942,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.03</strong></H1>
+        <H1><strong>Activity Tracker 3.04</strong></H1>
 		<hr>
     </div>
 	<div id="controls">

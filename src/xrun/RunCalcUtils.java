@@ -393,6 +393,11 @@ public class RunCalcUtils {
     }
     result.put("ach", val + " " + suff);
     result.put("when", best.get("date"));
+    String genby = best.getString("genby");
+    if (genby.endsWith(".gpx")) {
+      genby = genby.substring(0, genby.length() - 4);
+    }
+    result.put("genby", genby);
     return result;
   }
   
@@ -404,6 +409,11 @@ public class RunCalcUtils {
     JSONObject result = new JSONObject();
     result.put("ach", best.get("timeTotal"));
     result.put("when", best.get("date"));
+    String genby = best.getString("genby");
+    if (genby.endsWith(".gpx")) {
+      genby = genby.substring(0, genby.length() - 4);
+    }
+    result.put("genby", genby);
     return result;
   }
   

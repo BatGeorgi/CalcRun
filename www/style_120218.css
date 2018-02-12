@@ -317,6 +317,9 @@ tr.border_bottom td {
 .hovs:hover {
     cursor: pointer;
 }
+#bestOf td:hover {
+    cursor: pointer;
+}
 #bestSplitsTable td:hover {
     cursor: pointer;
 }
