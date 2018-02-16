@@ -27,6 +27,7 @@ public class SQLiteManager {
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
   private static final String PRESETS_TABLE_NAME = "presets";
   private static final String COORDS_TABLE_NAME = "coords";
+  private static final String EXTERNAL_DASHBOARD = "External";
   
   static final String MAIN_DASHBOARD = "Main";
   
@@ -163,7 +164,7 @@ public class SQLiteManager {
       Calendar current = new GregorianCalendar(TimeZone.getDefault());
       int currentYear = current.get(Calendar.YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
-        rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
+        rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos, dashboards FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
         if (years.get(i) == currentYear) {
@@ -191,6 +192,9 @@ public class SQLiteManager {
         }
         JSONArray wArr = new JSONArray();
         while (rs.next()) {
+          if (isExternal(rs.getString("dashboards"))) {
+            continue;
+          }
           Calendar cal = new GregorianCalendar();
           cal.setTimeInMillis(rs.getLong("timeRawMs"));
           String[] formatted = new String[1];
@@ -249,6 +253,16 @@ public class SQLiteManager {
     }
     return result;
   }
+  
+  private static boolean isExternal(String dashboards) {
+    JSONArray arr = new JSONArray(dashboards);
+    for (int i = 0; i < arr.length(); ++i) {
+      if (EXTERNAL_DASHBOARD.equals(arr.getString(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
 	
 	synchronized JSONArray getMonthlyTotals() {
 	  JSONArray result = new JSONArray();
@@ -283,24 +297,33 @@ public class SQLiteManager {
 	      }
         for (int j = 0; j < filters.length; ++j) {
           String typeFilter = (filters[j] != null ? ("(" + filters[j] + ") AND ") : "");
-          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
+          rs = executeQuery("SELECT month, SUM(distRaw), dashboards FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
               "year=" + years.get(i) + " GROUP BY month", true);
 	        while (rs.next()) {
+	          if (isExternal(rs.getString(3))) {
+	            continue;
+	          }
 	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
 	          months[rs.getInt(1)].remove("emp");
 	        }
-					rs = executeQuery("SELECT month, COUNT(genby) FROM "
+					rs = executeQuery("SELECT month, COUNT(genby), dashboards FROM "
 							+ RUNS_TABLE_NAME + " WHERE " + typeFilter + " year="
 							+ years.get(i) + " GROUP BY month", true);
 					while (rs.next()) {
+					  if (isExternal(rs.getString(3))) {
+              continue;
+            }
 						months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
 						months[rs.getInt(1)].put("totalPositiveEl", 0);
 						months[rs.getInt(1)].remove("emp");
 					}
 	      }
-        rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
+        rs = executeQuery("SELECT month, SUM(eleTotalPos), dashboards FROM " + RUNS_TABLE_NAME + " WHERE year=" +
                 years.get(i) + " GROUP BY month", true);
 				while (rs.next()) {
+				  if (isExternal(rs.getString(3))) {
+            continue;
+          }
 					int totalPositiveEl = rs.getInt(2);
 					if (totalPositiveEl > 0) {
 						months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
@@ -708,10 +731,14 @@ public class SQLiteManager {
 	}
 	
 	synchronized JSONObject getBestActivities(String columnName) {
+	  JSONArray extArr = new JSONArray();
+	  extArr.put(EXTERNAL_DASHBOARD);
+	  String extS = extArr.toString();
     try {
       ResultSet rs = executeQuery("SELECT date, genby, " + columnName + " FROM " + RUNS_TABLE_NAME +
           " WHERE " + columnName +
-          "=(SELECT MAX(" + columnName + ") FROM " + RUNS_TABLE_NAME + ')', true);
+          "=(SELECT MAX(" + columnName + ") FROM " + RUNS_TABLE_NAME +
+          " WHERE dashboards!='" + extS + "')", true);
       if (rs == null || !rs.next()) {
         return null;
       }
@@ -729,16 +756,21 @@ public class SQLiteManager {
 	
 	synchronized JSONObject getBestActivities(double distMin, double distMax) {
 	  try {
-	    ResultSet rs = executeQuery("SELECT genby, date, timeTotal FROM " + RUNS_TABLE_NAME +
-          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw LIMIT 1", true);
-	    if (rs == null || !rs.next()) {
+	    ResultSet rs = executeQuery("SELECT genby, date, timeTotal, dashboards FROM " + RUNS_TABLE_NAME +
+          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw", true);
+	    if (rs == null) {
         return null;
       }
-      JSONObject result = new JSONObject();
-      result.put("date", rs.getString("date"));
-      result.put("genby", rs.getString("genby"));
-      result.put("timeTotal", rs.getString("timeTotal"));
-      return result;
+	    while (rs.next()) {
+	      if (isExternal(rs.getString("dashboards"))) {
+	        continue;
+	      }
+	      JSONObject result = new JSONObject();
+	      result.put("date", rs.getString("date"));
+	      result.put("genby", rs.getString("genby"));
+	      result.put("timeTotal", rs.getString("timeTotal"));
+	      return result;
+	    }
     } catch (Exception e) {
       System.out.println("Error reading activities");
       e.printStackTrace();
@@ -748,10 +780,13 @@ public class SQLiteManager {
 	
 	synchronized JSONArray getActivitySplits() {
 	  JSONArray result = new JSONArray();
-	  ResultSet rs = executeQuery("SELECT name, date, splits, genby FROM " + RUNS_TABLE_NAME +
+	  ResultSet rs = executeQuery("SELECT name, date, splits, genby, dashboards FROM " + RUNS_TABLE_NAME +
 	      " WHERE (type='Running' OR type='Trail')", true);
 	  try {
       while (rs.next()) {
+        if (isExternal(rs.getString("dashboards"))) {
+          continue;
+        }
         JSONObject crnt = new JSONObject();
         crnt.put("name", rs.getString(1));
         crnt.put("date", rs.getString(2));
