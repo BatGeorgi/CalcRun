@@ -393,12 +393,6 @@ public class SQLiteManager {
 	  executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
 	}
 	
-	private void setMainDashboard(JSONObject entry) {
-		JSONArray arr = new JSONArray();
-		arr.put(MAIN_DASHBOARD);
-		entry.put("dashboards", arr);
-	}
-	
 	synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
 	    int top, String dashboard) throws SQLException {
 	  ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", true);
@@ -532,7 +526,6 @@ public class SQLiteManager {
 	}
 	
 	synchronized void addActivity(JSONObject entry) {
-		setMainDashboard(entry); // temporary
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
 	  if (!entry.has("origData")) {
@@ -933,6 +926,21 @@ public class SQLiteManager {
     JSONObject result = new JSONObject();
     result.put("dashboards", arr);
     return result;
+  }
+  
+  synchronized boolean dashboardExists(String dashboard) {
+    if (dashboard == null) {
+      return false;
+    }
+    try {
+      ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME +
+          " WHERE name='" + dashboard + "'", true);
+      return rs != null && rs.next();
+    } catch (Exception e) {
+      System.out.println("Error saving cookie");
+      e.printStackTrace();
+    }
+    return false;
   }
 	
   synchronized boolean saveCookie(String uid, Calendar expires) {

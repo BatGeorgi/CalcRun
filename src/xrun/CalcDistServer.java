@@ -222,7 +222,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
 	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-	    String activityName, String activityType, String reliveCC, String photos) {
+	    String activityName, String activityType, String reliveCC, String photos, String dashboard) {
 	  if (activityName != null && activityName.length() == 0) {
 	    activityName = null;
 	  }
@@ -232,7 +232,8 @@ class CalcDistHandler extends AbstractHandler {
 			while (iter.hasNext()) {
 				FileItemStream item = iter.next();
 				if (!item.isFormField()) {
-					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos);
+					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
+					    dashboard);
 				}
 			}
 		} catch (Exception e) {
@@ -247,6 +248,7 @@ class CalcDistHandler extends AbstractHandler {
     String type = null;
     String reliveCC = null;
     String photos = null;
+    String dashboard = null;
     int ind = target.indexOf('.');
     target = target.substring(ind + 1);
     ind = target.indexOf(SEP);
@@ -260,7 +262,11 @@ class CalcDistHandler extends AbstractHandler {
     reliveCC = target.substring(ind + SEP.length(), to);
     ind = to;
     
-    photos = target.substring(ind + SEP.length());
+    to = target.indexOf(SEP, ind + SEP.length());
+    photos = target.substring(ind + SEP.length(), to);
+    
+    ind = to;
+    dashboard = target.substring(ind + SEP.length());
     if (type.length() == 0) {
       type = RunCalcUtils.RUNNING;
     }
@@ -274,7 +280,7 @@ class CalcDistHandler extends AbstractHandler {
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
-        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos);
+        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos, dashboard);
         if (result == null) { // all normal
           pw.println("<h2>Upload finished!</h2>");
           pw.println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
