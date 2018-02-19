@@ -19,13 +19,34 @@
 	<script>
 	
 		$(document).ready(function() {
-			$('#fileToUpload').button();
-			$('#submit').button();
-			$("#upload").submit(function( event ) {
-				var sep = "#$^";
-				suff = "." + encodeURIComponent($('#name').val()) +  sep + $('#type').find(':selected').val() + sep + encodeURIComponent($('#relivecc').val()) + sep + encodeURIComponent($('#photos').val());
-				initVal = $('#upload').attr('action');
-				$('#upload').attr('action', encodeURIComponent(initVal + suff));
+			$.ajax({
+                url: 'getDash',
+                method: 'POST',
+                dataType: 'json',
+                statusCode: {
+                    200: function(data) {
+						arr = data['dashboards'];
+                        dashHtml = '<select id="select">';
+						dashCount = arr.length;
+                        $.each(arr, function(i, item) {
+							sel = '';
+							if (item == 'Main') {
+								sel = ' selected';
+							}
+                            dashHtml += '<option value="' + item + '"' + sel + '>' + item + '</option>';
+                        });
+						$('#dashOpt').html(dashHtml + '</select>');
+						$('#fileToUpload').button();
+						$('#submit').button();
+						$("#upload").submit(function( event ) {
+							var sep = "#$^";
+							suff = "." + encodeURIComponent($('#name').val()) +  sep + $('#type').find(':selected').val() + sep + encodeURIComponent($('#relivecc').val()) +
+							sep + encodeURIComponent($('#photos').val()) + sep + $('#select option:selected').val();
+							initVal = $('#upload').attr('action');
+							$('#upload').attr('action', encodeURIComponent(initVal + suff));
+						});
+					}
+				}
 			});
 		});
 	</script>
@@ -63,6 +84,11 @@
 				<td>
 					<p>Photos&nbsp;</td>
 				<td><input type="text" id="photos"></td>
+			</tr>
+			<tr>
+				<td>
+					<p>Dashboard</td>
+				<td id="dashOpt"></td>
 			</tr>
             <tr>
                 <td>

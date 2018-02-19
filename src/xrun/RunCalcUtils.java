@@ -170,7 +170,8 @@ public class RunCalcUtils {
   	return file;
   }
   
-  String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos) {
+  String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,
+      String dashboard) {
   	File file = null;
   	try {
   	  file = addActivity0(name, is);
@@ -188,6 +189,12 @@ public class RunCalcUtils {
       current.put("type", activityType);
       current.put("ccLink", reliveCC);
       current.put("photosLink", photos);
+      if (!sqLite.dashboardExists(dashboard)) {
+        dashboard = SQLiteManager.MAIN_DASHBOARD;
+      }
+      JSONArray arr = new JSONArray();
+      arr.put(dashboard);
+      current.put("dashboards", arr);
       sqLite.addActivity(current);
       if (drive != null) {
         drive.backupTrack(file);
