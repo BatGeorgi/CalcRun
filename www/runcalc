@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity Tracker</title>
-    <link href="style_120218.css" type="text/css" rel="stylesheet" />
+    <link href="style_200218.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -24,6 +24,9 @@
 	
 	<style>
 		#sortable li {
+			display: inline-block;
+		}
+		#dashSort li {
 			display: inline-block;
 		}
 	</style>
@@ -245,7 +248,7 @@
                             url: 'renameDash',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'name': $('#dashboard' + currentDash).attr('name'),
+                                'name': $('.selectedDash').attr('name'),
 								'newName': newName
                             },
                             method: 'POST',
@@ -284,13 +287,13 @@
                             url: 'removeDash',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'name': $('#dashboard' + currentDash).attr('name')
+                                'name': $('.selectedDash').attr('name')
                             },
                             method: 'POST',
                             dataType: 'text',
                             statusCode: {
                                 200: function(resp) {
-									currentDash = 0;
+									$('#dashboard0').addClass('selectedDash');
 									initDashboards();
 									fetch(false);
 									$('#infoDialog').html(resp);
@@ -731,7 +734,7 @@
 								'pattern': nf,
 								'dmin': $('#spinnerMin').val(),
 								'dmax': $('#spinnerMax').val(),
-								'dashboard': $('#dashboard' + currentDash).attr('name')
+								'dashboard': $('.selectedDash').attr('name')
                             },
                             method: 'POST',
                             dataType: 'text',
@@ -889,6 +892,8 @@
 			$('#allPresets').html(allPresetsHtml + '</ul>');
 			$("#sortable").sortable();
 			$("#sortable").disableSelection();
+			$("#dashSort").sortable();
+			$("#dashSort").disableSelection();
 			$.each(presets, function(i, item) {
 				name = decodeURIComponent(item['name']);
 				$('#preset' + name).click(function() {
@@ -942,7 +947,7 @@
 						$('#spinnerMax').val('');
 					}
 					fetchAfterDashClick = false;
-					$('button[name="' + item['dashboard'] + '"]').click();
+					$('li[name="' + item['dashboard'] + '"]').click();
 					fetchAfterDashClick = true;
 					$('#runs').hide();
 					$('#ht').html('<div class="loader"></div>');
@@ -1235,7 +1240,7 @@
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
                     'dmax': $('#spinnerMax').val(),
-					'dashboard': $('#dashboard' + currentDash).attr('name'),
+					'dashboard': $('.selectedDash').attr('name'),
 					'getWMTotals': getWMTotals
                 },
                 statusCode: {
@@ -1573,7 +1578,6 @@
         }
 		
 		var dashCount = 0;
-		var currentDash = 0;
 		var fetchAfterDashClick = true;
 
         function initDashboards() {
@@ -1584,23 +1588,26 @@
                 statusCode: {
                     200: function(data) {
                         arr = data['dashboards'];
-                        dashHtml = '';
+                        dashHtml = '<ul id="dashSort">';
 						dashCount = arr.length;
                         $.each(arr, function(i, item) {
-                            dashHtml += '<button class="dashButton" id="dashboard' + i + '">' + item + '</button>';
+                            dashHtml += '<li class="dashButton" id="dashboard' + i + '">' + item + '</li>';
                         });
-                        $('#allDash').html(dashHtml);
+                        $('#allDash').html(dashHtml + '</ul>');
 						$.each(arr, function(i, item) {
-                            $('#dashboard' + i).addClass(i == currentDash ? 'selectedDash' : 'notSelectedDash');
+							if (item == 'Main') {
+								$('#dashboard' + i).addClass('selectedDash');
+							} else {
+								$('#dashboard' + i).addClass('notSelectedDash');
+							}
 							$('#dashboard' + i).attr('name', item);
 							$('#dashboard' + i).click(function() {
-								if (currentDash == i) {
+								if ($('#dashboard' + i).hasClass('selectedDash')) {
 									return;
 								}
 								if ($('#search').button("option", "disabled")) {
 									return;
 								}
-								currentDash = i;
 								$('#dashboard' + i).addClass('selectedDash');
 								$('#dashboard' + i).removeClass('notSelectedDash');
 								for (j = 0; j < dashCount; ++j) {
@@ -1683,6 +1690,7 @@
 			$('#renamePreset').button();
 			$('#removePreset').button();
 			$('#saveOrder').button();
+			$('#reorderDash').button();
             $('#search').click(function() {
                 fetch(false);
             });
@@ -1710,6 +1718,33 @@
 				});
 				$.ajax({
                     url: 'savePresetOrder',
+                    headers: {
+                        'Content-Type': 'application/json',
+						'elements': elements
+                    },
+                    method: 'POST',
+                    dataType: 'text',
+                    statusCode: {
+                        200: function(resp) {
+							$('#infoDialog').html(resp);
+                            $('#infoDialog').dialog('option', 'title', 'Status');
+                            $('#infoDialog').dialog('open');
+                        },
+						401: function(resp) {
+							$('#infoDialog').html('Please sign in!');
+                            $('#infoDialog').dialog('option', 'title', 'Not authorized');
+                            $('#infoDialog').dialog('open');
+						}
+                    }
+                });
+			});
+			$('#reorderDash').click(function() {
+				elements = '';
+				$("#dashSort li").each(function(idx, li) {
+					elements += $(li).text() + '|||';
+				});
+				$.ajax({
+                    url: 'saveDashOrder',
                     headers: {
                         'Content-Type': 'application/json',
 						'elements': elements
@@ -1794,13 +1829,13 @@
 			});
 			$('#renameDashboardButton').click(function () {
 				$('#renameDashboard').html('New name&nbsp;<input type="text" id="newDashName" />');
-				$('#renameDashboard').dialog('option', 'title', 'Rename dashboard ' + $('#dashboard' + currentDash).attr('name'));
+				$('#renameDashboard').dialog('option', 'title', 'Rename dashboard ' + $('.selectedDash').attr('name'));
 				$('#renameDashboard').dialog('open');
 			});
 			$('#removeDashboardButton').click(function () {
-				crName = $('#dashboard' + currentDash).attr('name');
+				crName = $('.selectedDash').attr('name');
 				$('#removeDashboard').html('Really remove dashboard ' + crName + '?');
-				$('#removeDashboard').dialog('option', 'title', 'Remove dashboard ' + $('#dashboard' + currentDash).attr('name'));
+				$('#removeDashboard').dialog('option', 'title', 'Remove dashboard ' + $('.selectedDash').attr('name'));
 				$('#removeDashboard').dialog('open');
 			});
             $('#dtStart').datepicker({
@@ -1815,6 +1850,7 @@
             $('#dtEnd').datepicker('disable');
             initDashboards();
 			getPresets();
+			console.log($('.selectedDash'));
             fetch(true);
             
             $("#spinnerMin").spinner();
@@ -1942,7 +1978,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.05</strong></H1>
+        <H1><strong>Activity Tracker 3.1</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -2019,6 +2055,8 @@
 	<div id="dashboards">
             <div id="dashHeading">Dashboards</div><p>
             <div id="allDash"></div>
+			<p>
+			<button id="reorderDash">Reorder</button>
     </div>
 	<p>
 	<div id="presets">

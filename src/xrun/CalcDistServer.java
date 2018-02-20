@@ -985,7 +985,7 @@ class CalcDistHandler extends AbstractHandler {
     baseRequest.setHandled(true);
   }
   
-  private void processReorderFilters(Request baseRequest, HttpServletResponse response)
+  private void processReorder(Request baseRequest, HttpServletResponse response, int option)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -994,8 +994,8 @@ class CalcDistHandler extends AbstractHandler {
     }
     PrintWriter pw = response.getWriter();
     try {
-      String status = rcUtils.reorderPresets(baseRequest.getHeader("elements"));
-      pw.println(status == null ? "Preset order saved" : status);
+      String status = rcUtils.reorder(baseRequest.getHeader("elements"), option);
+      pw.println(status == null ? "Order saved" : status);
     } finally {
       pw.flush();
     }
@@ -1086,7 +1086,9 @@ class CalcDistHandler extends AbstractHandler {
       } else if ("/getFilters".equalsIgnoreCase(target)) {
         processGetFilters(baseRequest, response);
       } else if ("/savePresetOrder".equalsIgnoreCase(target)) {
-        processReorderFilters(baseRequest, response);
+        processReorder(baseRequest, response, 1);
+      } else if ("/saveDashOrder".equalsIgnoreCase(target)) {
+        processReorder(baseRequest, response, 2);
       }
 		}
   }

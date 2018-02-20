@@ -525,6 +525,13 @@ public class SQLiteManager {
 	  }
 	}
 	
+	synchronized void reorderDashboards(List<String> dashboards) throws SQLException {
+    executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME, false);
+    for (String dashboard : dashboards) {
+      executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + dashboard + "')", false);
+    }
+  }
+	
 	synchronized void addActivity(JSONObject entry) {
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
