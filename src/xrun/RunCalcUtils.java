@@ -721,7 +721,7 @@ public class RunCalcUtils {
   	return null;
   }
   
-  String reorderPresets(String elements) {
+  String reorder(String elements, int option) {
     int ind = -1;
     int next = 0;
     List<String> ordered = new LinkedList<String> ();
@@ -730,9 +730,18 @@ public class RunCalcUtils {
       next = ind + 3;
     }
     try {
-      sqLite.reorderPresets(ordered);
+      switch (option) {
+        case 1:
+          sqLite.reorderPresets(ordered);
+          break;
+        case 2:
+          if (ordered.size() > 0 && !SQLiteManager.MAIN_DASHBOARD.equals(ordered.get(0))) {
+            return "Main dashboard MUST be first!";
+          }
+          sqLite.reorderDashboards(ordered);
+      }
     } catch (SQLException e) {
-      return "Error reordering presets - db error";
+      return "Error reordering - db error";
     } catch (RuntimeException re) {
       return re.getMessage();
     }

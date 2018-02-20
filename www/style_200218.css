@@ -346,3 +346,6 @@ tr.border_bottom td {
 #typesDialog {
 	text-align: center;
 }
+.dashButton {
+	border: 1px solid black;
+}
