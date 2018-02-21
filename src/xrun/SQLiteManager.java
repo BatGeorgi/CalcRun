@@ -864,7 +864,6 @@ public class SQLiteManager {
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard " + name + " doest not exist");
     }
-    rs = executeQueryExc("SELECT genby FROM " + RUNS_TABLE_NAME, true);
     
     executeQuery("UPDATE " + DASHBOARDS_TABLE_NAME + " SET name='" + newName + "' WHERE name='" + name + "'", false);
     rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
@@ -874,6 +873,7 @@ public class SQLiteManager {
       boolean mod = false;
       for (int i = 0; i < arr.length(); ++i) {
         if (name.equals(arr.get(i))) {
+          arr.remove(i);
           arr.put(i, newName);
           mod = true;
           break;
