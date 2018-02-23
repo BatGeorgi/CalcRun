@@ -33,7 +33,7 @@
 							if (item == 'Main') {
 								sel = ' selected';
 							}
-                            dashHtml += '<option value="' + item + '"' + sel + '>' + item + '</option>';
+                            dashHtml += '<option value="' + item + '"' + sel + '>' + decodeURIComponent(item) + '</option>';
                         });
 						$('#dashOpt').html(dashHtml + '</select>');
 						$('#fileToUpload').button();

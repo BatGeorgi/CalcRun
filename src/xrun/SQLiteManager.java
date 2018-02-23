@@ -27,8 +27,8 @@ public class SQLiteManager {
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
   private static final String PRESETS_TABLE_NAME = "presets";
   private static final String COORDS_TABLE_NAME = "coords";
-  private static final String EXTERNAL_DASHBOARD = "External";
   
+  static final String EXTERNAL_DASHBOARD = "External";
   static final String MAIN_DASHBOARD = "Main";
   
   private static final String[] KEYS = new String[] {
