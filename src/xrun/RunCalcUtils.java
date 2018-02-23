@@ -194,6 +194,9 @@ public class RunCalcUtils {
       }
       JSONArray arr = new JSONArray();
       arr.put(dashboard);
+      if (!SQLiteManager.EXTERNAL_DASHBOARD.equals(dashboard) && !SQLiteManager.MAIN_DASHBOARD.equals(dashboard)) {
+        arr.put(SQLiteManager.MAIN_DASHBOARD);
+      }
       current.put("dashboards", arr);
       sqLite.addActivity(current);
       if (drive != null) {
