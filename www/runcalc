@@ -248,7 +248,7 @@
                             url: 'renameDash',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'name': $('.selectedDash').attr('name'),
+                                'name': encodeURIComponent($('.selectedDash').attr('name')),
 								'newName': newName
                             },
                             method: 'POST',
@@ -287,7 +287,7 @@
                             url: 'removeDash',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'name': $('.selectedDash').attr('name')
+                                'name': encodeURIComponent($('.selectedDash').attr('name'))
                             },
                             method: 'POST',
                             dataType: 'text',
@@ -448,8 +448,8 @@
                         $(this).dialog("close");
                     },
                     "Modify": function() {
-						dashAdd = $('#addToDash option:selected').val();
-						dashRem = $('#remFromDash option:selected').val();
+						dashAdd = encodeURIComponent($('#addToDash option:selected').val());
+						dashRem = encodeURIComponent($('#remFromDash option:selected').val());
 						changeDash('addToDash', $('#editable').attr('genby'), dashAdd);
 						changeDash('removeFromDash', $('#editable').attr('genby'), dashRem);
                         $.ajax({
@@ -734,7 +734,7 @@
 								'pattern': nf,
 								'dmin': $('#spinnerMin').val(),
 								'dmax': $('#spinnerMax').val(),
-								'dashboard': $('.selectedDash').attr('name')
+								'dashboard': encodeURIComponent($('.selectedDash').attr('name'))
                             },
                             method: 'POST',
                             dataType: 'text',
@@ -1222,6 +1222,7 @@
 			if ($('#overallBtn').length == 0) {
 				$('#overallLoader').html('<div class="loader"></div>');
 			}
+			dashQ = $('.selectedDash').length == 0 ? 'Main' : encodeURIComponent($('.selectedDash').attr('name'));
             $.ajax({
                 url: 'fetch',
                 method: 'POST',
@@ -1240,7 +1241,7 @@
                     'nameFilter': nf,
                     'dmin': $('#spinnerMin').val(),
                     'dmax': $('#spinnerMax').val(),
-					'dashboard': $('.selectedDash').attr('name'),
+					'dashboard': dashQ,
 					'getWMTotals': getWMTotals
                 },
                 statusCode: {
@@ -1591,7 +1592,7 @@
                         dashHtml = '<ul id="dashSort">';
 						dashCount = arr.length;
                         $.each(arr, function(i, item) {
-                            dashHtml += '<li class="dashButton" id="dashboard' + i + '">' + item + '</li>';
+                            dashHtml += '<li class="dashButton" id="dashboard' + i + '">' + decodeURIComponent(item) + '</li>';
                         });
                         $('#allDash').html(dashHtml + '</ul>');
 						$.each(arr, function(i, item) {
@@ -1600,7 +1601,7 @@
 							} else {
 								$('#dashboard' + i).addClass('notSelectedDash');
 							}
-							$('#dashboard' + i).attr('name', item);
+							$('#dashboard' + i).attr('name', decodeURIComponent(item));
 							$('#dashboard' + i).click(function() {
 								if ($('#dashboard' + i).hasClass('selectedDash')) {
 									return;
@@ -1850,7 +1851,6 @@
             $('#dtEnd').datepicker('disable');
             initDashboards();
 			getPresets();
-			console.log($('.selectedDash'));
             fetch(true);
             
             $("#spinnerMin").spinner();
