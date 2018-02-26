@@ -317,6 +317,88 @@
                 width: 300,
                 height: 200
             });
+			$('#confirmDialogDash').dialog({
+                autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+                    "Yes": function() {
+						elements = '';
+						$("#dashSort li").each(function(idx, li) {
+							elements += encodeURIComponent($(li).text()) + '|||';
+						});
+						$.ajax({
+							url: 'saveDashOrder',
+							headers: {
+								'Content-Type': 'application/json',
+								'elements': elements
+							},
+							method: 'POST',
+							dataType: 'text',
+							statusCode: {
+								200: function(resp) {
+									$('#infoDialog').html(resp);
+									$('#infoDialog').dialog('option', 'title', 'Status');
+									$('#infoDialog').dialog('open');
+								},
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+									$('#infoDialog').dialog('option', 'title', 'Not authorized');
+									$('#infoDialog').dialog('open');
+								}
+							}
+						});
+                        $(this).dialog("close");
+                    },
+					"No": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 300,
+                height: 200
+            });
+			$('#confirmDialogPresets').dialog({
+				autoOpen: false,
+                modal: true,
+                show: "blind",
+                hide: "blind",
+                buttons: {
+					"Yes": function() {
+						elements = '';
+						$("#sortable li").each(function(idx, li) {
+							elements += $(li).text() + '|||';
+						});
+						$.ajax({
+							url: 'savePresetOrder',
+							headers: {
+								'Content-Type': 'application/json',
+								'elements': elements
+							},
+							method: 'POST',
+							dataType: 'text',
+							statusCode: {
+								200: function(resp) {
+									$('#infoDialog').html(resp);
+									$('#infoDialog').dialog('option', 'title', 'Status');
+									$('#infoDialog').dialog('open');
+								},
+								401: function(resp) {
+									$('#infoDialog').html('Please sign in!');
+									$('#infoDialog').dialog('option', 'title', 'Not authorized');
+									$('#infoDialog').dialog('open');
+								}
+							}
+						});
+                        $(this).dialog("close");
+                    },
+					"No": function() {
+                        $(this).dialog("close");
+                    }
+                },
+                width: 300,
+                height: 200
+			});
 			$('#rescanDialog').dialog({
                 autoOpen: false,
                 modal: true,
@@ -478,7 +560,10 @@
                             }
                         });
                         $(this).dialog("close");
-                    }
+                    },
+					"Cancel": function() {
+						$(this).dialog("close");
+					}
                 },
 				width: Math.min($(window).width() * 0.7, 600),
                 height: Math.min($(window).height() * 0.85, 750),
@@ -526,7 +611,10 @@
                             }
                         });
                         $(this).dialog("close");
-                    }
+                    },
+					"Cancel": function() {
+						$(this).dialog("close");
+					}
                 },
                 width: Math.min($(window).width() * 0.4, 400),
                 height: Math.min($(window).height() * 0.4, 300),
@@ -1701,58 +1789,14 @@
 				$('#renamePresetDlg').dialog('open');
 			});
 			$('#saveOrder').click(function() {
-				elements = '';
-				$("#sortable li").each(function(idx, li) {
-					elements += $(li).text() + '|||';
-				});
-				$.ajax({
-                    url: 'savePresetOrder',
-                    headers: {
-                        'Content-Type': 'application/json',
-						'elements': elements
-                    },
-                    method: 'POST',
-                    dataType: 'text',
-                    statusCode: {
-                        200: function(resp) {
-							$('#infoDialog').html(resp);
-                            $('#infoDialog').dialog('option', 'title', 'Status');
-                            $('#infoDialog').dialog('open');
-                        },
-						401: function(resp) {
-							$('#infoDialog').html('Please sign in!');
-                            $('#infoDialog').dialog('option', 'title', 'Not authorized');
-                            $('#infoDialog').dialog('open');
-						}
-                    }
-                });
+				$('#confirmDialogPresets').html('Save the presets in this order?');
+				$('#confirmDialogPresets').dialog('option', 'title', 'Save preset order');
+				$('#confirmDialogPresets').dialog('open');
 			});
 			$('#reorderDash').click(function() {
-				elements = '';
-				$("#dashSort li").each(function(idx, li) {
-					elements += $(li).text() + '|||';
-				});
-				$.ajax({
-                    url: 'saveDashOrder',
-                    headers: {
-                        'Content-Type': 'application/json',
-						'elements': elements
-                    },
-                    method: 'POST',
-                    dataType: 'text',
-                    statusCode: {
-                        200: function(resp) {
-							$('#infoDialog').html(resp);
-                            $('#infoDialog').dialog('option', 'title', 'Status');
-                            $('#infoDialog').dialog('open');
-                        },
-						401: function(resp) {
-							$('#infoDialog').html('Please sign in!');
-                            $('#infoDialog').dialog('option', 'title', 'Not authorized');
-                            $('#infoDialog').dialog('open');
-						}
-                    }
-                });
+				$('#confirmDialogDash').html('Save the dashboard in this order?');
+				$('#confirmDialogDash').dialog('option', 'title', 'Save dashboard order');
+				$('#confirmDialogDash').dialog('open');
 			});
 			$('#removePreset').click(function() {
 				removeOps = '<select id="selectPresetRem">';
@@ -1966,7 +2010,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.12</strong></H1>
+        <H1><strong>Activity Tracker 3.13</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -2144,6 +2188,8 @@
     <div id="login" />
 	<div id="rescanDialog"></div>
 	<div id="typesDialog"></div>
+	<div id="confirmDialogDash"></div>
+	<div id="confirmDialogPresets"></div>
 </body>
 
 </html>
