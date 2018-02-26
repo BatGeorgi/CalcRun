@@ -191,24 +191,18 @@
                 buttons: {
                     "Create": function() {
 						cdName = $('#cdName').val();
-						if (!validateDashName(cdName)) {
-							$('#infoDialog').html('Dashboard name must only contain latin letters, digits, _ and whitespaces');
-							$('#infoDialog').dialog('option', 'title', 'Status');
-							$('#infoDialog').dialog('open');
-							$(this).dialog("close");
-							return;
-						}
 						$.ajax({
                             url: 'addDash',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'name': cdName
+                                'name': encodeURIComponent(cdName)
                             },
                             method: 'POST',
                             dataType: 'text',
                             statusCode: {
                                 200: function(resp) {
 									initDashboards();
+									fetch(false);
 									$('#infoDialog').html(resp);
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
@@ -237,25 +231,19 @@
                 buttons: {
                     "Rename": function() {
 						var newName = $('#newDashName').val();
-						if (!validateDashName(newName)) {
-							$('#infoDialog').html('Dashboard name must only contain latin letters, digits, _ and whitespaces');
-							$('#infoDialog').dialog('option', 'title', 'Status');
-							$('#infoDialog').dialog('open');
-							$(this).dialog("close");
-							return;
-						}
 						$.ajax({
                             url: 'renameDash',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'name': encodeURIComponent($('.selectedDash').attr('name')),
-								'newName': newName
+								'newName': encodeURIComponent(newName)
                             },
                             method: 'POST',
                             dataType: 'text',
                             statusCode: {
                                 200: function(resp) {
 									initDashboards();
+									fetch(false);
 									$('#infoDialog').html(resp);
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
@@ -947,7 +935,7 @@
 						$('#spinnerMax').val('');
 					}
 					fetchAfterDashClick = false;
-					$('li[name="' + item['dashboard'] + '"]').click();
+					$('li[name="' + decodeURIComponent(item['dashboard']) + '"]').click();
 					fetchAfterDashClick = true;
 					$('#runs').hide();
 					$('#ht').html('<div class="loader"></div>');
