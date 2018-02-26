@@ -1978,7 +1978,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.1</strong></H1>
+        <H1><strong>Activity Tracker 3.11</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -2060,7 +2060,7 @@
     </div>
 	<p>
 	<div id="presets">
-		<div id="presetHeading">Filter presets</div><p>
+		<div id="presetHeading">Presets</div><p>
 		<button id="renamePreset">Rename preset</button>
 		<button id="removePreset">Remove preset</button>
 		<button id="saveOrder">Save order</button>

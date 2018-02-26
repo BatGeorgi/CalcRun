@@ -457,7 +457,7 @@ class CalcDistHandler extends AbstractHandler {
       return;
     }
     if (dmin != 0 || dmax != Integer.MAX_VALUE) {
-      filterStr.append(" with distance in [" + dmin + ", " + (dmax != Integer.MAX_VALUE ? dmax : "+INF") + "] km");
+      filterStr.append(" with distance [" + dmin + ", " + (dmax != Integer.MAX_VALUE ? dmax : "+&#x221e;") + "] km");
     }
     String nameFilter = baseRequest.getHeader("nameFilter");
     if (nameFilter != null && nameFilter.trim().length() > 0) {
@@ -484,7 +484,7 @@ class CalcDistHandler extends AbstractHandler {
     if (other) {
       types.add(RunCalcUtils.OTHER);
     }
-    String typesStr = types.toString().replace(" ", " ").replace('[', '|').replace(']', '|');
+    String typesStr = types.toString().replace(" ", " ").replace("[", "").replace("]", "");
     filterStr.append(" of type " + typesStr);
     data.put("filter", filterStr.toString());
     response.setContentType("application/json");
