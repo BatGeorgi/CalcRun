@@ -201,8 +201,7 @@
                             dataType: 'text',
                             statusCode: {
                                 200: function(resp) {
-									initDashboards();
-									fetch(false);
+									initDashboards(true);
 									$('#infoDialog').html(resp);
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
@@ -242,8 +241,7 @@
                             dataType: 'text',
                             statusCode: {
                                 200: function(resp) {
-									initDashboards();
-									fetch(false);
+									initDashboards(true);
 									$('#infoDialog').html(resp);
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
@@ -281,9 +279,7 @@
                             dataType: 'text',
                             statusCode: {
                                 200: function(resp) {
-									$('#dashboard0').addClass('selectedDash');
-									initDashboards();
-									fetch(false);
+									initDashboards(true);
 									$('#infoDialog').html(resp);
                                     $('#infoDialog').dialog('option', 'title', 'Status');
                                     $('#infoDialog').dialog('open');
@@ -1298,6 +1294,9 @@
 			if ($('#overallBtn').length == 0) {
 				$('#overallLoader').html('<div class="loader"></div>');
 			}
+			$('#runs').hide();
+			$('#ht').html('<div class="loader"></div>');
+			$('#pagerMenu').hide();
 			dashQ = $('.selectedDash').length == 0 ? 'Main' : encodeURIComponent($('.selectedDash').attr('name'));
             $.ajax({
                 url: 'fetch',
@@ -1657,7 +1656,7 @@
 		var dashCount = 0;
 		var fetchAfterDashClick = true;
 
-        function initDashboards() {
+        function initDashboards(fetchAfterInit) {
             $.ajax({
                 url: 'getDash',
                 method: 'POST',
@@ -1716,6 +1715,9 @@
 								}
 							});
                         });
+						if (fetchAfterInit) {
+							fetch(false);
+						}
                     }
                 }
             });
@@ -2010,7 +2012,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.13</strong></H1>
+        <H1><strong>Activity Tracker 3.14</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
