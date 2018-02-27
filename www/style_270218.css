@@ -249,8 +249,16 @@ tr.border_bottom td {
 	font-size: 22px;
 	text-shadow: 1px 1px black;
 	text-decoration: underline;
+	display: inline-block;
+}
+#dashActions {
+	display: inline-block;
+}
+#presetActions {
+	display: inline-block;
 }
 #presetHeading {
+	display: inline-block;
 	margin: auto;
 	text-align: center;
 	color: #6977e0;

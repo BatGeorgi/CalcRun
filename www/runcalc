@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity Tracker</title>
-    <link href="style_200218.css" type="text/css" rel="stylesheet" />
+    <link href="style_270218.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -1766,10 +1766,6 @@
             checkCookieVal();
             $('#selectAll').button();
             $('#search').button();
-			$('#renamePreset').button();
-			$('#removePreset').button();
-			$('#saveOrder').button();
-			$('#reorderDash').button();
             $('#search').click(function() {
                 fetch(false);
             });
@@ -2012,7 +2008,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.14</strong></H1>
+        <H1><strong>Activity Tracker 3.15</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
@@ -2020,9 +2016,6 @@
 		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
 		<button id="loginButton" class="controlButton">Login</button>
 		<button id="hideFilters" class="controlButton">Show Filters</button>
-		<button id="createDashboardButton" class="controlButton">New dashboard</button>
-		<button id="renameDashboardButton" class="controlButton">Rename dashboard</button>
-		<button id="removeDashboardButton" class="controlButton">Remove dashboard</button>
 	</div><p><p><p><p>
 	<div id="createDashboard"></div>
 	<div id="renameDashboard"></div>
@@ -2087,18 +2080,27 @@
                             <button id="search">Search</button>
     </div>
 	<div id="dashboards">
-            <div id="dashHeading">Dashboards</div><p>
+            <div id="dashHeading">Dashboards&nbsp;</div>
+			<div id="dashActions">
+				<input id="createDashboardButton" type="image" src="images/add.png"></input>
+				<input id="renameDashboardButton" type="image" src="images/rename.png"></input>
+				<input id="removeDashboardButton" type="image" src="images/remove.png"></input>
+				<input id="reorderDash" type="image" src="images/saveOrder.png"></input>
+			</div>
+			<p>
             <div id="allDash"></div>
 			<p>
-			<button id="reorderDash">Reorder</button>
     </div>
 	<p>
 	<div id="presets">
-		<div id="presetHeading">Presets</div><p>
-		<button id="renamePreset">Rename preset</button>
-		<button id="removePreset">Remove preset</button>
-		<button id="saveOrder">Save order</button>
-        <div id="allPresets"></div>
+		<div id="presetHeading">Presets&nbsp;</div>
+		<div id="presetActions">
+			<input id="renamePreset" type="image" src="images/rename.png"></input>
+			<input id="removePreset" type="image" src="images/remove.png"></input>
+			<input id="saveOrder" type="image" src="images/saveOrder.png"></input>
+        </div>
+		<p>
+		<div id="allPresets"></div>
 		<div id="presetsDlg"></div>
 		<div id="renamePresetDlg"></div>
 		<div id="removePresetDlg"></div>
