@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity Tracker</title>
-    <link href="style_270218.css" type="text/css" rel="stylesheet" />
+    <link href="style_280218.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -1164,7 +1164,16 @@
                 if (item['photosLink'] != 'none') {
                     extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input class="hovs" type="image" src="photos-icon.png" width="60" height="60" /></a>';
                 }
-                $('#data' + i).append(extLinks + '<hr><ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
+				tags = $.parseJSON(item['dashboards']);
+				dashboardTags = '<span class="dashboardList">';
+				$.each(tags, function(d, itemd) {
+					if (d > 0) {
+						dashboardTags += ',&nbsp;';
+					}
+					dashboardTags += decodeURIComponent(itemd);
+				});
+				dashboardTags += '</span><hr>';
+                $('#data' + i).append(extLinks + '<hr>' + dashboardTags + '<ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
                     item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
                     '</td></tr><tr><td>Elevation gain</td><td>' +
                     '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
@@ -2008,7 +2017,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.15</strong></H1>
+        <H1><strong>Activity Tracker 3.16</strong></H1>
 		<hr>
     </div>
 	<div id="controls">

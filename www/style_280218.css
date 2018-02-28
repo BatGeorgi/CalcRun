@@ -357,3 +357,6 @@ tr.border_bottom td {
 .dashButton {
 	border: 1px solid black;
 }
+.dashboardList {
+	font-style: italic;
+}
