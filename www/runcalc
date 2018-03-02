@@ -1129,6 +1129,7 @@
                     item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + item['avgSpeed'] + '</td>' +
                     '<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>' +
                     '<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>' +
+					'<div id="feat' + i + '" class="ui-icon ui-icon-note ui-state-hover runitem"></div>' +
                     '<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem"></div>' +
                     '<div id="trash' + i + '" class="ui-icon ui-icon-trash ui-state-hover runitem"></div></td></tr>';
                 $('#dataHolder').append('<div style="display: none;" id="data' + i + '"></div>');
@@ -2017,7 +2018,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.16</strong></H1>
+        <H1><strong>Activity Tracker 3.2</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
