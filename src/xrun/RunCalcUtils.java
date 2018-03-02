@@ -510,6 +510,18 @@ public class RunCalcUtils {
     }
   }
   
+  String setFeatures(String fileName, String descr, List<String> links) {
+    try {
+      sqLite.setFeatures(fileName, descr != null ? descr : "", links);
+    } catch (SQLException e) {
+      return "DB Error - " + e.getMessage();
+    }
+    if (drive != null) {
+      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+    }
+    return null;
+  }
+  
   void deleteActivity(String fileName) {
     File file = new File(gpxBase, fileName);
     if (file.isFile() && !file.delete()) {
