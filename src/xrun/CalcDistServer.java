@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
@@ -1002,6 +1003,32 @@ class CalcDistHandler extends AbstractHandler {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
+
+  private void processSetFeatures(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
+    List<String> links = new ArrayList<String>(4);
+    PrintWriter pw = response.getWriter();
+    try {
+      for (int i = 0;; ++i) {
+        String link = baseRequest.getHeader("link" + i);
+        if (link == null || link.length() == 0) {
+          break;
+        }
+        links.add(link);
+      }
+      String status = rcUtils.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("genby"), links);
+      pw.println(status == null ? "Activity modified" : status);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
   
 	private boolean isAllowed(Request baseRequest) {
 		String origin = baseRequest.getHeader("Origin");
@@ -1089,6 +1116,8 @@ class CalcDistHandler extends AbstractHandler {
         processReorder(baseRequest, response, 1);
       } else if ("/saveDashOrder".equalsIgnoreCase(target)) {
         processReorder(baseRequest, response, 2);
+      } else if ("/setFeatures".equalsIgnoreCase(target)) {
+        processSetFeatures(baseRequest, response);
       }
 		}
   }

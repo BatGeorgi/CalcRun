@@ -27,6 +27,7 @@ public class SQLiteManager {
   private static final String DASHBOARDS_TABLE_NAME = "dashboards";
   private static final String PRESETS_TABLE_NAME = "presets";
   private static final String COORDS_TABLE_NAME = "coords";
+  private static final String FEATURES_TABLE_NAME = "features";
   
   static final String EXTERNAL_DASHBOARD = "External";
   static final String MAIN_DASHBOARD = "Main";
@@ -60,6 +61,8 @@ public class SQLiteManager {
   private static final String CREATE_STATEMENT_PRESETS_TABLE = "CREATE TABLE IF NOT EXISTS " + PRESETS_TABLE_NAME + 
       "(name text NOT NULL, types text NOT NULL, pattern text NOT NULL, startDate text NOT NULL, endDate text NOT NULL, "
       + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL, dashboard text NOT NULL)";
+  private static final String CREATE_STATEMENT_FEATURES_TABLE = "CREATE TABLE IF NOT EXISTS " + FEATURES_TABLE_NAME + 
+      "(id text NOT NULL, descr text not null, links text NOT NULL)";
 
 	private File dbActivities;
 	private File dbCoords;
@@ -391,6 +394,40 @@ public class SQLiteManager {
 	  executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
 	  executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
 	  executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
+	  executeCreate(CREATE_STATEMENT_FEATURES_TABLE);
+	}
+	
+	synchronized private void fillInFeatures(JSONObject activity) {
+	  activity.put("descr", "");
+	  ResultSet rs = executeQuery("SELECT * FROM " + FEATURES_TABLE_NAME + " WHERE id='" + activity.getString("genby") + "'", true);
+    try {
+      if (rs != null && rs.next()) {
+        activity.put("descr", rs.getString("descr"));
+        activity.put("links", rs.getString("links"));
+      }
+    } catch (SQLException e) {
+      System.out.println("Error working with features db - retrieving results");
+    }
+    if (!activity.has("links")) {
+      activity.put("links", new JSONArray().toString());
+    }
+	}
+	
+	synchronized void setFeatures(String id, String descr, List<String> links) throws SQLException {
+	  JSONArray arr = new JSONArray();
+	  for (String link : links) {
+	    arr.put(link);
+	  }
+	  ResultSet rs = executeQueryExc("SELECT * FROM " + FEATURES_TABLE_NAME + " WHERE id='" + id + "'", true);
+	  if (rs == null || !rs.next()) {
+	    executeQueryExc("INSERT INTO " + FEATURES_TABLE_NAME + " VALUES('" + id + "', '" + descr + "', '" + arr.toString() + "')", false);
+	  } else {
+	    executeQueryExc("UPDATE " + FEATURES_TABLE_NAME + " SET descr='" + descr + "', links='" + arr.toString() + "' WHERE id='" + id + "'", false);
+	  }
+	}
+	
+	synchronized private void removeFeatures(String id) throws SQLException {
+	  executeQueryExc("DELETE FROM " + FEATURES_TABLE_NAME + " WHERE id='" + id + "'", false);
 	}
 	
 	synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
@@ -590,6 +627,7 @@ public class SQLiteManager {
 	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CalcDist.CORRECTION_BG_SUMMER : CalcDist.CORRECTION_BG_WINTER;
 	  cal.setTimeInMillis(activity.getLong("timeRawMs") + corr);
 	  activity.put("startAt", CalcDist.formatDate(cal, true));
+	  fillInFeatures(activity);
 	  return activity;
 	}
 	
@@ -701,6 +739,12 @@ public class SQLiteManager {
 	
 	synchronized void deleteActivity(String fileName) {
 	  executeQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
+	  try {
+	    removeFeatures(fileName);
+	  } catch (Exception e) {
+	    System.out.println("Error removing features for " + fileName);
+      e.printStackTrace();
+	  }
 	  removeCoordsData(fileName);
 	}
 	
