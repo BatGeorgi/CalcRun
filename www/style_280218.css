@@ -360,3 +360,6 @@ tr.border_bottom td {
 .dashboardList {
 	font-style: italic;
 }
+#featDescr {
+	height: 150px;
+}
