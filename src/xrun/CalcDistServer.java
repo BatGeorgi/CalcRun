@@ -1021,7 +1021,7 @@ class CalcDistHandler extends AbstractHandler {
         }
         links.add(link);
       }
-      String status = rcUtils.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("genby"), links);
+      String status = rcUtils.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("descr"), links);
       pw.println(status == null ? "Activity modified" : status);
     } finally {
       pw.flush();
