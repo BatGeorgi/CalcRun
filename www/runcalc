@@ -1315,7 +1315,14 @@
                     $('#comparable').dialog('open');
                 });
 				$('#feat' + i).click(function() {
-                    $('#featDialog').html('<h3>Description</h3><textarea id="featDescr" row="10" cols="50"></textarea><p><h3>Media</h3><fieldset id="buildlinks"><legend>Links</legend></fieldset>' +
+					ilinks = $.parseJSON(item['links']);
+					console.log(ilinks);
+					flinkHtml = '';
+					$.each(ilinks, function(d, ilinks) {
+						flinkHtml += '<div class="fieldwrapper" id="field' + d + '"><input type="text" class="fieldname"/><input type="text" class="fieldlink"/><input type="button" class="remove" value="Remove"/></div>';
+					});
+                    $('#featDialog').html('<h3>Description</h3><textarea id="featDescr" row="10" cols="50">' + item['descr'] + '</textarea><p><h3>Media</h3>' +
+										  '<fieldset id="buildlinks"><legend>Links</legend>' + flinkHtml + '</fieldset>' +
 										  '<p><input type="button" value="Add" class="add" id="addLink" />');
                     $('#featDialog').dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text() + " features");
                     $('#featDialog').attr('file', item['genby']);
