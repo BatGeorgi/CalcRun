@@ -430,7 +430,23 @@ function initContent(data) {
 			dashboardTags += decodeURIComponent(itemd);
 		});
 		dashboardTags += '</span><hr>';
-		$('#data' + i).append(extLinks + '<hr>' + dashboardTags + '<ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
+		descrHtml = '';
+		if (item['descr'].length > 0) {
+			descrHtml = '<blockquote>' + decodeURIComponent(item['descr']) + '</blockquote><hr>';
+		}
+		ilinks = $.parseJSON(item['links']);
+		linksHtml = '';
+		if (ilinks.length > 0) {
+			for (e = 0; e < ilinks.length; e += 2) {
+				targ = decodeURIComponent(ilinks[e + 1]);
+				if (targ.indexOf("youtube") != -1 || targ.indexOf("youtu.be") != -1) {
+					linksHtml += '<image src="images/youtube.png"/>';
+				}
+				linksHtml += '<a href="' + decodeURIComponent(ilinks[e + 1]) + '" target="_blank">' + decodeURIComponent(ilinks[e]) + '</a><p>';
+			}
+			linksHtml += '<hr>';
+		}
+		$('#data' + i).append(extLinks + '<hr>' + dashboardTags + descrHtml + linksHtml + '<ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
 			item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
 			'</td></tr><tr><td>Elevation gain</td><td>' +
 			'<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
