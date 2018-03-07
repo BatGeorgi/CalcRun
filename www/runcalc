@@ -629,12 +629,18 @@
                 hide: "blind",
                 buttons: {
                     "Save": function() {
+						feats = $(".featfield");
+						flinks = [];
+						$.each(feats, function(i, feat) {
+							flinks.push(encodeURIComponent(feat.value));
+						});
                         $.ajax({
                             url: 'setFeatures',
                             headers: {
                                 'Content-Type': 'application/json',
 								'descr': encodeURIComponent($('#featDescr').val()),
-								'activity': $('#featDialog').attr('name')
+								'activity': $('#featDialog').attr('name'),
+								'links': flinks
                             },
                             method: 'POST',
                             dataType: 'json',
@@ -651,7 +657,7 @@
                                     $('#infoDialog').dialog('open');
                                 },
                                 400: function(xhr) {
-                                    $('#infoDialog').html('TODO!');
+                                    $('#infoDialog').html('Bad data format');
                                     $('#infoDialog').dialog('option', 'title', 'Error');
                                     $('#infoDialog').dialog('open');
                                 }
@@ -663,7 +669,7 @@
 						$(this).dialog("close");
 					}
                 },
-                width: Math.min($(window).width() * 0.7, 600),
+                width: Math.min($(window).width() * 0.8, 700),
                 height: Math.min($(window).height() * 0.7, 600),
                 create: function(event) {
                     $(event.target).parent().css({
@@ -1106,13 +1112,15 @@
 				intId = (lastField && lastField.length && lastField.data("idx") + 1) || 1;
 				fieldWrapper = $('<div class="fieldwrapper" id="field' + intId + '"/>');
 				fieldWrapper.data("idx", intId);
-				fName = $('<input type="text" class="fieldname" />');
-				fLink = $('<input type="text" class="fieldlink" />');
+				fName = $('<input type="text" class="featfield" />');
+				fLink = $('<input type="text" class="featfield" />');
 				removeButton = $('<input type="button" class="remove" value="Remove" />');
 				removeButton.click(function() {
 					$(this).parent().remove();
 				});
+				fieldWrapper.append('<b>Name</b>&nbsp;');
 				fieldWrapper.append(fName);
+				fieldWrapper.append('&nbsp;<b>Link</b>&nbsp;');
 				fieldWrapper.append(fLink);
 				fieldWrapper.append(removeButton);
 				$("#buildlinks").append(fieldWrapper);
@@ -1319,14 +1327,19 @@
 				$('#feat' + i).click(function() {
 					ilinks = $.parseJSON(item['links']);
 					flinkHtml = '';
-					$.each(ilinks, function(d, ilinks) {
-						flinkHtml += '<div class="fieldwrapper" id="field' + d + '"><input type="text" class="fieldname"/><input type="text" class="fieldlink"/><input type="button" class="remove" value="Remove"/></div>';
-					});
+					for (d = 0; d < ilinks.length; d += 2) {
+						linkInd = parseInt(d / 2);
+						flinkHtml += '<div class="fieldwrapper" id="field' + linkInd + '"><b>Name</b>&nbsp;<input type="text" class="featfield" value="' + decodeURIComponent(ilinks[d]) + '"/>' +
+						'&nbsp;<b>Link</b>&nbsp;<input type="text" class="featfield" value="' + decodeURIComponent(ilinks[d + 1]) + '"/><input type="button" class="remove" value="Remove"/></div>';
+					}
 					$('#featDialog').attr('name', item['genby']);
                     $('#featDialog').html('<h3>Description</h3><textarea id="featDescr" row="10" cols="50">' + decodeURIComponent(item['descr']) + '</textarea><p><h3>Media</h3>' +
 										  '<fieldset id="buildlinks"><legend>Links</legend>' + flinkHtml + '</fieldset>' +
 										  '<p><input type="button" value="Add" class="add" id="addLink" />');
-                    $('#featDialog').dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text() + " features");
+					$('.remove').click(function() {
+						$(this).parent().remove();
+					});
+                    $('#featDialog').dialog('option', 'title', 'Edit ' + $('#item' + i).text() + ' ' + $('#date' + i).text() + " Features");
                     $('#featDialog').attr('file', item['genby']);
                     $('#featDialog').dialog('open');
 					initFeatures();
