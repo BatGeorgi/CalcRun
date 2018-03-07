@@ -1021,7 +1021,6 @@ class CalcDistHandler extends AbstractHandler {
           links.add(st.nextToken());
         }
       }
-      System.out.println("links = " + links);
       String status = rcUtils.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("descr"), links);
       pw.println(status == null ? "Activity modified" : status);
     } finally {
