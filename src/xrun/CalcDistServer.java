@@ -1014,13 +1014,14 @@ class CalcDistHandler extends AbstractHandler {
     List<String> links = new ArrayList<String>(4);
     PrintWriter pw = response.getWriter();
     try {
-      for (int i = 0;; ++i) {
-        String link = baseRequest.getHeader("link" + i);
-        if (link == null || link.length() == 0) {
-          break;
+      String linkStr = baseRequest.getHeader("links");
+      if (linkStr != null) {
+        StringTokenizer st = new StringTokenizer(linkStr, ",", false);
+        while (st.hasMoreTokens()) {
+          links.add(st.nextToken());
         }
-        links.add(link);
       }
+      System.out.println("links = " + links);
       String status = rcUtils.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("descr"), links);
       pw.println(status == null ? "Activity modified" : status);
     } finally {
