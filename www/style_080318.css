@@ -363,3 +363,6 @@ tr.border_bottom td {
 #featDescr {
 	height: 150px;
 }
+.xdash {
+	display: inline-block;
+}
