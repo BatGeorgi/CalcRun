@@ -33,6 +33,26 @@
 	</style>
 
 	<script>
+	
+		function checkCookieVal(cookieVal) {
+			$.ajax({
+				url: 'checkCookie',
+				method: 'POST',
+				dataType: 'json',
+				statusCode: {
+					200: function (xhr) {
+						$('#loginButton').prop("disabled", true);
+						$('#loginButton').text('Authorized');
+						$('#loginButton').css({
+							'cursor': 'default'
+						});
+					},
+					401: function (xhr) {
+						$('#loginButton').prop("disabled", false);
+					}
+				}
+			});
+		}
 
         $(document).ready(function() {
             checkWidth();
@@ -177,6 +197,19 @@
 				}
 				$('#filters').toggle();
 			});
+			$('#rescanButton').click(function () {
+				$('#rescanDialog').html('Really rescan remote folder for activities?');
+				$('#rescanDialog').dialog('option', 'title', 'Potentially unsafe operation');
+				$('#rescanDialog').dialog('open');
+			});
+			$('#aboutButton').click(function () {
+				$('#aboutDialog').html('Powered by <b><i>Raspberry PI 3, Garmin Forerunner 210</i></b><p>Using <b><i>Java, Jetty Server, SQLite DB, JQuery UI, Odometer, FusionCharts<p></i></b>'
+					+ '<ul><li><a href="https://connect.garmin.com/modern/profile/BatGeorgi" target="_blank">Garmin Connect</a></li>'
+					+ '<li><a href="https://www.strava.com/athletes/22679541" target="_blank">Strava</a></li>'
+					+ '<li><a href="https://drive.google.com/drive/folders/0B22GzCU9umn-SFJlOUd4REJGQUU" target="_blank">Google Drive</a></li></ul>');
+				$('#aboutDialog').dialog('option', 'title', 'About');
+				$('#aboutDialog').dialog('open');
+			});
             getBest();
             var months = {
                 'Jan': 0,
@@ -286,12 +319,13 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.2.1</strong></H1>
+        <H1><strong>Activity Tracker 3.2.2</strong></H1>
 		<hr>
     </div>
 	<div id="controls">
-		<a href="upload"><input id="importButton" type="image" src="button-dark-plus-icon.png" width="40" height="40" /></a>
+		<img id="importButton" src="button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;"/>
 		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
+		<input id="aboutButton" type="image" src="images/info.png" />
 		<button id="loginButton" class="controlButton">Login</button>
 		<button id="hideFilters" class="controlButton">Show Filters</button>
 	</div><p><p><p><p>
@@ -473,6 +507,7 @@
 	<div id="confirmDialogDash"></div>
 	<div id="confirmDialogPresets"></div>
 	<div id="featDialog"></div>
+	<div id="aboutDialog"></div>
 </body>
 
 </html>
