@@ -579,11 +579,6 @@ function initContent(data) {
 	for (i = 0; i < itemsDS.length; ++i) {
 		$('#runs tr:eq(' + (i + 1) + ') td:not(:last-child)').click(itemsDS[i]);
 	}
-	$('#rescanButton').click(function () {
-		$('#rescanDialog').html('Really rescan remote folder for activities?');
-		$('#rescanDialog').dialog('option', 'title', 'Potentially unsafe operation');
-		$('#rescanDialog').dialog('open');
-	});
 }
 
 function fetch(getWMTotals) {
@@ -933,26 +928,6 @@ function initWeeklyTotals(data) {
 		$('input[name=selectTypeW],[name=selectYearW]').change(f);
 		if (i == 0) {
 			f.call();
-		}
-	});
-}
-
-function checkCookieVal(cookieVal) {
-	$.ajax({
-		url: 'checkCookie',
-		method: 'POST',
-		dataType: 'json',
-		statusCode: {
-			200: function (xhr) {
-				$('#loginButton').prop("disabled", true);
-				$('#loginButton').text('Authorized');
-				$('#loginButton').css({
-					'cursor': 'default'
-				});
-			},
-			401: function (xhr) {
-				$('#loginButton').prop("disabled", false);
-			}
 		}
 	});
 }

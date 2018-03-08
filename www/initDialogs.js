@@ -799,6 +799,22 @@ function initControlDialogs() {
 	});
 }
 
+function initAboutDialog() {
+	$('#aboutDialog').dialog({
+		autoOpen: false,
+		modal: false,
+		show: "blind",
+		hide: "blind",
+		buttons: {
+			"Close": function () {
+				$(this).dialog("close");
+			}
+		},
+		width: 450,
+		height: 300
+	});
+}
+
 function initDialogs() {
 	initDashboardDialogs();
 	initActionDialogs();
@@ -806,4 +822,5 @@ function initDialogs() {
 	initPresetDialogs();
 	initControlDialogs();
 	initControlDialogs();
+	initAboutDialog();
 }
