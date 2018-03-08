@@ -968,10 +968,13 @@ function initDashboards(fetchAfterInit) {
 		statusCode: {
 			200: function (data) {
 				arr = data['dashboards'];
-				dashHtml = '<ul id="dashSort">';
+				dashHtml = '<ul class="xdash">';
 				dashCount = arr.length;
 				$.each(arr, function (i, item) {
 					dashHtml += '<li class="dashButton" id="dashboard' + i + '">' + decodeURIComponent(item) + '</li>';
+					if (i == 0 && dashCount > 1) {
+						dashHtml += '</ul><ul id="dashSort" class="xdash">';
+					}
 				});
 				$('#allDash').html(dashHtml + '</ul>');
 				$.each(arr, function (i, item) {

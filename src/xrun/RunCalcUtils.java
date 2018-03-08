@@ -750,9 +750,7 @@ public class RunCalcUtils {
           sqLite.reorderPresets(ordered);
           break;
         case 2:
-          if (ordered.size() > 0 && !SQLiteManager.MAIN_DASHBOARD.equals(ordered.get(0))) {
-            return "Main dashboard MUST be first!";
-          }
+          ordered.add(0, SQLiteManager.MAIN_DASHBOARD);
           sqLite.reorderDashboards(ordered);
       }
     } catch (SQLException e) {
