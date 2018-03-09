@@ -30,6 +30,11 @@
 	</style>
 
     <script>
+		function endsWith(str, suff) {
+			pos = str.length - suff.length;
+			return str.indexOf(suff, pos) != -1;
+		}
+		
         function formatEleDiff(diff) {
             if (diff == 0) {
                 return '0';
@@ -74,7 +79,7 @@
 				runT = 'Run B';
 			}
 			var gb = item['genby'];
-			if (gb.endsWith('.gpx')) {
+			if (endsWith(gb, '.gpx')) {
 				gb = gb.substring(0, gb.length - 4);
 			}
 			descrHtml = '';
