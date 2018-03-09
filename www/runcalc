@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity Tracker</title>
-    <link href="style_080318.css" type="text/css" rel="stylesheet" />
+    <link href="style_090318.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -319,21 +319,22 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.2.2</strong></H1>
+        <H1><strong>Activity Tracker 3.3</strong></H1>
 		<hr>
     </div>
+	
+	<div id="userData">
+	<div id="mainBar">
 	<div id="controls">
 		<img id="importButton" src="button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;"/>
 		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
-		<input id="aboutButton" type="image" src="images/info.png" />
+		<input id="aboutButton" type="image" src="images/about.png" width="40" height="40"/>
 		<button id="loginButton" class="controlButton">Login</button>
 		<button id="hideFilters" class="controlButton">Show Filters</button>
-	</div><p><p><p><p>
+	</div>
 	<div id="createDashboard"></div>
 	<div id="renameDashboard"></div>
 	<div id="removeDashboard"></div>
-	<div id="userData">
-	<div id="mainBar">
     <div id="filters" style="display:none">
         <fieldset>
             <legend class="legend-cap">Activity Type</legend>

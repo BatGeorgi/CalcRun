@@ -185,6 +185,12 @@ tr.border_bottom td {
 }
 #hideFilters {
 	width : 140px;
+	float: right;
+	margin-right: 5px;
+}
+#loginButton {
+	float: right;
+	margin-right: 50px;
 }
 .dashButton {
 	box-shadow: rgb(39, 104, 115) 0px 10px 14px -7px;
@@ -246,9 +252,8 @@ tr.border_bottom td {
 	margin: auto;
 	text-align: center;
 	color: red;
-	font-size: 22px;
+	font-size: 28px;
 	text-shadow: 1px 1px black;
-	text-decoration: underline;
 	display: inline-block;
 }
 #dashActions {
@@ -262,9 +267,8 @@ tr.border_bottom td {
 	margin: auto;
 	text-align: center;
 	color: #6977e0;
-	font-size: 22px;
+	font-size: 28px;
 	text-shadow: 1px 1px black;
-	text-decoration: underline;
 }
 #bestTotalsBtn {
 	font-weight: bold;
