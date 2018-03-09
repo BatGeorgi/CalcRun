@@ -1,3 +1,8 @@
+function endsWith(str, suff) {
+	pos = str.length - suff.length;
+	return str.indexOf(suff, pos) != -1;
+}
+
 function initDashboardDialogs() {
 	$('#createDashboard').dialog({
 		autoOpen: false,
@@ -390,14 +395,15 @@ function initActionDialogs() {
 							});
 							$('#selectComp :nth-child(' + index + ')').prop('selected', true);
 							f1 = $('#comparable').attr('file1');
-							if (f1.endsWith(".gpx")) {
+							if (endsWith(f1, ".gpx")) {
 								f1 = f1.substring(0, f1.length - 4);
 							}
 							f2 = $('#selectComp').find(':selected').attr('genby');
-							if (f2.endsWith(".gpx")) {
+							if (endsWith(f2, ".gpx")) {
 								f2 = f2.substring(0, f2.length - 4);
 							}
-							var extLinkComp = '<hr><a href="compare?a1=' + f1 + '&a2=' + f2 + '" target="_blank"><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" /></a>';
+							compLink = 'compare?a1=' + f1 + '&a2=' + f2;
+							var extLinkComp = '<hr><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + compLink + '\', \'_blank\');return false;" />';
 							$('#compareResults').html(extLinkComp + '<hr><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
 								'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
 								'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +

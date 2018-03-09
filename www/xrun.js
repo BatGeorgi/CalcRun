@@ -305,6 +305,11 @@ function initFeatures() {
 	});
 }
 
+function endsWith(str, suff) {
+	pos = str.length - suff.length;
+	return str.indexOf(suff, pos) != -1;
+}
+
 function initContent(data) {
 	itemsDS = [];
 	$('#dataHolder').html('');
@@ -403,7 +408,7 @@ function initContent(data) {
 				'</td><td>' + sp['accumSpeed'] + '</td></tr>';
 		});
 		splitHtml += '</tbody></table></span>';
-		filename = item['genby'].endsWith('.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
+		filename = endsWith(item['genby'], '.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
 		itemsDS.push(function () {
 			$('#ui' + i).dialog(dialog);
 			$('#ui' + i).html($('#data' + i).html());
@@ -411,15 +416,17 @@ function initContent(data) {
 			$('#ui' + i).dialog('open');
 		});
 		var origData = item['origData'];
-		var extLinks = '<a href="' + filename + '" target="_blank"><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" /></a>';
+		var extLinks = '<input class="hovs" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + filename + '\', \'_blank\');return false;" />';
 		if (item['garminLink'] != 'none') {
-			extLinks += '<a href="' + item['garminLink'] + '" target="_blank"><input class="hovs" type="image" src="garmin-icon.png" width="60" height="60" /></a>';
+			extLinks += '<input class="hovs" type="image" src="garmin-icon.png" width="60" height="60" onclick="window.open(\'' + item['garminLink'] + '\', \'_blank\');return false;" />';
 		}
 		if (item['ccLink'] != 'none') {
-			extLinks += '<a href="' + decodeURIComponent(item['ccLink']) + '" target="_blank"><input class="hovs" type="image" src="relivecc-icon.png" width="60" height="60" /></a>';
+			ccl = decodeURIComponent(item['ccLink']);
+			extLinks += '<input class="hovs" type="image" src="relivecc-icon.png" width="60" height="60" onclick="window.open(\'' + ccl + '\', \'_blank\');return false;" />';
 		}
 		if (item['photosLink'] != 'none') {
-			extLinks += '<a href="' + decodeURIComponent(item['photosLink']) + '" target="_blank"><input class="hovs" type="image" src="photos-icon.png" width="60" height="60" /></a>';
+			phl = decodeURIComponent(item['photosLink']);
+			extLinks += '<input class="hovs" type="image" src="photos-icon.png" width="60" height="60" onclick="window.open(\'' + phl + '\', \'_blank\');return false;" />';
 		}
 		tags = $.parseJSON(item['dashboards']);
 		dashboardTags = '<span class="dashboardList">';
