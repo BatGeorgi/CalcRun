@@ -776,11 +776,7 @@ function initControlDialogs() {
 							$('#infoDialog').html('Logged in!');
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
-							$('#loginButton').prop("disabled", true);
-							$('#loginButton').text("Authorized");
-							$('#loginButton').css({
-								'cursor': 'default'
-							});
+							$('#loginButton').text("Logout");
 						},
 						401: function (xhr) {
 							$('#infoDialog').html('Please sign in!');
@@ -802,6 +798,49 @@ function initControlDialogs() {
 		},
 		width: 450,
 		height: 250
+	});
+	$('#logout').dialog({
+		autoOpen: false,
+		modal: true,
+		show: "blind",
+		hide: "blind",
+		buttons: {
+			"Logout": function () {
+				$.ajax({
+					url: 'removeCookie',
+					headers: {
+						'Content-Type': 'application/txt'
+					},
+					method: 'POST',
+					dataType: 'json',
+					statusCode: {
+						200: function (xhr) {
+							document.cookie = 'xruncalc=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+							$('#infoDialog').html('Logged out');
+							$('#infoDialog').dialog('option', 'title', 'Status');
+							$('#infoDialog').dialog('open');
+							$('#loginButton').text("Login");
+						},
+						401: function (xhr) {
+							$('#infoDialog').html('Not logged in!');
+							$('#infoDialog').dialog('option', 'title', 'Not authorized');
+							$('#infoDialog').dialog('open');
+						},
+						500: function (xhr) {
+							$('#infoDialog').html('Internal server error :(');
+							$('#infoDialog').dialog('option', 'title', 'Error');
+							$('#infoDialog').dialog('open');
+						}
+					}
+				});
+				$(this).dialog("close");
+			},
+			"Cancel": function () {
+				$(this).dialog("close");
+			}
+		},
+		width: 250,
+		height: 150
 	});
 }
 
