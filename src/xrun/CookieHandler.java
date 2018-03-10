@@ -33,6 +33,12 @@ class CookieHandler extends TimerTask {
     return sqLite.isValidCookie(cookie.getValue());
   }
   
+  void removeCookie(Cookie cookie) {
+  	if (COOKIE_NAME.equals(cookie.getName())) {
+  		sqLite.deleteCookie(cookie.getValue());
+  	}
+  }
+  
   Cookie generateCookie() {
     String uid = null;
     Calendar cal = new GregorianCalendar(TimeZone.getDefault());

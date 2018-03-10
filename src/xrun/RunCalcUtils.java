@@ -67,6 +67,10 @@ public class RunCalcUtils {
     return cookieHandler.isAuthorized(cookie);
   }
   
+  void removeCookie(Cookie cookie) {
+  	cookieHandler.removeCookie(cookie);
+  }
+  
   void rescan() {
     String[] all = gpxBase.list();
     boolean entriesAdded = false;

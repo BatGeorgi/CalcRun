@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Activity Tracker</title>
-    <link href="style_090318.css" type="text/css" rel="stylesheet" />
+    <link href="style_100318.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -41,11 +41,7 @@
 				dataType: 'json',
 				statusCode: {
 					200: function (xhr) {
-						$('#loginButton').prop("disabled", true);
-						$('#loginButton').text('Authorized');
-						$('#loginButton').css({
-							'cursor': 'default'
-						});
+						$('#loginButton').text('Logout');
 					},
 					401: function (xhr) {
 						$('#loginButton').prop("disabled", false);
@@ -146,10 +142,16 @@
             });
             initDialogs();
             $("#loginButton").click(function() {
-                $('#login').html('<table><tbody><tr><td>User </td><td><input type="text" id="loginUser" value="BatGeorgi"/></td></tr>' +
+                if ($('#loginButton').text() == 'Logout') {
+                    $('#logout').html('Logout BatGeorgi?');
+                    $('#logout').dialog('option', 'title', 'Logout');
+                    $('#logout').dialog('open');
+                } else {
+                    $('#login').html('<table><tbody><tr><td>User </td><td><input type="text" id="loginUser" value="BatGeorgi"/></td></tr>' +
                     '<tr><td>Password </td><td><input type="password" id="loginPassword"/></td></tr></tbody></table>');
-                $('#login').dialog('option', 'title', 'Login');
-                $('#login').dialog('open');
+                    $('#login').dialog('option', 'title', 'Login');
+                    $('#login').dialog('open');
+                }
             });
 			$('#createDashboardButton').click(function () {
 				$('#createDashboard').html('Dashboard name&nbsp;<input type="text" id="cdName" />');
@@ -319,7 +321,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.3.1</strong></H1>
+        <H1><strong>Activity Tracker 3.4</strong></H1>
 		<hr>
     </div>
 	
@@ -509,6 +511,7 @@
 	<div id="confirmDialogPresets"></div>
 	<div id="featDialog"></div>
 	<div id="aboutDialog"></div>
+    <div id="logout"></div>
 </body>
 
 </html>

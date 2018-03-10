@@ -110,7 +110,7 @@ class CalcDistHandler extends AbstractHandler {
   
   private static final String SEP = "#$^";
 
-  static boolean isAuthorized(String password) {
+  private static boolean isAuthorized(String password) {
     if (password == null) {
       return false;
     }
@@ -1030,6 +1030,29 @@ class CalcDistHandler extends AbstractHandler {
     baseRequest.setHandled(true);
   }
   
+  private void processRemoveCookie(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+  	if (!isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
+    PrintWriter pw = response.getWriter();    
+    try {
+    	Cookie[] cookies = baseRequest.getCookies();
+  		if (cookies != null) {
+  			for (Cookie cookie : cookies) {
+  				rcUtils.removeCookie(cookie);
+  			}
+  		}
+      pw.println("Logged out!");
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
+  
 	private boolean isAllowed(Request baseRequest) {
 		String origin = baseRequest.getHeader("Origin");
 		if (origin == null) {
@@ -1118,6 +1141,8 @@ class CalcDistHandler extends AbstractHandler {
         processReorder(baseRequest, response, 2);
       } else if ("/setFeatures".equalsIgnoreCase(target)) {
         processSetFeatures(baseRequest, response);
+      } else if ("/removeCookie".equalsIgnoreCase(target)) {
+      	processRemoveCookie(baseRequest, response);
       }
 		}
   }
