@@ -1053,6 +1053,25 @@ class CalcDistHandler extends AbstractHandler {
     baseRequest.setHandled(true);
   }
   
+  private void processGetComps(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    String activity = baseRequest.getHeader("activity");
+    response.setContentType("application/json");
+    PrintWriter pw = response.getWriter();    
+    try {
+      JSONObject json = rcUtils.getCompOptions(activity);
+      if (json == null) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      } else {
+        pw.println(json.toString());
+        response.setStatus(HttpServletResponse.SC_OK);
+      }
+    } finally {
+      pw.flush();
+    }
+    baseRequest.setHandled(true);
+  }
+  
 	private boolean isAllowed(Request baseRequest) {
 		String origin = baseRequest.getHeader("Origin");
 		if (origin == null) {
@@ -1143,6 +1162,8 @@ class CalcDistHandler extends AbstractHandler {
         processSetFeatures(baseRequest, response);
       } else if ("/removeCookie".equalsIgnoreCase(target)) {
       	processRemoveCookie(baseRequest, response);
+      } else if ("/getCompOptions".equalsIgnoreCase(target)) {
+        processGetComps(baseRequest, response);
       }
 		}
   }

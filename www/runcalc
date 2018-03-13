@@ -321,7 +321,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.4</strong></H1>
+        <H1><strong>Activity Tracker 3.45</strong></H1>
 		<hr>
     </div>
 	
@@ -436,7 +436,7 @@
                     <th>Time</th>
                     <th>Pace&nbsp;&nbsp;</th>
                     <th>Speed&nbsp;&nbsp;</th>
-                    <th>Elevation est.</th>
+                    <th>Elevation&nbsp;&nbsp;</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -501,6 +501,7 @@
 	<div id="wTotals"></div>
     <div id="dataHolder" />
     <div id="comparable">
+		<div id="comparePre" />
         <div id="compareResults" />
     </div>
     <div id="infoDialog"></div>
