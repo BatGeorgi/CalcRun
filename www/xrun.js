@@ -1,5 +1,52 @@
 var compactDate = false;
 
+function compFast(file2) {
+	$.ajax({
+		url: 'compare',
+		method: 'POST',
+		dataType: 'json',
+		headers: {
+			'Content-Type': 'application/json',
+			'file1': $('#comparable').attr('file1'),
+			'file2': file2
+		},
+		statusCode: {
+			200: function (data) {
+				general = data['general'];
+				times = data['times'];
+				tt = '';
+				$.each(times, function (i, sp) {
+					tt += '<tr><td><strong>' + round(sp['point']) + '</strong></td><td>' + colorDiff1(sp['time1'], sp['time2']) + '</td><td>' + colorDiff1(sp['time2'], sp['time1']) + '</td><td>' + colorDiff(sp['currentDiff']) + '</td><td>' + colorDiff(sp['totalDiff']) + '</td></tr>';
+				});
+				f1 = $('#comparable').attr('file1');
+				if (endsWith(f1, ".gpx")) {
+					f1 = f1.substring(0, f1.length - 4);
+				}
+				if (endsWith(file2, ".gpx")) {
+					file2 = file2.substring(0, file2.length - 4);
+				}
+				compLink = 'compare?a1=' + f1 + '&a2=' + file2;
+				var extLinkComp = '<hr><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + compLink + '\', \'_blank\');return false;" />';
+				$('#compareResults').html(extLinkComp + '<hr><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
+					'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
+					'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
+					'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
+					'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr>' +
+					'<tr><td>Running|>9km/h| time</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
+					'<tr><td>Running|>9km/h| distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
+					'<tr><td>Running|>9km/h| elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
+					'<tr><td>Running|>9km/h| elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
+				$('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>Point(km)</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
+			},
+			400: function (xhr) {
+				$('#infoDialog').html('Activities may be removed :(');
+				$('#infoDialog').dialog('option', 'title', 'Error');
+				$('#infoDialog').dialog('open');
+			}
+		}
+	});
+}
+
 function initPortableDialogs() {
 	$('#overall').dialog({
 		autoOpen: false,
@@ -379,6 +426,12 @@ function initContent(data) {
 	var chike = 0;
 	var cwalk = 0;
 	var coth = 0;
+	isAllTrail = data['isAllTrail'];
+	if (isAllTrail) {
+		$('#runs tr:eq(0) th:eq(7)').html("RunDist&nbsp;&nbsp;");
+	} else {
+		$('table tr:eq(0) th:eq(7)').html("Speed&nbsp;&nbsp;");
+	}
 	$.each(all, function (i, item) {
 		var isMod = item['isModified'] == 'y';
 		dateStr = item['date'];
@@ -387,7 +440,7 @@ function initContent(data) {
 		}
 		runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div class="runitem" id="item' + i + '">' + (isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
 			'</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
-			item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + item['avgSpeed'] + '</td>' +
+			item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + (isAllTrail ? item['distRunning'] : item['avgSpeed']) + '</td>' +
 			'<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>' +
 			'<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>' +
 			'<div id="feat' + i + '" class="ui-icon ui-icon-note ui-state-hover runitem"></div>' +
@@ -520,10 +573,35 @@ function initContent(data) {
 	});
 	$.each(all, function (i, item) {
 		$('#compare' + i).click(function () {
-			$('#comparable').html('Compare with <select id="selectComp">' + optsAll + '</select><div id="compareResults" />');
-			$('#comparable').dialog('option', 'title', 'Compare ' + $('#item' + i).text() + ' ' + $('#date' + i).text());
+			$('#comparable').html('Compare with <select id="selectComp">' + optsAll + '</select><div id="comparePre" /><div id="compareResults" />');
+			$('#comparable').dialog('option', 'title', 'Compare ' + $('#item' + i).text() + ' ' + $('#date' + i).text() + ', ' + item['dist'] + "km");
 			$('#comparable').attr('file1', item['genby']);
 			$('#comparable').dialog('open');
+			$.ajax({
+					url: 'getCompOptions',
+					method: 'POST',
+					dataType: 'json',
+					headers: {
+						'Content-Type': 'application/json',
+						'activity': item['genby']
+					},
+					statusCode: {
+						200: function (data) {
+							comps = data['comps'];
+							hotOpts = '<hr><p><ul>';
+							$.each(comps, function (h, xitem) {
+								hotOpts += '<li class="hovs" id="compOpt' + h + '">' + decodeURIComponent(xitem['text']) + '</li>';
+							});
+							$('#comparePre').html(hotOpts + '</ul>');
+							$.each(comps, function (h, xitem) {
+								$('#compOpt' + h).click(function () {
+									console.log(xitem['id']);
+									compFast(xitem['id']);
+								});
+							});
+						}
+					}
+			});
 		});
 		$('#feat' + i).click(function () {
 			ilinks = $.parseJSON(item['links']);

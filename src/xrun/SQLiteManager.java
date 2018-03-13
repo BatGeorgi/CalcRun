@@ -1074,6 +1074,93 @@ public class SQLiteManager {
 	  }
 	}
 	
+	private static boolean areTypesCompatible(String type1, String type2) {
+	  if (type1.equals(type2)) {
+	    return true;
+	  }
+	  if (RunCalcUtils.TRAIL.equals(type1)) {
+	    return RunCalcUtils.HIKING.equals(type2) || RunCalcUtils.UPHILL.equals(type2);
+	  }
+	  if (RunCalcUtils.HIKING.equals(type1)) {
+	    return RunCalcUtils.TRAIL.equals(type2) || RunCalcUtils.UPHILL.equals(type2);
+	  }
+	  if (RunCalcUtils.UPHILL.equals(type1)) {
+	    return RunCalcUtils.HIKING.equals(type2) || RunCalcUtils.TRAIL.equals(type2);
+	  }
+	  return false;
+	}
+	
+  synchronized JSONObject getCompOptions(String activity) {
+    JSONObject json = null;
+    Map<String, Boolean> dashboards = new HashMap<String, Boolean>();
+    String type = null;
+    double dist = 0.0;
+    double speed = 0.0;
+    List<DataEntry> entries = new ArrayList<>();
+    try {
+      ResultSet rs = executeQueryExc("SELECT dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+      if (rs == null || !rs.next()) {
+        return null;
+      }
+      type = rs.getString("type");
+      dist = rs.getDouble("distRaw");
+      speed = rs.getDouble("avgSpeedRaw");
+      JSONArray arr = new JSONArray(rs.getString("dashboards"));
+      for (int i = 0; i < arr.length(); ++i) {
+        String dash = arr.getString(i);
+        if (!MAIN_DASHBOARD.equals(dash)) {
+          dashboards.put(dash, Boolean.TRUE);
+        }
+      }
+      rs = executeQueryExc("SELECT genby, dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME, true);
+      while (rs != null && rs.next()) {
+        if (activity.equals(rs.getString("genby"))) {
+          continue;
+        }
+        if (!areTypesCompatible(type, rs.getString("type"))) {
+          continue;
+        }
+        double sspeed = rs.getDouble("avgSpeedRaw");
+        if (0.66 * speed > sspeed || 1.5 * speed < sspeed) {
+          continue;
+        }
+        arr = new JSONArray(rs.getString("dashboards"));
+        boolean dashboardMatch = false;
+        for (int i = 0; i < arr.length(); ++i) {
+          if (dashboards.containsKey(arr.get(i))) {
+            dashboardMatch = true;
+            break;
+          }
+        }
+        if (!dashboardMatch) {
+          continue;
+        }
+        entries.add(new DataEntry(rs.getString("genby"), Math.abs(dist - rs.getDouble("distRaw"))));
+      }
+      Collections.sort(entries);
+      int len = Math.min(10, entries.size());
+      arr = new JSONArray();
+      for (int i = 0; i < len; ++i) {
+        String id = entries.get(i).getId();
+        rs = executeQueryExc("SELECT name, type, date, dist FROM " + RUNS_TABLE_NAME + " WHERE genby='" + id + "'",
+            true);
+        if (rs != null && rs.next()) {
+          JSONObject cr = new JSONObject();
+          cr.put("id", id);
+          cr.put("text", rs.getString("name") + ' ' + rs.getString("type") + ", " + rs.getString("date")
+              + "| " + rs.getString("dist") + "km");
+          arr.put(cr);
+        }
+      }
+      json = new JSONObject();
+      json.put("comps", arr);
+    } catch (SQLException e) {
+      System.out.println("Error getting comparison options " + e);
+      e.printStackTrace();
+    }
+    return json;
+  }
+	
 	synchronized void close() {
 	  try {
       if (conn != null) {
@@ -1093,4 +1180,26 @@ public class SQLiteManager {
 	  connDB2 = null;
 	}
 
+}
+
+class DataEntry implements Comparable<DataEntry>{
+  
+  private String id;
+  private double diff;
+  
+  DataEntry(String id, double diff) {
+    this.id = id;
+    this.diff = diff;
+  }
+
+  public int compareTo(DataEntry arg0) {
+    if (diff == arg0.diff) {
+      return 0;
+    }
+    return diff < arg0.diff ? -1 : 1;
+  }
+  
+  String getId() {
+    return id;
+  }
 }

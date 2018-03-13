@@ -231,6 +231,7 @@ public class RunCalcUtils {
     }
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
+    boolean isAllTrail = true;
     List<JSONObject> matched = filter(run, trail, uphill, hike, walk, other, startDate, endDate,
         minDistance, maxDistance);
     Iterator<JSONObject> it = matched.iterator();
@@ -258,8 +259,13 @@ public class RunCalcUtils {
       totals.put("avgDist", String.format("%.3f", totals.getDouble("totalDistance") / (double) count));
     }
     for (int i = 1; i < matched.size(); ++i) {
-      activities.put(matched.get(i));
+      JSONObject jobj = matched.get(i);
+      activities.put(jobj);
+      if (!RunCalcUtils.TRAIL.equals(jobj.getString("type"))) {
+        isAllTrail = false;
+      }
     }
+    result.put("isAllTrail", isAllTrail);
     result.put("activities", activities);
     result.put("charts", ChartUtils.getResultCharts(activities));
     if (getWMT) {
@@ -582,6 +588,10 @@ public class RunCalcUtils {
   
   JSONObject getDashboards() {
     return sqLite.getDashboards();
+  }
+  
+  JSONObject getCompOptions(String activity) {
+    return sqLite.getCompOptions(activity);
   }
   
   String addToDashboard(String activity, String dashboard) {
