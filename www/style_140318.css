@@ -109,6 +109,9 @@ li {
 .red {
 	color: #db0832;
 }
+.highlight li:hover {
+  background-color: #ffff99;
+}
 .highlight tr:nth-child(2n) {
   background-color: #e9e5e5;
 }
