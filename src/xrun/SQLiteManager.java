@@ -595,7 +595,7 @@ public class SQLiteManager {
     }
 	}
 	
-	private JSONObject readActivity(ResultSet rs) throws JSONException, SQLException {
+	private JSONObject readActivity(ResultSet rs, boolean includeSplitsAndDistr) throws JSONException, SQLException {
 	  if (!rs.next()) {
 	    return null;
 	  }
@@ -604,24 +604,28 @@ public class SQLiteManager {
 	  for (int i = 0; i < len - 3; ++i) {
 	    activity.put(KEYS[i], rs.getObject(i + 1));
 	  }
-	  activity.put(KEYS[len - 3], new JSONArray(rs.getString(len - 2)));
-	  activity.put(KEYS[len - 2], new JSONArray(rs.getString(len - 1)));
+	  if (includeSplitsAndDistr) {
+	    activity.put(KEYS[len - 3], new JSONArray(rs.getString(len - 2)));
+	    activity.put(KEYS[len - 2], new JSONArray(rs.getString(len - 1)));
+	  }
 	  String origData = rs.getString(len);
 	  activity.put(KEYS[len - 1], (origData != null ? new JSONObject(origData) : new JSONObject()));
 	  JSONObject data = activity.getJSONObject(KEYS[len - 1]);
 	  if (data != null && data.keys().hasNext()) {
 	    activity.put("isModified", "y");
 	  }
-	  JSONArray splits = activity.getJSONArray("splits");
-	  double accEle = 0.0;
-	  for (int i = 0; i < splits.length(); ++i) {
-	  	JSONObject split = splits.getJSONObject(i);
-	  	accEle += split.getDouble("eleD");
-	  	split.put("accEle", (long) accEle);
-	  	split.put("total", split.getString("total").replace(',', '.'));
-	  	split.put("speed", split.getString("speed").replace(',', '.'));
-	  	split.put("accumSpeed", split.getString("accumSpeed").replace(',', '.'));
-	  }
+    if (includeSplitsAndDistr) {
+      JSONArray splits = activity.getJSONArray("splits");
+      double accEle = 0.0;
+      for (int i = 0; i < splits.length(); ++i) {
+        JSONObject split = splits.getJSONObject(i);
+        accEle += split.getDouble("eleD");
+        split.put("accEle", (long) accEle);
+        split.put("total", split.getString("total").replace(',', '.'));
+        split.put("speed", split.getString("speed").replace(',', '.'));
+        split.put("accumSpeed", split.getString("accumSpeed").replace(',', '.'));
+      }
+    }
 	  Calendar cal = new GregorianCalendar();
 	  cal.setTimeInMillis(activity.getLong("timeRawMs"));
 	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CalcDist.CORRECTION_BG_SUMMER : CalcDist.CORRECTION_BG_WINTER;
@@ -711,7 +715,7 @@ public class SQLiteManager {
 	  rs = executeQuery(selectClause.toString(), true);
 	  JSONObject json = null;
 	  try {
-      while ((json = readActivity(rs)) != null) {
+      while ((json = readActivity(rs, false)) != null) {
         result.add(json);
       }
 	  } catch (Exception ignore) {
@@ -758,7 +762,7 @@ public class SQLiteManager {
 	
 	synchronized JSONObject getActivity(String fileName) {
 	  try {
-	    return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', true));
+	    return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', true), true);
 	  } catch (Exception e) {
 	    System.out.println("Error reading activity " + fileName);
 	    e.printStackTrace();
@@ -1088,6 +1092,32 @@ public class SQLiteManager {
 	    return RunCalcUtils.HIKING.equals(type2) || RunCalcUtils.TRAIL.equals(type2);
 	  }
 	  return false;
+	}
+	
+	synchronized JSONObject getSplitsAndDist(String activity) {
+	  JSONObject json = null;
+	  try {
+	    ResultSet rs = executeQueryExc("SELECT splits, speedDist FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+	    if (rs != null && rs.next()) {
+	      json = new JSONObject();
+	      JSONArray splits = new JSONArray(rs.getString("splits"));
+	      double accEle = 0.0;
+	      for (int i = 0; i < splits.length(); ++i) {
+	        JSONObject split = splits.getJSONObject(i);
+	        accEle += split.getDouble("eleD");
+	        split.put("accEle", (long) accEle);
+	        split.put("total", split.getString("total").replace(',', '.'));
+	        split.put("speed", split.getString("speed").replace(',', '.'));
+	        split.put("accumSpeed", split.getString("accumSpeed").replace(',', '.'));
+	      }
+	      json.put("splits", splits);
+	      json.put("speedDist", new JSONArray(rs.getString("speedDist")));
+	    }
+	  } catch (SQLException e) {
+      System.out.println("Error getting splits " + e);
+      e.printStackTrace();
+    }
+    return json;
 	}
 	
   synchronized JSONObject getCompOptions(String activity) {

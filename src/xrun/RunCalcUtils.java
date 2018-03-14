@@ -594,6 +594,10 @@ public class RunCalcUtils {
     return sqLite.getCompOptions(activity);
   }
   
+  JSONObject getSplitsAndDist(String activity) {
+    return sqLite.getSplitsAndDist(activity);
+  }
+  
   String addToDashboard(String activity, String dashboard) {
     if (activity == null || dashboard == null) {
       return "Invalid parameters";
