@@ -448,25 +448,42 @@ function initContent(data) {
 			'<div id="trash' + i + '" class="ui-icon ui-icon-trash ui-state-hover runitem"></div></td></tr>';
 		$('#dataHolder').append('<div style="display: none;" id="data' + i + '"></div>');
 		$('#dataHolder').append('<div style="display: none;" id="ui' + i + '"></div>');
-		distr = item['speedDist'];
-		tableHtml = '<span class="highlight"><table><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
-		$.each(distr, function (i, diap) {
-			tableHtml += '<tr><td><strong>' + diap['range'] + ' km/h</strong></td><td>' + diap['time'] + '</td><td>' + diap['dist'] + '</td><td><span class="green">' + diap['elePos'] + '</span></td><td><span class="red">' + diap['eleNeg'] + '</span></td></tr>';
-		});
-		tableHtml += '</tbody></table></span>';
-		splits = item['splits'];
-		splitHtml = '<span class="highlight"><table><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th></thead><tbody>';
-		$.each(splits, function (i, sp) {
-			splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] +
-				'</td><td>' + sp['accumSpeed'] + '</td></tr>';
-		});
-		splitHtml += '</tbody></table></span>';
 		filename = endsWith(item['genby'], '.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
 		itemsDS.push(function () {
 			$('#ui' + i).dialog(dialog);
 			$('#ui' + i).html($('#data' + i).html());
 			$('#ui' + i).dialog('option', 'title', 'Details ' + $('#item' + i).text());
 			$('#ui' + i).dialog('open');
+			$.ajax({
+					url: 'getSplitsAndDist',
+					headers: {
+						'Content-Type': 'application/json',
+						'activity': item['genby']
+					},
+					method: 'POST',
+					dataType: 'json',
+					statusCode: {
+						200: function (data) {
+							distr = data['speedDist'];
+							tableHtml = '<hr><li><h3>Speed distribution</h3><span class="highlight"><table><thead><th>Range</th><th>Time</th><th>Distance</th><th>Gain</th><th>Loss</th></thead><tbody>';
+							$.each(distr, function (w, diap) {
+								tableHtml += '<tr><td><strong>' + diap['range'] + ' km/h</strong></td><td>' + diap['time'] + '</td><td>' + diap['dist'] + '</td><td><span class="green">' + diap['elePos'] + '</span></td><td><span class="red">' + diap['eleNeg'] + '</span></td></tr>';
+							});
+							tableHtml += '</tbody></table></span>';
+							splitHtml = '<hr><li><h3>Splits</h3><span class="highlight"><table><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th></thead><tbody>';
+							splits = data['splits'];
+							$.each(splits, function (v, sp) {
+								splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td>' + sp['pace'] + '</td><td>' + sp['speed'] + '</td><td>' + formatEleDiff(sp['ele']) + '</td><td>' + sp['timeTotal'] +
+								'</td><td>' + sp['accumSpeed'] + '</td></tr>';
+							});
+							splitHtml += '</tbody></table></span>';
+							$('#ui' + i).append('<ul><li>' + tableHtml + '</li><li>' + splitHtml + '</li></ul>');
+						},
+						400: function (xhr) {
+							$('#ui' + i).append('Error retrieving data :(');
+						}
+					}
+			});
 		});
 		var origData = item['origData'];
 		var extLinks = '<input class="hovs" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + filename + '\', \'_blank\');return false;" />';
@@ -516,8 +533,7 @@ function initContent(data) {
 			'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
 			'<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
 			'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
-			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table><hr><li><h3>Speed distribution</h3>' +
-			'</li>' + tableHtml + '</li><hr><li><h3>Splits</h3></li>' + splitHtml + '</ul>');
+			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table></ul>');
 	});
 	var happc = '<div id="typesDistr">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div>';
 	$('#ht').append(happc);
