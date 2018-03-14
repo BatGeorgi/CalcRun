@@ -588,9 +588,9 @@ function initContent(data) {
 					statusCode: {
 						200: function (data) {
 							comps = data['comps'];
-							hotOpts = '<hr><p><ul>';
+							hotOpts = '<hr><p><ul class="highlight">';
 							$.each(comps, function (h, xitem) {
-								hotOpts += '<li class="hovs" id="compOpt' + h + '">' + decodeURIComponent(xitem['text']) + '</li>';
+								hotOpts += '<li><div class="hovs runitem" id="compOpt' + h + '">' + decodeURIComponent(xitem['text']) + '</div></li>';
 							});
 							$('#comparePre').html(hotOpts + '</ul>');
 							$.each(comps, function (h, xitem) {
