@@ -851,6 +851,10 @@ function initSplitsBest() {
 }
 
 function getChart(caption, subcap, xname, yname, suff, data, id) {
+	chart = getChartFromId(id);
+	if (chart !== undefined) {
+		chart.dispose();
+	}
 	return {
 		type: "column2d",
 		width: "700",
@@ -1007,22 +1011,19 @@ function initWeeklyTotals(data) {
 		ydata = item['data'];
 		year = item['year'];
 		f = function () {
+			$('div[id^="wContainer"]').html('');
 			currentYearInd = parseInt($('input[name=selectYearW]:checked').attr('ind'));
 			for (j = 1; j <= 4; ++j) {
 				fr = 13 * (j - 1);
 				to = (j < 4 ? 13 * j : 100);
 				optType = $('input[name=selectTypeW]:checked').val();
 				optText = $('input[name=selectTypeW]:checked').attr('hrn') + ' ' + wtotals[currentYearInd]['year'];
-				chart = getChartFromId('wid' + j);
-				if (chart !== undefined) {
-					chart.dispose();
-				}
 				ftype = optType !== 'd' ? optType : 'totalPositiveEl';
 				wd = getWeekData(wtotals[currentYearInd]['data'], ftype, fr, to);
 				meas = optType !== 'd' ? 'km' : 'm';
 				yax = optType !== 'd' ? 'Distance' : 'Denivelation';
 				if (wd.length > 0) {
-					$('#' + gcn(optType, j)).insertFusionCharts(getChart(optText, "Year weekly report", "Week", yax, meas, wd, 'wid' + j));
+					$('#' + gcn(optType, j)).insertFusionCharts(getChart(optText, "Year weekly report", "Week", yax, meas, wd, 'wid' + optType + j));
 				}
 			}
 		};
