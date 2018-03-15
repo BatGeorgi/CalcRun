@@ -720,41 +720,6 @@ function initControlDialogs() {
 		width: 300,
 		height: 200
 	});
-	$('#rescanDialog').dialog({
-		autoOpen: false,
-		modal: true,
-		show: "blind",
-		hide: "blind",
-		buttons: {
-			"Rescan": function () {
-				$.ajax({
-					url: 'rescanActivities',
-					method: 'POST',
-					dataType: 'json',
-					statusCode: {
-						200: function (data) {
-							getBest();
-							fetch(true);
-							$('#infoDialog').html('Rescan completed!');
-							$('#infoDialog').dialog('option', 'title', 'Action finished');
-							$('#infoDialog').dialog('open');
-						},
-						401: function (resp) {
-							$('#infoDialog').html('Please sign in!');
-							$('#infoDialog').dialog('option', 'title', 'Not authorized');
-							$('#infoDialog').dialog('open');
-						}
-					}
-				});
-				$(this).dialog("close");
-			},
-			"Cancel": function () {
-				$(this).dialog("close");
-			}
-		},
-		width: 300,
-		height: 200
-	});
 	$('#login').dialog({
 		autoOpen: false,
 		modal: true,

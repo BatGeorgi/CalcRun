@@ -109,6 +109,9 @@ class CalcDistHandler extends AbstractHandler {
       -110, -67, 6, 56, -102, -7};
   
   private static final String SEP = "#$^";
+  
+  private String cachedDefaultFetch;
+  private long counter = 0;
 
   private static boolean isAuthorized(String password) {
     if (password == null) {
@@ -148,6 +151,21 @@ class CalcDistHandler extends AbstractHandler {
     this.comparisonTemplateFile = comparisonTemplateFile;
     this.allowedRefs = allowedRefs;
     System.out.println("Initialize finished!");
+  }
+  
+  private synchronized long getCounter() {
+    return counter;
+  }
+  
+  private synchronized void resetCache() { // MUST be called once before modification and once after
+    cachedDefaultFetch = null;
+    ++counter;
+  }
+  
+  private synchronized void trySetNewCache(long oldCounter, String cache) {
+    if (oldCounter == counter) {
+      cachedDefaultFetch = cache;
+    }
   }
   
   private boolean isAllowed(String refIP) {
@@ -351,7 +369,69 @@ class CalcDistHandler extends AbstractHandler {
   	return year % 4 == 0 ? 29 : 28;
   }
   
+  private boolean isDefaultFetch(Request baseRequest) {
+    if (!"true".equals(baseRequest.getHeader("run")) || !"true".equals(baseRequest.getHeader("trail")) ||
+        !"true".equals(baseRequest.getHeader("uphill")) || !"true".equals(baseRequest.getHeader("hike")) ||
+        !"false".equals(baseRequest.getHeader("walk")) || !"false".equals(baseRequest.getHeader("other"))) {
+      return false;
+    }
+    try {
+      if (Integer.parseInt(baseRequest.getHeader("dateOpt")) != 5) {
+        return false;
+      }
+    } catch (Exception ignore) {
+      return false;
+    }
+    String smin = baseRequest.getHeader("dmin");
+    String smax = baseRequest.getHeader("dmax");
+    String nf = baseRequest.getHeader("nameFilter");
+    if (smin != null && smin.length() > 0) {
+      return false;
+    }
+    if (smax != null && smax.length() > 0) {
+      return false;
+    }
+    if (nf != null && nf.length() > 0) {
+      return false;
+    }
+    String dashboard = baseRequest.getHeader("dashboard");
+    if (dashboard != null && dashboard.length() > 0 && !"Main".equals(dashboard)) {
+      return false;
+    }
+    return true;
+  }
+  
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    String result = null;
+    final String cached = cachedDefaultFetch;
+    boolean isDefault = isDefaultFetch(baseRequest);
+    if (isDefault) {
+      result = cached;
+    }
+    response.setContentType("application/json");
+    PrintWriter pw = response.getWriter();
+    try {
+      if (result == null) {
+        final long localCounter = isDefault ? getCounter() : -1;
+        JSONObject data = processFetch0(baseRequest, response);
+        if (data != null) { // in other case request is handled
+          result = data.toString();
+          if (isDefault) {
+            trySetNewCache(localCounter, result);
+          }
+        }
+      }
+      if (result != null) {
+        pw.println(result.toString());
+      }
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
+  }
+  
+  private JSONObject processFetch0(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     boolean getWMT = "true".equals(baseRequest.getHeader("getWMTotals"));
     boolean run = "true".equals(baseRequest.getHeader("run"));
     boolean trail = "true".equals(baseRequest.getHeader("trail"));
@@ -455,7 +535,7 @@ class CalcDistHandler extends AbstractHandler {
     if (dmin > dmax || err) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       baseRequest.setHandled(true);
-      return;
+      return null;
     }
     if (dmin != 0 || dmax != Integer.MAX_VALUE) {
       filterStr.append(" with distance [" + dmin + ", " + (dmax != Integer.MAX_VALUE ? dmax : "+&#x221e;") + "] km");
@@ -488,15 +568,7 @@ class CalcDistHandler extends AbstractHandler {
     String typesStr = types.toString().replace(" ", " ").replace("[", "").replace("]", "");
     filterStr.append(" of type " + typesStr);
     data.put("filter", filterStr.toString());
-    response.setContentType("application/json");
-    PrintWriter pw = response.getWriter();
-    try {
-      pw.println(data.toString());
-    } finally {
-      pw.flush();
-    }
-    response.setStatus(HttpServletResponse.SC_OK);
-    baseRequest.setHandled(true);
+    return data;
   }
   
   private void processEdit(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
@@ -505,6 +577,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     String fileName = baseRequest.getHeader("File");
     String name = baseRequest.getHeader("Name");
     String type = baseRequest.getHeader("Type");
@@ -570,6 +643,7 @@ class CalcDistHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processRevert(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
@@ -578,6 +652,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     String fileName = baseRequest.getHeader("File");
     if (fileName != null && fileName.length() > 0) {
       rcUtils.editActivity(fileName, null, null, null, null, null, null);
@@ -586,9 +661,11 @@ class CalcDistHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processDelete(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    resetCache();
     String fileName = baseRequest.getHeader("File");
     if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -602,6 +679,7 @@ class CalcDistHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processCompare(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
@@ -618,15 +696,18 @@ class CalcDistHandler extends AbstractHandler {
     }
   }
   
+  /* TODO - deprecate this */
   private void processRescan(Request baseRequest, HttpServletResponse response) {
   	if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
     }
+  	resetCache();
     rcUtils.rescan();
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processLogin(Request baseRequest, HttpServletResponse response) {
@@ -780,6 +861,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -790,6 +872,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
 
   private void processRenameDashboard(Request baseRequest, HttpServletResponse response)
@@ -799,6 +882,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -809,6 +893,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
 
   private void processRemoveDashboard(Request baseRequest, HttpServletResponse response)
@@ -818,6 +903,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -828,6 +914,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processGetDashboards(Request baseRequest, HttpServletResponse response)
@@ -872,6 +959,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
   	PrintWriter pw = response.getWriter();
   	String name = baseRequest.getHeader("name");
   	String dashboard = baseRequest.getHeader("dashboard");
@@ -933,6 +1021,7 @@ class CalcDistHandler extends AbstractHandler {
   	}
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processRenameFilter(Request baseRequest, HttpServletResponse response)
@@ -942,6 +1031,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
   	PrintWriter pw = response.getWriter();
   	try {
   		String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
@@ -951,6 +1041,7 @@ class CalcDistHandler extends AbstractHandler {
   	}
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
@@ -960,6 +1051,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
   	PrintWriter pw = response.getWriter();
   	try {
   		String status = rcUtils.removePreset(baseRequest.getHeader("name"));
@@ -969,6 +1061,7 @@ class CalcDistHandler extends AbstractHandler {
   	}
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processGetFilters(Request baseRequest, HttpServletResponse response)
@@ -993,6 +1086,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     PrintWriter pw = response.getWriter();
     try {
       String status = rcUtils.reorder(baseRequest.getHeader("elements"), option);
@@ -1002,6 +1096,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
 
   private void processSetFeatures(Request baseRequest, HttpServletResponse response)
@@ -1011,6 +1106,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+    resetCache();
     List<String> links = new ArrayList<String>(4);
     PrintWriter pw = response.getWriter();
     try {
@@ -1028,6 +1124,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processRemoveCookie(Request baseRequest, HttpServletResponse response)
@@ -1037,6 +1134,7 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
+  	resetCache();
     PrintWriter pw = response.getWriter();    
     try {
     	Cookie[] cookies = baseRequest.getCookies();
@@ -1051,6 +1149,7 @@ class CalcDistHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
+    resetCache();
   }
   
   private void processGetComps(Request baseRequest, HttpServletResponse response)
@@ -1185,6 +1284,10 @@ class CalcDistHandler extends AbstractHandler {
         processGetComps(baseRequest, response);
       } else if ("/getSplitsAndDist".equals(target)) {
         processGetSplitsAndDist(baseRequest, response);
+      } else if ("/resetCache".equals(target)) {
+        resetCache();
+        response.setStatus(HttpServletResponse.SC_OK);
+        baseRequest.setHandled(true);
       }
 		}
   }
