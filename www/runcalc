@@ -200,9 +200,21 @@
 				$('#filters').toggle();
 			});
 			$('#rescanButton').click(function () {
-				$('#rescanDialog').html('Really rescan remote folder for activities?');
-				$('#rescanDialog').dialog('option', 'title', 'Potentially unsafe operation');
-				$('#rescanDialog').dialog('open');
+				$.ajax({
+					url: 'resetCache',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					method: 'POST',
+					dataType: 'text',
+					statusCode: {
+						200: function (data) {
+							$('#infoDialog').html('Cache cleared!');
+							$('#infoDialog').dialog('option', 'title', 'Refresh');
+							$('#infoDialog').dialog('open');
+						}
+					}
+				});
 			});
 			$('#aboutButton').click(function () {
 				$('#aboutDialog').html('Powered by <b><i>Raspberry PI 3, Garmin Forerunner 210</i></b><p>Using <b><i>Java, Jetty Server, SQLite DB, JQuery UI, Odometer, FusionCharts<p></i></b>'
@@ -321,7 +333,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.47</strong></H1>
+        <H1><strong>Activity Tracker 3.5</strong></H1>
 		<hr>
     </div>
 	
@@ -506,7 +518,6 @@
     </div>
     <div id="infoDialog"></div>
     <div id="login" />
-	<div id="rescanDialog"></div>
 	<div id="typesDialog"></div>
 	<div id="confirmDialogDash"></div>
 	<div id="confirmDialogPresets"></div>
