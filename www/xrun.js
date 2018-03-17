@@ -646,7 +646,7 @@ function initContent(data) {
 			dashboards = item['dashboards'];
 			for (q = 0; q < dashCount; ++q) {
 				name = $('#dashboard' + q).attr('name');
-				if (dashboards.indexOf(name) == -1) {
+				if (dashboards.indexOf(encodeURIComponent(name)) == -1) {
 					optsAdd += '<option value="' + name + '">' + name + '</option>';
 				} else {
 					optsRem += '<option value="' + name + '">' + name + '</option>';
