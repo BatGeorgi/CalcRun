@@ -296,6 +296,7 @@ class CalcDistHandler extends AbstractHandler {
       photos = "none";
     }
     PrintWriter pw = response.getWriter();
+    resetCache();
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
@@ -318,6 +319,7 @@ class CalcDistHandler extends AbstractHandler {
     } finally {
       pw.flush();
     }
+    resetCache();
     baseRequest.setHandled(true);
 	}
 	
