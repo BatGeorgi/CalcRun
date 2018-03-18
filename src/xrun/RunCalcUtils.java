@@ -590,8 +590,8 @@ public class RunCalcUtils {
     return sqLite.getDashboards();
   }
   
-  JSONObject getCompOptions(String activity) {
-    return sqLite.getCompOptions(activity);
+  JSONObject getCompOptions(String activity, boolean ext) {
+    return sqLite.getCompOptions(activity, ext);
   }
   
   JSONObject getSplitsAndDist(String activity) {
