@@ -333,7 +333,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.52</strong></H1>
+        <H1><strong>Activity Tracker 3.53</strong></H1>
 		<hr>
     </div>
 	
@@ -514,6 +514,7 @@
     <div id="dataHolder" />
     <div id="comparable">
 		<div id="comparePre" />
+        <div id="compareExt" />
         <div id="compareResults" />
     </div>
     <div id="infoDialog"></div>
