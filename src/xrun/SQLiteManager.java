@@ -38,7 +38,7 @@ public class SQLiteManager {
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "garminLink", "ccLink", "photosLink",
-      "dashboards",
+      "dashboards", "isExt",
       "speedDist", "splits",
       "origData"
   };
@@ -48,7 +48,7 @@ public class SQLiteManager {
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
       "text", "text", "text",
-      "text",
+      "text", "integer",
       "text", "text",
       "text"
   };
@@ -167,7 +167,7 @@ public class SQLiteManager {
       Calendar current = new GregorianCalendar(TimeZone.getDefault());
       int currentYear = current.get(Calendar.YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
-        rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos, dashboards FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
+        rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos, isExt FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
         if (years.get(i) == currentYear) {
@@ -195,7 +195,7 @@ public class SQLiteManager {
         }
         JSONArray wArr = new JSONArray();
         while (rs.next()) {
-          if (isExternal(rs.getString("dashboards"))) {
+          if (rs.getInt("isExt") == 1) {
             continue;
           }
           Calendar cal = new GregorianCalendar();
@@ -300,33 +300,24 @@ public class SQLiteManager {
 	      }
         for (int j = 0; j < filters.length; ++j) {
           String typeFilter = (filters[j] != null ? ("(" + filters[j] + ") AND ") : "");
-          rs = executeQuery("SELECT month, SUM(distRaw), dashboards FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
-              "year=" + years.get(i) + " GROUP BY month", true);
+          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
+              "year=" + years.get(i) + " AND isExt=0 GROUP BY month", true);
 	        while (rs.next()) {
-	          if (isExternal(rs.getString(3))) {
-	            continue;
-	          }
 	          months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
 	          months[rs.getInt(1)].remove("emp");
 	        }
-					rs = executeQuery("SELECT month, COUNT(genby), dashboards FROM "
+					rs = executeQuery("SELECT month, COUNT(genby) FROM "
 							+ RUNS_TABLE_NAME + " WHERE " + typeFilter + " year="
-							+ years.get(i) + " GROUP BY month", true);
+							+ years.get(i) + " AND isExt=0 GROUP BY month", true);
 					while (rs.next()) {
-					  if (isExternal(rs.getString(3))) {
-              continue;
-            }
 						months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
 						months[rs.getInt(1)].put("totalPositiveEl", 0);
 						months[rs.getInt(1)].remove("emp");
 					}
 	      }
-        rs = executeQuery("SELECT month, SUM(eleTotalPos), dashboards FROM " + RUNS_TABLE_NAME + " WHERE year=" +
-                years.get(i) + " GROUP BY month", true);
+        rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
+                years.get(i) + " AND isExt=0 GROUP BY month", true);
 				while (rs.next()) {
-				  if (isExternal(rs.getString(3))) {
-            continue;
-          }
 					int totalPositiveEl = rs.getInt(2);
 					if (totalPositiveEl > 0) {
 						months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
@@ -570,6 +561,8 @@ public class SQLiteManager {
   }
 	
 	synchronized void addActivity(JSONObject entry) {
+	  boolean isExt = isExternal(entry.getString("dashboards"));
+	  entry.put("isExt", isExt ? 1 : 0);
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
 	  if (!entry.has("origData")) {
@@ -804,13 +797,13 @@ public class SQLiteManager {
 	
 	synchronized JSONObject getBestActivities(double distMin, double distMax) {
 	  try {
-	    ResultSet rs = executeQuery("SELECT genby, date, timeTotal, dashboards FROM " + RUNS_TABLE_NAME +
+	    ResultSet rs = executeQuery("SELECT genby, date, timeTotal, isExt FROM " + RUNS_TABLE_NAME +
           " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw", true);
 	    if (rs == null) {
         return null;
       }
 	    while (rs.next()) {
-	      if (isExternal(rs.getString("dashboards"))) {
+	      if (rs.getInt("isExt") == 1) {
 	        continue;
 	      }
 	      JSONObject result = new JSONObject();
@@ -828,11 +821,11 @@ public class SQLiteManager {
 	
 	synchronized JSONArray getActivitySplits() {
 	  JSONArray result = new JSONArray();
-	  ResultSet rs = executeQuery("SELECT name, date, splits, genby, dashboards FROM " + RUNS_TABLE_NAME +
+	  ResultSet rs = executeQuery("SELECT name, date, splits, genby, isExt FROM " + RUNS_TABLE_NAME +
 	      " WHERE (type='Running' OR type='Trail')", true);
 	  try {
       while (rs.next()) {
-        if (isExternal(rs.getString("dashboards"))) {
+        if (rs.getInt("isExt") == 1) {
           continue;
         }
         JSONObject crnt = new JSONObject();
