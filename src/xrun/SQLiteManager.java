@@ -1113,13 +1113,14 @@ public class SQLiteManager {
     return json;
 	}
 	
-  synchronized JSONObject getCompOptions(String activity) {
+  synchronized JSONObject getCompOptions(String activity, boolean searchOnlyExt) {
     JSONObject json = null;
     Map<String, Boolean> dashboards = new HashMap<String, Boolean>();
     String type = null;
     double dist = 0.0;
     double speed = 0.0;
     List<DataEntry> entries = new ArrayList<>();
+    boolean isFromExt = false;
     try {
       ResultSet rs = executeQueryExc("SELECT dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
       if (rs == null || !rs.next()) {
@@ -1134,6 +1135,9 @@ public class SQLiteManager {
         if (!MAIN_DASHBOARD.equals(dash)) {
           dashboards.put(dash, Boolean.TRUE);
         }
+        if (EXTERNAL_DASHBOARD.equals(dash)) {
+        	isFromExt = true;
+        }
       }
       rs = executeQueryExc("SELECT genby, dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME, true);
       while (rs != null && rs.next()) {
@@ -1144,24 +1148,31 @@ public class SQLiteManager {
           continue;
         }
         double sspeed = rs.getDouble("avgSpeedRaw");
-        if (0.66 * speed > sspeed || 1.5 * speed < sspeed) {
+        if (dist < 25 && (0.66 * speed > sspeed || 1.5 * speed < sspeed)) {
           continue;
         }
         arr = new JSONArray(rs.getString("dashboards"));
-        boolean dashboardMatch = false;
-        for (int i = 0; i < arr.length(); ++i) {
-          if (dashboards.containsKey(arr.get(i))) {
-            dashboardMatch = true;
-            break;
-          }
-        }
-        if (!dashboardMatch) {
-          continue;
-        }
+        boolean dashboardMatch = isFromExt;
+				if (!dashboardMatch) {
+					for (int i = 0; i < arr.length(); ++i) {
+						String cdash = arr.getString(i);
+						if (searchOnlyExt && EXTERNAL_DASHBOARD.equals(cdash)) {
+							dashboardMatch = true;
+							break;
+						}
+						if (!searchOnlyExt && dashboards.containsKey(cdash)) {
+							dashboardMatch = true;
+							break;
+						}
+					}
+					if (!dashboardMatch) {
+						continue;
+					}
+				}
         entries.add(new DataEntry(rs.getString("genby"), Math.abs(dist - rs.getDouble("distRaw"))));
       }
       Collections.sort(entries);
-      int len = Math.min(10, entries.size());
+      int len = searchOnlyExt ? entries.size() : Math.min(10, entries.size());
       arr = new JSONArray();
       for (int i = 0; i < len; ++i) {
         String id = entries.get(i).getId();

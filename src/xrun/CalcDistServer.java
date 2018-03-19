@@ -296,6 +296,7 @@ class CalcDistHandler extends AbstractHandler {
       photos = "none";
     }
     PrintWriter pw = response.getWriter();
+    resetCache();
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
@@ -318,6 +319,7 @@ class CalcDistHandler extends AbstractHandler {
     } finally {
       pw.flush();
     }
+    resetCache();
     baseRequest.setHandled(true);
 	}
 	
@@ -432,6 +434,12 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private JSONObject processFetch0(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+  	String dash = baseRequest.getHeader("dashboard");
+  	if (SQLiteManager.EXTERNAL_DASHBOARD.equals(dash) && !isLoggedIn(baseRequest)) {
+  		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return null;
+  	}
     boolean getWMT = "true".equals(baseRequest.getHeader("getWMTotals"));
     boolean run = "true".equals(baseRequest.getHeader("run"));
     boolean trail = "true".equals(baseRequest.getHeader("trail"));
@@ -545,7 +553,7 @@ class CalcDistHandler extends AbstractHandler {
       filterStr.append(", matching the name regex");
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
-        startDate, endDate, dmin, dmax, baseRequest.getHeader("dashboard"), periodLen, getWMT);
+        startDate, endDate, dmin, dmax, dash, periodLen, getWMT);
     List<String> types = new LinkedList<String>();
     if (run) {
       types.add(RunCalcUtils.RUNNING);
@@ -1155,10 +1163,16 @@ class CalcDistHandler extends AbstractHandler {
   private void processGetComps(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     String activity = baseRequest.getHeader("activity");
+    boolean ext = "true".equals(baseRequest.getHeader("ext"));
+    if (ext && !isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      baseRequest.setHandled(true);
+      return;
+    }
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();    
     try {
-      JSONObject json = rcUtils.getCompOptions(activity);
+      JSONObject json = rcUtils.getCompOptions(activity, ext);
       if (json == null) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       } else {

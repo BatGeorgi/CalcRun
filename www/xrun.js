@@ -589,7 +589,7 @@ function initContent(data) {
 	});
 	$.each(all, function (i, item) {
 		$('#compare' + i).click(function () {
-			$('#comparable').html('Compare with <select id="selectComp">' + optsAll + '</select><div id="comparePre" /><div id="compareResults" />');
+			$('#comparable').html('Compare with <select id="selectComp">' + optsAll + '</select><div id="comparePre" /><div id="compareExt" /><div id="compareResults" />');
 			$('#comparable').dialog('option', 'title', 'Compare ' + $('#item' + i).text() + ' ' + $('#date' + i).text() + ', ' + item['dist'] + "km");
 			$('#comparable').attr('file1', item['genby']);
 			$('#comparable').dialog('open');
@@ -611,12 +611,54 @@ function initContent(data) {
 							$('#comparePre').html(hotOpts + '</ul>');
 							$.each(comps, function (h, xitem) {
 								$('#compOpt' + h).click(function () {
-									console.log(xitem['id']);
 									compFast(xitem['id']);
 								});
 							});
 						}
 					}
+			});
+			$.ajax({
+				url: 'getCompOptions',
+				method: 'POST',
+				dataType: 'json',
+				headers: {
+					'Content-Type': 'application/json',
+					'activity': item['genby'],
+					'ext': true
+				},
+				statusCode: {
+					200: function (data) {
+						comps = data['comps'];
+						if (comps.length == 0) {
+							return;
+						}
+						extCompsDiv = '<p><div id="extComps"></div>';
+						extOpts = '<p><h3>External</h3><ul class="highlight">';
+						$.each(comps, function (h, xitem) {
+							extOpts += '<li><div class="hovs runitem" id="compExt' + h + '">' + decodeURIComponent(xitem['text']) + '</div></li>';
+						});
+						extOpts += '</ul>';
+						$('#compareExt').html('<p><button id="extCompSwitch">Show external</button>' + extCompsDiv);
+						$('#extComps').hide();
+						$('#extComps').html(extOpts);
+						$('#extCompSwitch').click(function() {
+							if ($('#extComps').css('display') == 'none') {
+								$(this).text("Hide external");
+							} else {
+								$(this).text("Show external");
+							}
+							$('#extComps').toggle();
+						});
+						$.each(comps, function (h, xitem) {
+							$('#compExt' + h).click(function () {
+								compFast(xitem['id']);
+							});
+						});
+					},
+					401: function(data) {
+						$('#compareExt').html("<h3>Log in to view external options</h3>");
+					}
+				}
 			});
 		});
 		$('#feat' + i).click(function () {
@@ -646,7 +688,7 @@ function initContent(data) {
 			dashboards = item['dashboards'];
 			for (q = 0; q < dashCount; ++q) {
 				name = $('#dashboard' + q).attr('name');
-				if (dashboards.indexOf(name) == -1) {
+				if (dashboards.indexOf(encodeURIComponent(name)) == -1) {
 					optsAdd += '<option value="' + name + '">' + name + '</option>';
 				} else {
 					optsRem += '<option value="' + name + '">' + name + '</option>';
@@ -735,6 +777,18 @@ function fetch(getWMTotals) {
 				for (i = 0; i < dashCount; ++i) {
 					$('#dashboard' + i).prop("disabled", false);
 				}
+				initContent({'activities': [], 'filter': ''});
+			},
+			401: function (data) {
+				$(".presetButton").removeClass('selectedDash');
+				$('#infoDialog').html('Must be logged in to view this dashboard');
+				$('#infoDialog').dialog('option', 'title', 'Not authorized');
+				$('#infoDialog').dialog('open');
+				$('#search').button("option", "disabled", false);
+				for (i = 0; i < dashCount; ++i) {
+					$('#dashboard' + i).prop("disabled", false);
+				}
+				initContent({'activities': [], 'filter': ''});
 			}
 		}
 	});
