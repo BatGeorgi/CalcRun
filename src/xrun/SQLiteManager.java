@@ -1139,6 +1139,11 @@ public class SQLiteManager {
         	isFromExt = true;
         }
       }
+      if (isFromExt && searchOnlyExt) {
+        json = new JSONObject();
+        json.put("comps", new JSONArray());
+        return json;
+      }
       rs = executeQueryExc("SELECT genby, dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME, true);
       while (rs != null && rs.next()) {
         if (activity.equals(rs.getString("genby"))) {
