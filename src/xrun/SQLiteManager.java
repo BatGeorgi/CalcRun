@@ -561,7 +561,7 @@ public class SQLiteManager {
   }
 	
 	synchronized void addActivity(JSONObject entry) {
-	  boolean isExt = isExternal(entry.getString("dashboards"));
+	  boolean isExt = isExternal(entry.getJSONArray("dashboards").toString());
 	  entry.put("isExt", isExt ? 1 : 0);
 	  StringBuffer sb = new StringBuffer();
 	  sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
