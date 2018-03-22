@@ -418,7 +418,7 @@ class CalcDistHandler extends AbstractHandler {
         JSONObject data = processFetch0(baseRequest, response);
         if (data != null) { // in other case request is handled
           result = data.toString();
-          if (isDefault) {
+          if (isDefault && "true".equals(baseRequest.getHeader("getWMTotals"))) {
             trySetNewCache(localCounter, result);
           }
         }
