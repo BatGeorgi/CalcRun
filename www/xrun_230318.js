@@ -26,7 +26,7 @@ function compFast(file2) {
 					file2 = file2.substring(0, file2.length - 4);
 				}
 				compLink = 'compare?a1=' + f1 + '&a2=' + file2;
-				var extLinkComp = '<hr><input class="hovs" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + compLink + '\', \'_blank\');return false;" />';
+				var extLinkComp = '<hr><input class="hovs" title="View full comparison" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + compLink + '\', \'_blank\');return false;" />';
 				$('#compareResults').html(extLinkComp + '<hr><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
 					'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
 					'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
@@ -438,14 +438,14 @@ function initContent(data) {
 		if (compactDate) {
 			dateStr = item['day'] + '.' + (item['month'] + 1) + '.' + (item['year'] - 2000);
 		}
-		runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div class="runitem" id="item' + i + '">' + (isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
+		runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div title="View details" class="runitem" id="item' + i + '">' + (isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
 			'</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
 			item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + (isAllTrail ? item['distRunning'] : item['avgSpeed']) + '</td>' +
 			'<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>' +
-			'<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem"></div>' +
-			'<div id="feat' + i + '" class="ui-icon ui-icon-note ui-state-hover runitem"></div>' +
-			'<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem"></div>' +
-			'<div id="trash' + i + '" class="ui-icon ui-icon-trash ui-state-hover runitem"></div></td></tr>';
+			'<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem" title="Edit activity data"></div>' +
+			'<div id="feat' + i + '" class="ui-icon ui-icon-note ui-state-hover runitem" title="Set description and links"></div>' +
+			'<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem" title="Compare with another activity"></div>' +
+			'<div id="trash' + i + '" class="ui-icon ui-icon-trash ui-state-hover runitem" title="Remove activity"></div></td></tr>';
 		$('#dataHolder').append('<div style="display: none;" id="data' + i + '"></div>');
 		$('#dataHolder').append('<div style="display: none;" id="ui' + i + '"></div>');
 		filename = endsWith(item['genby'], '.gpx') ? item['genby'].substring(0, item['genby'].length - 4) : item['genby'];
@@ -486,17 +486,17 @@ function initContent(data) {
 			});
 		});
 		var origData = item['origData'];
-		var extLinks = '<input class="hovs" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + filename + '\', \'_blank\');return false;" />';
+		var extLinks = '<input class="hovs" title="View full info" type="image" src="extview-icon.png" width="60" height="60" onclick="window.open(\'' + filename + '\', \'_blank\');return false;" />';
 		if (item['garminLink'] != 'none') {
-			extLinks += '<input class="hovs" type="image" src="garmin-icon.png" width="60" height="60" onclick="window.open(\'' + item['garminLink'] + '\', \'_blank\');return false;" />';
+			extLinks += '<input class="hovs" title="View on Garmin Connect" type="image" src="garmin-icon.png" width="60" height="60" onclick="window.open(\'' + item['garminLink'] + '\', \'_blank\');return false;" />';
 		}
 		if (item['ccLink'] != 'none') {
 			ccl = decodeURIComponent(item['ccLink']);
-			extLinks += '<input class="hovs" type="image" src="relivecc-icon.png" width="60" height="60" onclick="window.open(\'' + ccl + '\', \'_blank\');return false;" />';
+			extLinks += '<input class="hovs" title="View on ReliveCC" type="image" src="relivecc-icon.png" width="60" height="60" onclick="window.open(\'' + ccl + '\', \'_blank\');return false;" />';
 		}
 		if (item['photosLink'] != 'none') {
 			phl = decodeURIComponent(item['photosLink']);
-			extLinks += '<input class="hovs" type="image" src="photos-icon.png" width="60" height="60" onclick="window.open(\'' + phl + '\', \'_blank\');return false;" />';
+			extLinks += '<input class="hovs" title="View photos" type="image" src="photos-icon.png" width="60" height="60" onclick="window.open(\'' + phl + '\', \'_blank\');return false;" />';
 		}
 		tags = $.parseJSON(item['dashboards']);
 		dashboardTags = '<span class="dashboardList">';
@@ -535,7 +535,7 @@ function initContent(data) {
 			'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table></ul>');
 	});
-	var happc = '<div id="typesDistr">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div>';
+	var happc = '<div id="typesDistr" title="View results distribution">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div>';
 	$('#ht').append(happc);
 	charts = data['charts'];
 	$('#typesDistr').click(function () {

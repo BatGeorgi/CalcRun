@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <title>Activity Tracker</title>
+    <title>Running Calc Tools</title>
     <link href="style_140318.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
@@ -18,8 +18,8 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun.js"></script>
-	<script type="text/javascript" src="initDialogs.js"></script>
+	<script type="text/javascript" src="xrun_230318.js"></script>
+	<script type="text/javascript" src="initDialogs_230318.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
 	
@@ -333,18 +333,18 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Activity Tracker 3.54</strong></H1>
+        <H1><strong>Running Calc Tools 3.6</strong></H1>
 		<hr>
     </div>
 	
 	<div id="userData">
 	<div id="mainBar">
 	<div id="controls">
-		<img id="importButton" src="button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;"/>
-		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" />
-		<input id="aboutButton" type="image" src="images/about.png" width="40" height="40"/>
-		<button id="loginButton" class="controlButton">Login</button>
-		<button id="hideFilters" class="controlButton">Show Filters</button>
+		<img id="importButton" src="button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;" title="Add new activity"/>
+		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" title="Clear cached data"/>
+		<input id="aboutButton" type="image" src="images/about.png" width="40" height="40" title="Info"/>
+		<button id="loginButton" class="controlButton" title="Authorization">Login</button>
+		<button id="hideFilters" class="controlButton" title="Toggle search filters">Show Filters</button>
 	</div>
 	<div id="createDashboard"></div>
 	<div id="renameDashboard"></div>
@@ -409,10 +409,10 @@
 	<div id="dashboards">
             <div id="dashHeading">Dashboards&nbsp;</div>
 			<div id="dashActions">
-				<input id="createDashboardButton" type="image" src="images/add.png"></input>
-				<input id="renameDashboardButton" type="image" src="images/rename.png"></input>
-				<input id="removeDashboardButton" type="image" src="images/remove.png"></input>
-				<input id="reorderDash" type="image" src="images/saveOrder.png"></input>
+				<input id="createDashboardButton" type="image" src="images/add.png" title="Create new dashboard"></input>
+				<input id="renameDashboardButton" type="image" src="images/rename.png" title="Rename current dashboard"></input>
+				<input id="removeDashboardButton" type="image" src="images/remove.png" title="Remove current dashboard"></input>
+				<input id="reorderDash" type="image" src="images/saveOrder.png" title="Save dashboards order"></input>
 			</div>
 			<p>
             <div id="allDash"></div>
@@ -424,7 +424,7 @@
 		<div id="presetActions">
 			<input id="renamePreset" type="image" src="images/rename.png"></input>
 			<input id="removePreset" type="image" src="images/remove.png"></input>
-			<input id="saveOrder" type="image" src="images/saveOrder.png"></input>
+			<input id="saveOrder" type="image" src="images/saveOrder.png" title="Save presets order"></input>
         </div>
 		<p>
 		<div id="allPresets"></div>
