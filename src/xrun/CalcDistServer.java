@@ -241,7 +241,7 @@ class CalcDistHandler extends AbstractHandler {
   }
   
 	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-	    String activityName, String activityType, String reliveCC, String photos, String dashboard) {
+	    String activityName, String activityType, String reliveCC, String photos, String dashboard, boolean secure) {
 	  if (activityName != null && activityName.length() == 0) {
 	    activityName = null;
 	  }
@@ -252,7 +252,7 @@ class CalcDistHandler extends AbstractHandler {
 				FileItemStream item = iter.next();
 				if (!item.isFormField()) {
 					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
-					    dashboard);
+					    dashboard, secure);
 				}
 			}
 		} catch (Exception e) {
@@ -283,9 +283,12 @@ class CalcDistHandler extends AbstractHandler {
     
     to = target.indexOf(SEP, ind + SEP.length());
     photos = target.substring(ind + SEP.length(), to);
-    
     ind = to;
-    dashboard = target.substring(ind + SEP.length());
+    
+    to = target.indexOf(SEP, ind + SEP.length());
+    dashboard = target.substring(ind + SEP.length(), to);
+    ind = to;
+    boolean secure = "t".equals(target.substring(ind + SEP.length()));
     if (type.length() == 0) {
       type = RunCalcUtils.RUNNING;
     }
@@ -300,7 +303,7 @@ class CalcDistHandler extends AbstractHandler {
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
-        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos, dashboard);
+        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos, dashboard, secure);
         if (result == null) { // all normal
           pw.println("<h2>Upload finished!</h2>");
           pw.println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
@@ -592,6 +595,7 @@ class CalcDistHandler extends AbstractHandler {
     String garminLink = baseRequest.getHeader("garminLink");
     String ccLink = baseRequest.getHeader("ccLink");
     String photosLink = baseRequest.getHeader("photosLink");
+    boolean secureFlag = "true".equals(baseRequest.getHeader("secure"));
     String actDist = baseRequest.getHeader("actDist");
     String actTime = baseRequest.getHeader("actTime");
     String actGain = baseRequest.getHeader("actGain");
@@ -645,7 +649,7 @@ class CalcDistHandler extends AbstractHandler {
       if (newLoss != null) {
         mods.put("loss", newLoss);
       }
-      rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, mods);
+      rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, secureFlag, mods);
       response.setStatus(HttpServletResponse.SC_OK);
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -663,7 +667,7 @@ class CalcDistHandler extends AbstractHandler {
     resetCache();
     String fileName = baseRequest.getHeader("File");
     if (fileName != null && fileName.length() > 0) {
-      rcUtils.editActivity(fileName, null, null, null, null, null, null);
+      rcUtils.editActivity(fileName, null, null, null, null, null, false, null);
       response.setStatus(HttpServletResponse.SC_OK);
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

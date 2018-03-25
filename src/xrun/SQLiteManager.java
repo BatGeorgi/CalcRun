@@ -28,6 +28,7 @@ public class SQLiteManager {
   private static final String PRESETS_TABLE_NAME = "presets";
   private static final String COORDS_TABLE_NAME = "coords";
   private static final String FEATURES_TABLE_NAME = "features";
+  private static final String SECURED_TABLE_NAME = "secured";
   
   static final String EXTERNAL_DASHBOARD = "External";
   static final String MAIN_DASHBOARD = "Main";
@@ -63,6 +64,8 @@ public class SQLiteManager {
       + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL, dashboard text NOT NULL)";
   private static final String CREATE_STATEMENT_FEATURES_TABLE = "CREATE TABLE IF NOT EXISTS " + FEATURES_TABLE_NAME + 
       "(id text NOT NULL, descr text not null, links text NOT NULL)";
+  private static final String CREATE_STATEMENT_SECURED_TABLE = "CREATE TABLE IF NOT EXISTS " + SECURED_TABLE_NAME + 
+      "(id text NOT NULL)";
 
 	private File dbActivities;
 	private File dbCoords;
@@ -386,6 +389,7 @@ public class SQLiteManager {
 	  executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
 	  executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
 	  executeCreate(CREATE_STATEMENT_FEATURES_TABLE);
+	  executeCreate(CREATE_STATEMENT_SECURED_TABLE);
 	}
 	
 	synchronized private void fillInFeatures(JSONObject activity) {
@@ -717,7 +721,7 @@ public class SQLiteManager {
 	  return result;
   }
 	
-	synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos) {
+	synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure) {
 	  StringBuffer sb = new StringBuffer();
 	  if (newGarmin == null || newGarmin.length() == 0) {
       newGarmin = "none";
@@ -732,10 +736,12 @@ public class SQLiteManager {
 	      "', garminLink='" + newGarmin + "', ccLink='" + newCC + "', photosLink='" + newPhotos);
 	  sb.append("' WHERE genby='" + fileName + '\'');
 	  executeQuery(sb.toString(), false);
+	  setSecureFlag(fileName, secure);
 	}
 	
 	synchronized void deleteActivity(String fileName) {
 	  executeQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
+	  executeQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id='" + fileName + '\'', false);
 	  try {
 	    removeFeatures(fileName);
 	  } catch (Exception e) {
@@ -743,6 +749,27 @@ public class SQLiteManager {
       e.printStackTrace();
 	  }
 	  removeCoordsData(fileName);
+	}
+	
+	synchronized boolean isSecured(String fileName) {
+		try {
+			ResultSet rs = executeQuery("SELECT * FROM " + SECURED_TABLE_NAME + " WHERE id='" + fileName + "'", true);
+			return rs != null && rs.next();
+		} catch (SQLException se) {
+			System.out.println("Error checking secured flag");
+		}
+		return true;
+	}
+	
+	synchronized void setSecureFlag(String fileName, boolean flag) {
+		boolean isSecured = isSecured(fileName);
+		if (flag) {
+			if (!isSecured) {
+				executeQuery("INSERT INTO " + SECURED_TABLE_NAME + " VALUES('" + fileName + "')", false);
+			}
+		} else if (isSecured) {
+			executeQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id='" + fileName + "'", false);
+		}
 	}
 	
 	File getActivitiesDBFile() {
