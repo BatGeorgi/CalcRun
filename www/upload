@@ -41,7 +41,7 @@
 						$("#upload").submit(function( event ) {
 							var sep = "#$^";
 							suff = "." + encodeURIComponent($('#name').val()) +  sep + $('#type').find(':selected').val() + sep + encodeURIComponent($('#relivecc').val()) +
-							sep + encodeURIComponent($('#photos').val()) + sep + $('#select option:selected').val();
+							sep + encodeURIComponent($('#photos').val()) + sep + $('#select option:selected').val() + sep + ($('#secured:checked').length > 0 ? 't' : 'f');
 							initVal = $('#upload').attr('action');
 							$('#upload').attr('action', encodeURIComponent(initVal + suff));
 						});
@@ -90,6 +90,11 @@
 					<p>Dashboard</td>
 				<td id="dashOpt"></td>
 			</tr>
+            <tr>
+                <td>
+                    <p>Mark as private</td>
+                <td><input type="checkbox" id="secured" /></td>
+            </tr>
             <tr>
                 <td>
                     <p>Select file&nbsp;</td>

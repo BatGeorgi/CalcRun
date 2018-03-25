@@ -175,7 +175,7 @@ public class RunCalcUtils {
   }
   
   String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,
-      String dashboard) {
+      String dashboard, boolean secure) {
   	File file = null;
   	try {
   	  file = addActivity0(name, is);
@@ -203,6 +203,9 @@ public class RunCalcUtils {
       }
       current.put("dashboards", arr);
       sqLite.addActivity(current);
+      if (secure) {
+      	sqLite.setSecureFlag(current.getString("genby"), true);
+      }
       if (drive != null) {
         drive.backupTrack(file);
       }
@@ -494,7 +497,7 @@ public class RunCalcUtils {
     return result;
   }
   
-  void editActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, JSONObject mods) {
+  void editActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure, JSONObject mods) {
     JSONObject activity = sqLite.getActivity(fileName);
     if (activity == null) {
       return;
@@ -509,7 +512,7 @@ public class RunCalcUtils {
         sqLite.deleteActivity(fileName);
         sqLite.addActivity(activity);
       } else {
-        sqLite.updateActivity(fileName, newName, newType, newGarmin, newCC, newPhotos);
+        sqLite.updateActivity(fileName, newName, newType, newGarmin, newCC, newPhotos, secure);
       }
     } else if (revertActivityChanges(activity)) {
       sqLite.deleteActivity(fileName);
@@ -530,6 +533,14 @@ public class RunCalcUtils {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
     }
     return null;
+  }
+  
+  boolean isSecured(String fileName) {
+  	return sqLite.isSecured(fileName);
+  }
+  
+  void setSecureFlag(String fileName, boolean flag) {
+  	sqLite.setSecureFlag(fileName, flag);
   }
   
   void deleteActivity(String fileName) {
