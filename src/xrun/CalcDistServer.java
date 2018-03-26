@@ -406,6 +406,37 @@ class CalcDistHandler extends AbstractHandler {
     return true;
   }
   
+  private void chechCacheUpToDate(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    response.setContentType("application/txt");
+    String weekS = baseRequest.getHeader("maxWeek");
+    String yearS = baseRequest.getHeader("maxYear");
+    int week = -1;
+    int year = -1;
+    try {
+      week = Integer.parseInt(weekS);
+      year = Integer.parseInt(yearS);
+    } catch (Exception e) {
+      response.setStatus(HttpServletResponse.SC_CONFLICT);
+      resetCache();
+      return;
+    }
+    Calendar current = new GregorianCalendar(TimeZone.getDefault());
+    int currentYear = current.get(Calendar.YEAR);
+    if (currentYear != year) {
+      response.setStatus(HttpServletResponse.SC_CONFLICT);
+      resetCache();
+      return;
+    } else {
+      int currentWeek = WeekCalc.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
+      if (currentWeek != week) {
+        response.setStatus(HttpServletResponse.SC_CONFLICT);
+        resetCache();
+        return;
+      }
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+  }
+  
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     String result = null;
     final String cached = cachedDefaultFetch;
@@ -1326,6 +1357,9 @@ class CalcDistHandler extends AbstractHandler {
       } else if ("/resetCache".equals(target)) {
         resetCache();
         response.setStatus(HttpServletResponse.SC_OK);
+        baseRequest.setHandled(true);
+      } else if ("/checkCache".equals(target)) {
+        chechCacheUpToDate(baseRequest, response);
         baseRequest.setHandled(true);
       }
 		}
