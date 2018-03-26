@@ -357,7 +357,37 @@ function endsWith(str, suff) {
 	return str.indexOf(suff, pos) != -1;
 }
 
+function checkResetCacheNeeded(data) {
+	if (data['WMT'] != 'none') {
+		wt = data['wtotals'];
+		if (wt.length == 0) {
+			return false;
+		}
+		first = wt[0];
+		maxY = first['year'];
+		inner = first['data'];
+		maxW = inner.length;
+		$.ajax({
+			url: 'checkCache',
+			method: 'POST',
+			dataType: 'json',
+			headers: {
+				'Content-Type': 'application/json',
+				'maxYear': maxY,
+				'maxWeek': maxW
+			},
+			statusCode: {
+				409: function (data) {
+					fetch(true);
+				}
+			}
+		});
+	}
+	return false;
+}
+
 function initContent(data) {
+	checkResetCacheNeeded(data);
 	itemsDS = [];
 	$('#dataHolder').html('');
 	all = data['activities'];
@@ -769,6 +799,7 @@ function fetch(getWMTotals) {
 				for (i = 0; i < dashCount; ++i) {
 					$('#dashboard' + i).prop("disabled", false);
 				}
+				checkResetCacheNeeded(data);
 			},
 			400: function (data) {
 				$(".presetButton").removeClass('selectedDash');
