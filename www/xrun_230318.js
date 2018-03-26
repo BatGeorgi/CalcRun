@@ -1110,6 +1110,8 @@ function initDashboards(fetchAfterInit) {
 					}
 				});
 				$('#allDash').html(dashHtml + '</ul>');
+				$("#dashSort").sortable();
+				$("#dashSort").disableSelection();
 				$.each(arr, function (i, item) {
 					if (item == 'Main') {
 						$('#dashboard' + i).addClass('selectedDash');
