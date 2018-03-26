@@ -611,6 +611,9 @@ public class SQLiteManager {
 	  if (data != null && data.keys().hasNext()) {
 	    activity.put("isModified", "y");
 	  }
+	  if (isSecured(activity.getString("genby"))) {
+	    activity.put("secured", true);
+	  }
     if (includeSplitsAndDistr) {
       JSONArray splits = activity.getJSONArray("splits");
       double accEle = 0.0;

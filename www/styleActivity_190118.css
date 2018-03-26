@@ -20,6 +20,9 @@
 	color: #1c9e45;
 	text-shadow: 2px 2px black;
 }
+#nodata {
+	text-align: center;
+}
 #mainstats {
 	text-align:left;
 	font-size: 120%;
