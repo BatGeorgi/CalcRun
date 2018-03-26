@@ -829,28 +829,49 @@ class CalcDistHandler extends AbstractHandler {
   
   private void processFetchActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
   	String name = target.substring(4);
+  	boolean isProtected = false;
   	JSONObject json = rcUtils.getActivity(name);
   	if (json == null) {
   		json = rcUtils.getActivity(name + ".gpx");
+  		isProtected = rcUtils.isSecured(name + ".gpx");
+  	} else {
+  	  isProtected = rcUtils.isSecured(name);
   	}
-  	PrintWriter pw = response.getWriter();
-  	response.setContentType("application/json");
-  	try {
-  		if (json == null) {
-    		pw.println("No data :(");
-    		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    	} else {
-    		pw.println(json.toString());
-    		response.setStatus(HttpServletResponse.SC_OK);
-    	}
-  	} finally {
-  		pw.flush();
-  	}
+    if (isProtected && !isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    } else {
+      PrintWriter pw = response.getWriter();
+      response.setContentType("application/json");
+      try {
+        if (json == null) {
+          pw.println("No data :(");
+          response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        } else {
+          pw.println(json.toString());
+          response.setStatus(HttpServletResponse.SC_OK);
+        }
+      } finally {
+        pw.flush();
+      }
+    }
   	baseRequest.setHandled(true);
   }
   
   private void processGetGoords(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-    JSONObject data = rcUtils.retrieveCoords(baseRequest.getHeader("activity"), "true".equals(baseRequest.getHeader("perc")));
+    String name = baseRequest.getHeader("activity");
+    boolean isProtected = false;
+    JSONObject json = rcUtils.getActivity(name);
+    if (json != null) {
+      isProtected = rcUtils.isSecured(name);
+    } else {
+      isProtected = rcUtils.isSecured(name + ".gpx");
+    }
+    if (isProtected && !isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+      baseRequest.setHandled(true);
+      return;
+    }
+    JSONObject data = rcUtils.retrieveCoords(name, "true".equals(baseRequest.getHeader("perc")));
     response.setContentType("application/json");
     if (data == null) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);

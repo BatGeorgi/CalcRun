@@ -220,7 +220,8 @@ function initActionDialogs() {
 						'actLoss': $('#actLoss').val(),
 						'garminLink': $('#chooseGarmin').val(),
 						'ccLink': $('#chooseCC').val(),
-						'photosLink': $('#choosePhotos').val()
+						'photosLink': $('#choosePhotos').val(),
+						'secure': $('#setProtected:checked').length > 0
 					},
 					method: 'POST',
 					dataType: 'json',

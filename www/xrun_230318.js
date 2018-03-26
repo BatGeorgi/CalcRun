@@ -694,13 +694,15 @@ function initContent(data) {
 					optsRem += '<option value="' + name + '">' + name + '</option>';
 				}
 			}
+			checkBoxData = '<input type="checkbox" id="setProtected" ' + (item['secured'] ? 'checked' : '') + '/>';
 			$('#editable').html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
 				getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td>' +
 				'<tr><td>Garmin </td><td><input size="50" type="text" id="chooseGarmin" value="' + (item['garminLink'] != 'none' ? item['garminLink'] : "") + '"/></td></tr>' +
 				'<tr><td>Relive CC </td><td><input size="50" type="text" id="chooseCC" value="' + (item['ccLink'] != 'none' ? decodeURIComponent(item['ccLink']) : "") + '"/></td></tr>' +
 				'<tr><td>Photos </td><td><input size="50" type="text" id="choosePhotos" value="' + (item['photosLink'] != 'none' ? decodeURIComponent(item['photosLink']) : "") + '"/></td></tr>' +
 				'<tr><td>Add to dashboard</td><td><select id="addToDash">' + optsAdd + '</select></td></tr>' +
-				'<tr><td>Remove from dashboard</td><td><select id="remFromDash">' + optsRem + '</select></td></tr></tbody></table>' +
+				'<tr><td>Remove from dashboard</td><td><select id="remFromDash">' + optsRem + '</select></td></tr>' +
+				'<tr><td>Protected</td><td>' + checkBoxData + '</td></tbody></table>' +
 				'<u><h2>Modifications</h2></u><p><h4>Optional. Leave empty to keep old data.</h4>' +
 				'<table><tbody><tr><td>Actual distance</td><td><input type="text" id="actDist" /></td></tr>' +
 				'<tr><td>Actual time(hh:mm:ss)</td><td><input type="text" id="actTime" /></td></tr>' +
