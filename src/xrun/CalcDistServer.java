@@ -110,7 +110,8 @@ class CalcDistHandler extends AbstractHandler {
   
   private static final String SEP = "#$^";
   
-  private String cachedDefaultFetch;
+  private String cachedDefaultFetchLoggedIn;
+  private String cachedDefaultFetchNotLoggedIn;
   private long counter = 0;
 
   private static boolean isAuthorized(String password) {
@@ -158,13 +159,18 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private synchronized void resetCache() { // MUST be called once before modification and once after
-    cachedDefaultFetch = null;
+    cachedDefaultFetchLoggedIn = null;
+    cachedDefaultFetchNotLoggedIn = null;
     ++counter;
   }
   
-  private synchronized void trySetNewCache(long oldCounter, String cache) {
+  private synchronized void trySetNewCache(long oldCounter, String cache, boolean loggedIn) {
     if (oldCounter == counter) {
-      cachedDefaultFetch = cache;
+      if (loggedIn) {
+        cachedDefaultFetchLoggedIn = cache;
+      } else {
+        cachedDefaultFetchNotLoggedIn = cache;
+      }
     }
   }
   
@@ -438,8 +444,9 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+    boolean isLoggedIn = isLoggedIn(baseRequest);
     String result = null;
-    final String cached = cachedDefaultFetch;
+    final String cached = isLoggedIn ? cachedDefaultFetchLoggedIn : cachedDefaultFetchNotLoggedIn;
     boolean isDefault = isDefaultFetch(baseRequest);
     if (isDefault) {
       result = cached;
@@ -453,7 +460,7 @@ class CalcDistHandler extends AbstractHandler {
         if (data != null) { // in other case request is handled
           result = data.toString();
           if (isDefault && "true".equals(baseRequest.getHeader("getWMTotals"))) {
-            trySetNewCache(localCounter, result);
+            trySetNewCache(localCounter, result, isLoggedIn);
           }
         }
       }
@@ -587,7 +594,7 @@ class CalcDistHandler extends AbstractHandler {
       filterStr.append(", matching the name regex");
     }
     JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
-        startDate, endDate, dmin, dmax, dash, periodLen, getWMT);
+        startDate, endDate, dmin, dmax, dash, periodLen, getWMT, isLoggedIn(baseRequest));
     List<String> types = new LinkedList<String>();
     if (run) {
       types.add(RunCalcUtils.RUNNING);

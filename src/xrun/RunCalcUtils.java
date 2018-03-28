@@ -228,7 +228,8 @@ public class RunCalcUtils {
   }
   
   JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen, boolean getWMT) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen, boolean getWMT,
+      boolean isLoggedIn) {
     if (dashboard == null || dashboard.trim().length() == 0) {
       dashboard = SQLiteManager.MAIN_DASHBOARD;
     }
@@ -252,6 +253,8 @@ public class RunCalcUtils {
         totals.put("elePos", totals.getLong("elePos") - cr.getLong("eleTotalPos"));
         totals.put("eleNeg", totals.getLong("eleNeg") - cr.getLong("eleTotalNeg"));
         totals.put("totalRunDist", totals.getDouble("totalRunDist") - cr.getDouble("distRunningRaw"));
+      } else if (!isLoggedIn && cr.optBoolean("secured")) {
+        it.remove();
       } else {
       	++count;
       }

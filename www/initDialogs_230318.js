@@ -743,6 +743,7 @@ function initControlDialogs() {
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
 							$('#loginButton').text("Logout");
+							fetch(true);
 						},
 						401: function (xhr) {
 							$('#infoDialog').html('Please sign in!');
@@ -786,6 +787,7 @@ function initControlDialogs() {
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
 							$('#loginButton').text("Login");
+							fetch(true);
 						},
 						401: function (xhr) {
 							$('#infoDialog').html('Not logged in!');
