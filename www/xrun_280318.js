@@ -386,8 +386,7 @@ function checkResetCacheNeeded(data) {
 	return false;
 }
 
-function initContent(data) {
-	checkResetCacheNeeded(data);
+function initContent(data, skipCache) {
 	itemsDS = [];
 	$('#dataHolder').html('');
 	all = data['activities'];
@@ -402,6 +401,7 @@ function initContent(data) {
 		$('#overallLoader').html('');
 		return false;
 	}
+	checkResetCacheNeeded(data);
 	$('#overall').show();
 	$('#overallLoader').html('');
 	$('#runs').show();
@@ -810,7 +810,7 @@ function fetch(getWMTotals) {
 				for (i = 0; i < dashCount; ++i) {
 					$('#dashboard' + i).prop("disabled", false);
 				}
-				initContent({'activities': [], 'filter': ''});
+				initContent({'activities': [], 'filter': ''}, 'y');
 			},
 			401: function (data) {
 				$(".presetButton").removeClass('selectedDash');
