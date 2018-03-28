@@ -222,6 +222,14 @@ public class RunCalcUtils {
   	return null;
   }
   
+  private void removeFromTotals(JSONObject totals, JSONObject cr) {
+    totals.put("totalDistance", totals.getDouble("totalDistance") - cr.getDouble("distRaw"));
+    totals.put("totalTime", totals.getLong("totalTime") - cr.getLong("timeTotalRaw"));
+    totals.put("elePos", totals.getLong("elePos") - cr.getLong("eleTotalPos"));
+    totals.put("eleNeg", totals.getLong("eleNeg") - cr.getLong("eleTotalNeg"));
+    totals.put("totalRunDist", totals.getDouble("totalRunDist") - cr.getDouble("distRunningRaw"));
+  }
+  
   private List<JSONObject> filter(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
     return sqLite.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance);
@@ -248,13 +256,10 @@ public class RunCalcUtils {
       JSONObject cr = it.next();
       if (!matchName(nameFilter, cr.getString("name")) || !isFromDashboard(cr, dashboard)) {
         it.remove();
-        totals.put("totalDistance", totals.getDouble("totalDistance") - cr.getDouble("distRaw"));
-        totals.put("totalTime", totals.getLong("totalTime") - cr.getLong("timeTotalRaw"));
-        totals.put("elePos", totals.getLong("elePos") - cr.getLong("eleTotalPos"));
-        totals.put("eleNeg", totals.getLong("eleNeg") - cr.getLong("eleTotalNeg"));
-        totals.put("totalRunDist", totals.getDouble("totalRunDist") - cr.getDouble("distRunningRaw"));
+        removeFromTotals(totals, cr);
       } else if (!isLoggedIn && cr.optBoolean("secured")) {
         it.remove();
+        removeFromTotals(totals, cr);
       } else {
       	++count;
       }
