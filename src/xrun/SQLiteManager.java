@@ -1248,6 +1248,17 @@ public class SQLiteManager {
 	  conn = null;
 	  connDB2 = null;
 	}
+	
+  synchronized void cleanupReliveCCBefore(Calendar cal) {
+    int day = cal.get(Calendar.DAY_OF_MONTH);
+    int month = cal.get(Calendar.MONTH);
+    int year = cal.get(Calendar.YEAR);
+    StringBuffer whereClause = new StringBuffer();
+    whereClause.append("(YEAR < " + year + ") OR ");
+    whereClause.append("(YEAR = " + year + " AND MONTH < " + month + ") OR ");
+    whereClause.append("(YEAR = " + year + " AND MONTH = " + month + " AND DAY <= " + day + ")");
+    executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET ccLink='none' WHERE " + whereClause.toString(), false);
+  }
 
 }
 
