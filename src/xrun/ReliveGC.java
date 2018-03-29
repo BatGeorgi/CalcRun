@@ -8,12 +8,14 @@ import java.util.TimerTask;
 
 public class ReliveGC extends TimerTask {
 
+  private RunCalcUtils     rcUtils;
   private SQLiteManager    sqLite;
   private Timer            timer          = new Timer();
 
   private static final int CLEANUP_PERIOD = 24 * 3600 * 1000; // one day
 
-  ReliveGC(SQLiteManager sqLite) {
+  ReliveGC(RunCalcUtils rcUtils, SQLiteManager sqLite) {
+    this.rcUtils = rcUtils;
     this.sqLite = sqLite;
     run();
     timer.scheduleAtFixedRate(this, CLEANUP_PERIOD, CLEANUP_PERIOD);
@@ -23,6 +25,7 @@ public class ReliveGC extends TimerTask {
     GregorianCalendar cal = new GregorianCalendar(TimeZone.getDefault());
     cal.add(Calendar.MONTH, -4);
     sqLite.cleanupReliveCCBefore(cal);
+    rcUtils.resetHandlerCache();
   }
 
   void dispose() {

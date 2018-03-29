@@ -147,7 +147,7 @@ class CalcDistHandler extends AbstractHandler {
 
   public CalcDistHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile, List<String> allowedRefs)
   		throws IOException {
-    rcUtils = new RunCalcUtils(tracksBase, clientSecret);
+    rcUtils = new RunCalcUtils(this, tracksBase, clientSecret);
     this.activityTemplateFile = activityTemplateFile;
     this.comparisonTemplateFile = comparisonTemplateFile;
     this.allowedRefs = allowedRefs;
@@ -158,7 +158,7 @@ class CalcDistHandler extends AbstractHandler {
     return counter;
   }
   
-  private synchronized void resetCache() { // MUST be called once before modification and once after
+  synchronized void resetCache() { // MUST be called once before modification and once after
     cachedDefaultFetchLoggedIn = null;
     cachedDefaultFetchNotLoggedIn = null;
     ++counter;
