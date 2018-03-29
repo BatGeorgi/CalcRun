@@ -34,13 +34,15 @@ public class RunCalcUtils {
   private GoogleDrive drive;
   private CookieHandler cookieHandler;
   private ReliveGC reliveGC;
+  private CalcDistHandler handler;
   
-  RunCalcUtils(File base, File clientSecret) {
+  RunCalcUtils(CalcDistHandler handler, File base, File clientSecret) {
+    this.handler = handler;
     sqLite = new SQLiteManager(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
     cookieHandler = new CookieHandler(sqLite);
-    reliveGC = new ReliveGC(sqLite);
+    reliveGC = new ReliveGC(this, sqLite);
     if (clientSecret != null) {
       drive = new GoogleDrive(clientSecret);
     }
@@ -54,7 +56,13 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(base, null).rescan();
+    new RunCalcUtils(null, base, null).rescan();
+  }
+  
+  void resetHandlerCache() {
+    if (handler != null) {
+      handler.resetCache();
+    }
   }
   
   Cookie generateCookie() {
