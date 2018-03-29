@@ -33,12 +33,14 @@ public class RunCalcUtils {
   private SQLiteManager sqLite;
   private GoogleDrive drive;
   private CookieHandler cookieHandler;
+  private ReliveGC reliveGC;
   
   RunCalcUtils(File base, File clientSecret) {
     sqLite = new SQLiteManager(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
     cookieHandler = new CookieHandler(sqLite);
+    reliveGC = new ReliveGC(sqLite);
     if (clientSecret != null) {
       drive = new GoogleDrive(clientSecret);
     }
@@ -654,6 +656,12 @@ public class RunCalcUtils {
   void dispose() {
     if (sqLite != null) {
       sqLite.close();
+    }
+    if (cookieHandler != null) {
+      cookieHandler.dispose();
+    }
+    if (reliveGC != null) {
+      reliveGC.dispose();
     }
   }
   
