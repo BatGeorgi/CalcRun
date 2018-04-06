@@ -18,7 +18,7 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun_280318.js"></script>
+	<script type="text/javascript" src="xrun_060418.js"></script>
 	<script type="text/javascript" src="initDialogs_280318.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
@@ -334,7 +334,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 3.7</strong></H1>
+        <H1><strong>Running Calc Tools 3.71</strong></H1>
 		<hr>
     </div>
 	
@@ -343,7 +343,7 @@
 	<div id="controls">
 		<img id="importButton" src="button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;" title="Add new activity"/>
 		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" title="Clear cached data"/>
-		<input id="aboutButton" type="image" src="images/about.png" width="40" height="40" title="Info"/>
+		<input id="aboutButton" type="image" src="images/about.png" width="40" height="40" title="About"/>
 		<button id="loginButton" class="controlButton" title="Authorization">Login</button>
 		<button id="hideFilters" class="controlButton" title="Toggle search filters">Show Filters</button>
 	</div>

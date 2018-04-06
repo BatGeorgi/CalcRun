@@ -1057,8 +1057,10 @@ function genRadioYear(year, ind, checked) {
 
 function getWeekData(data, type, fr, to) {
 	result = [];
-	$.each(data, function (i, item) {
-		if (i >= fr && i < to) {
+	len = data.length;
+	console.log(fr + ' ' + to);
+	for(i = fr; i < to && i < len; ++i) {
+			item = data[i];
 			ckey = 'count' + type;
 			cval = item.hasOwnProperty(ckey) ? '(' + item[ckey] + ')' : '';
 			info = item['info'];
@@ -1070,8 +1072,7 @@ function getWeekData(data, type, fr, to) {
 				"label": info + cval,
 				"value": parseFloat(item[type]).toFixed(1)
 			});
-		}
-	});
+	}
 	return result;
 }
 
@@ -1100,9 +1101,12 @@ function initWeeklyTotals(data) {
 		f = function () {
 			$('div[id^="wContainer"]').html('');
 			currentYearInd = parseInt($('input[name=selectYearW]:checked').attr('ind'));
-			for (j = 1; j <= 4; ++j) {
-				fr = 13 * (j - 1);
-				to = (j < 4 ? 13 * j : 100);
+			to = wtotals[currentYearInd]['data'].length;
+			for (j = 4; j > 0 && to >= 0; --j) {
+				fr = to - 13;
+				if (fr < 0) {
+					fr = 0;
+				}
 				optType = $('input[name=selectTypeW]:checked').val();
 				optText = $('input[name=selectTypeW]:checked').attr('hrn') + ' ' + wtotals[currentYearInd]['year'];
 				ftype = optType !== 'd' ? optType : 'totalPositiveEl';
@@ -1112,6 +1116,7 @@ function initWeeklyTotals(data) {
 				if (wd.length > 0) {
 					$('#' + gcn(optType, j)).insertFusionCharts(getChart(optText, "Year weekly report", "Week", yax, meas, wd, 'wid' + optType + j));
 				}
+				to -= 13;
 			}
 		};
 		$('input[name=selectTypeW],[name=selectYearW]').change(f);
