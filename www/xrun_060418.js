@@ -803,7 +803,7 @@ function fetch(getWMTotals) {
 			},
 			400: function (data) {
 				$(".presetButton").removeClass('selectedDash');
-				$('#infoDialog').html('Invalid distance arguments!');
+				$('#infoDialog').html('Invalid distance or period arguments!');
 				$('#infoDialog').dialog('option', 'title', 'Bad data');
 				$('#infoDialog').dialog('open');
 				$('#search').button("option", "disabled", false);

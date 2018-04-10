@@ -227,9 +227,6 @@ class CalcDistHandler extends AbstractHandler {
   }
   
   private Calendar parseDate(String dt) {
-    if (dt == null) {
-      return null;
-    }
     StringTokenizer st = new StringTokenizer(dt, "/,;", false);
     if (st.countTokens() != 3) {
       return null;
@@ -470,8 +467,10 @@ class CalcDistHandler extends AbstractHandler {
     } finally {
       pw.flush();
     }
-    response.setStatus(HttpServletResponse.SC_OK);
-    baseRequest.setHandled(true);
+    if (response.getStatus() != HttpServletResponse.SC_UNAUTHORIZED && response.getStatus() != HttpServletResponse.SC_BAD_REQUEST) {
+    	response.setStatus(HttpServletResponse.SC_OK);
+    	baseRequest.setHandled(true);
+    }
   }
   
   private JSONObject processFetch0(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
@@ -504,6 +503,7 @@ class CalcDistHandler extends AbstractHandler {
     Calendar currentDate = new GregorianCalendar();
     int mt = 0;
     int periodLen = 0;
+    boolean err = false;
     switch (dateOpt) {
       case 0: // this month
         startDate.set(Calendar.DAY_OF_MONTH, 1);
@@ -555,18 +555,44 @@ class CalcDistHandler extends AbstractHandler {
         startDate = null;
         break;
       case 6: // custom
-        startDate = parseDate(baseRequest.getHeader("dtStart"));
-        endDate = parseDate(baseRequest.getHeader("dtEnd"));
-        ZonedDateTime zd1 = ZonedDateTime.of(startDate.get(Calendar.YEAR), startDate.get(Calendar.MONTH) + 1, startDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
-        ZonedDateTime zd2 = ZonedDateTime.of(endDate.get(Calendar.YEAR), endDate.get(Calendar.MONTH) + 1, endDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
-        periodLen =  (int) Duration.between(zd1, zd2).toDays() + 1;
+      	String dts = baseRequest.getHeader("dtStart");
+      	String dte = baseRequest.getHeader("dtEnd");
+      	Calendar tempED = new GregorianCalendar(TimeZone.getDefault());
+      	if (dts != null && dts.trim().length() > 0) {
+      		startDate = parseDate(dts);
+      		if (startDate == null) {
+      			err = true;
+      		}
+      	} else {
+      		periodLen = 0;
+      		startDate = null;
+      	}
+      	if (dte != null && dte.trim().length() > 0) {
+      		endDate = parseDate(dte);
+      		if (endDate == null) {
+      			err = true;
+      		} else {
+      			tempED = endDate;
+      		}
+      	} else {
+      		endDate = null;
+      	}
+      	if (startDate != null) {
+      		ZonedDateTime zd1 = ZonedDateTime.of(startDate.get(Calendar.YEAR), startDate.get(Calendar.MONTH) + 1, startDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
+      		ZonedDateTime zd2 = ZonedDateTime.of(tempED.get(Calendar.YEAR), tempED.get(Calendar.MONTH) + 1, tempED.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
+      		periodLen =  (int) Duration.between(zd1, zd2).toDays() + 1;
+      	}
         filterStr.append(" in period " + getDateStr(startDate, "Begining") + " - " + getDateStr(endDate, "Now"));
+    }
+    if (err) {
+    	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+    	baseRequest.setHandled(true);
+    	return null;
     }
     String smin = baseRequest.getHeader("dmin");
     String smax = baseRequest.getHeader("dmax");
     int dmin = 0;
     int dmax = Integer.MAX_VALUE;
-    boolean err = false;
     try {
       if (smin != null && smin.trim().length() > 0) {
         dmin = Integer.parseInt(smin);
