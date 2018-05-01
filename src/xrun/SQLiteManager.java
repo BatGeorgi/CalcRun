@@ -430,7 +430,7 @@ public class SQLiteManager {
 	
 	synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
 	    int top, String dashboard) throws SQLException {
-	  ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", true);
+	  ResultSet rs = executePreparedQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name=?", new Object[] {name});
 	  if (rs != null && rs.next()) {
 	    updatePreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
 	    return false;
@@ -772,7 +772,7 @@ public class SQLiteManager {
 	
 	synchronized boolean isSecured(String fileName) {
 		try {
-			ResultSet rs = executeQuery("SELECT * FROM " + SECURED_TABLE_NAME + " WHERE id='" + fileName + "'", true);
+			ResultSet rs = executePreparedQuery("SELECT * FROM " + SECURED_TABLE_NAME + " WHERE id=?", new Object[] {fileName});
 			return rs != null && rs.next();
 		} catch (SQLException se) {
 			System.out.println("Error checking secured flag");
@@ -801,7 +801,7 @@ public class SQLiteManager {
 	
 	synchronized JSONObject getActivity(String fileName) {
 	  try {
-	    return readActivity(executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', true), true);
+	    return readActivity(executePreparedQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby=?", new Object[] {fileName}), true);
 	  } catch (Exception e) {
 	    System.out.println("Error reading activity " + fileName);
 	    e.printStackTrace();
@@ -811,7 +811,7 @@ public class SQLiteManager {
 	
 	synchronized boolean hasActivity(String fileName) {
 	  try {
-      return executeQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', true).next();
+      return executePreparedQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby=?", new Object[] {fileName}).next();
     } catch (SQLException e) {
       return false;
     }
@@ -822,10 +822,10 @@ public class SQLiteManager {
 	  extArr.put(EXTERNAL_DASHBOARD);
 	  String extS = extArr.toString();
     try {
-      ResultSet rs = executeQuery("SELECT date, genby, " + columnName + " FROM " + RUNS_TABLE_NAME +
+      ResultSet rs = executePreparedQuery("SELECT date, genby, " + columnName + " FROM " + RUNS_TABLE_NAME +
           " WHERE " + columnName +
           "=(SELECT MAX(" + columnName + ") FROM " + RUNS_TABLE_NAME +
-          " WHERE dashboards!='" + extS + "')", true);
+          " WHERE dashboards!=?)", new Object[] {extS});
       if (rs == null || !rs.next()) {
         return null;
       }
@@ -889,11 +889,11 @@ public class SQLiteManager {
 	}
 	
 	synchronized void addToDashboard(String activity, String dashboard) throws SQLException {
-	  ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + dashboard + "'", true);
+	  ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", new Object[] {dashboard});
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard not found");
     }
-	  rs = executeQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+	  rs = executePreparedQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby=?", new Object[] {activity});
 	  if (!rs.next()) {
 	    throw new IllegalArgumentException("Activity not found");
 	  }
@@ -902,15 +902,16 @@ public class SQLiteManager {
 	    throw new IllegalArgumentException("Activity already in dashboard");
 	  }
 	  dashboards.put(dashboard);
-	  executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + dashboards.toString() + "' WHERE genby='" + activity + "'", false);
+	  executePreparedQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards=? WHERE genby=?",
+	  		new Object[] {dashboards.toString(), activity});
 	}
 	
 	synchronized void removeFromDashboard(String activity, String dashboard) throws SQLException {
-	  ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + dashboard + "'", true);
+	  ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", new Object[] {dashboard});
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard not found");
     }
-    rs = executeQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+    rs = executePreparedQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby=?", new Object[] {activity});
     if (!rs.next()) {
       throw new IllegalArgumentException("Activity not found");
     }
@@ -923,7 +924,8 @@ public class SQLiteManager {
       throw new IllegalArgumentException("Activity must be present in at least one dashboard");
     }
     dashboards.remove(ind);
-    executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + dashboards.toString() + "' WHERE genby='" + activity + "'", false);
+    executePreparedQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards=? WHERE genby=?",
+    		new Object[] {dashboards.toString(), activity});
   }
 	
   synchronized void addDashboard(String name) throws SQLException {
@@ -943,11 +945,11 @@ public class SQLiteManager {
     if (MAIN_DASHBOARD.equals(name) || MAIN_DASHBOARD.equals(newName)) {
       throw new IllegalArgumentException("Cannot rename main dashboard");
     }
-    ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + newName + "'", true);
+    ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", new Object[] {newName});
     if (rs.next()) {
       throw new IllegalArgumentException("Dashboard " + newName + " already exists");
     }
-    rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + name + "'", true);
+    rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", new Object[] {name});
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard " + name + " doest not exist");
     }
@@ -968,10 +970,11 @@ public class SQLiteManager {
       }
       if (mod) {
         String genby = rs.getString(1);
-        executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
+        executePreparedQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards=? WHERE genby=?",
+        		new Object[] {arr.toString(), genby});
       }
     }
-    executeQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + newName + "' WHERE dashboard='" + name + "'", false);
+    executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard=? WHERE dashboard=?" + name + "'", new Object[] {newName, name});
   }
 
   synchronized void removeDashboard(String name) throws SQLException {
@@ -1041,7 +1044,7 @@ public class SQLiteManager {
 	
   synchronized boolean saveCookie(String uid, Calendar expires) {
     try {
-      boolean hasCookie = executeQuery("SELECT uid FROM " + COOKIES_TABLE_NAME + " WHERE uid='" + uid + "'", true)
+      boolean hasCookie = executePreparedQuery("SELECT uid FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", new Object[] {uid})
           .next();
       if (!hasCookie) {
         StringBuffer sb = new StringBuffer();
