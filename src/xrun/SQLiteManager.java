@@ -3,6 +3,7 @@ package xrun;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -564,7 +565,7 @@ public class SQLiteManager {
     }
   }
 	
-	synchronized void addActivity(JSONObject entry) {
+	synchronized void addActivity(JSONObject entry) throws SQLException {
 	  boolean isExt = isExternal(entry.getJSONArray("dashboards").toString());
 	  entry.put("isExt", isExt ? 1 : 0);
 	  StringBuffer sb = new StringBuffer();
@@ -572,24 +573,49 @@ public class SQLiteManager {
 	  if (!entry.has("origData")) {
 	    entry.put("origData", new JSONObject());
 	  }
+	  Object[] values = new Object[KEYS.length];
 	  for (int i = 0; i < KEYS.length; ++i) {
 	    String str = entry.get(KEYS[i]).toString();
 	    if ("real".equals(TYPES[i])) {
-	      str = str.replace(',', '.');
+	      values[i] = Double.valueOf(str);
 	    } else if ("text".equals(TYPES[i])) {
-	      str = "'" + str + "'";
+	      values[i] = str;
+	    } else { // integer
+	    	values[i] = Long.valueOf(str);
 	    }
-	    sb.append(str);
+	    sb.append(" ?");
 	    if (i < KEYS.length - 1) {
 	      sb.append(", ");
 	    }
 	  }
 	  sb.append(')');
-    executeQuery(sb.toString(), false);
+    executePreparedQuery(sb.toString(), values);
     if (entry.has("lons") && entry.has("lats") && entry.has("times") && entry.has("markers")) {
       addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"), entry.getJSONArray("times"),
       		entry.getJSONArray("markers"));
     }
+	}
+	
+	private Object executePreparedQuery(String statement, Object[] values)
+			throws SQLException {
+		Object result = null;
+		PreparedStatement prep = conn.prepareStatement(statement);
+		for (int i = 0; i < values.length; ++i) {
+			if (values[i] instanceof String) {
+				prep.setString(i + 1, (String) values[i]);
+			} else if (values[i] instanceof Long || values[i] instanceof Integer) {
+				prep.setLong(i + 1, ((Number) values[i]).longValue());
+			} else if (values[i] instanceof Double || values[i] instanceof Float) {
+				prep.setDouble(i + 1, ((Number) values[i]).doubleValue());
+			}
+		}
+		if (prep.execute()) {
+			result = prep.getResultSet();
+		}
+		if (!conn.getAutoCommit()) {
+			conn.commit();
+		}
+		return result;
 	}
 	
 	private JSONObject readActivity(ResultSet rs, boolean includeSplitsAndDistr) throws JSONException, SQLException {

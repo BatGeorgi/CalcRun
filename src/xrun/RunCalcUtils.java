@@ -515,31 +515,41 @@ public class RunCalcUtils {
     return result;
   }
   
-  void editActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure, JSONObject mods) {
-    JSONObject activity = sqLite.getActivity(fileName);
-    if (activity == null) {
-      return;
-    }
-    if (mods != null) { 
-      if (modifyActivity(activity, mods)) {
-        activity.put("name", newName);
-        activity.put("type", newType);
-        activity.put("garminLink", newGarmin.length() > 0 ? newGarmin : "none");
-        activity.put("ccLink", newCC.length() > 0 ? newCC : "none");
-        activity.put("photosLink", newPhotos.length() > 0 ? newPhotos : "none");
-        sqLite.deleteActivity(fileName);
-        sqLite.addActivity(activity);
-      } else {
-        sqLite.updateActivity(fileName, newName, newType, newGarmin, newCC, newPhotos, secure);
-      }
-    } else if (revertActivityChanges(activity)) {
-      sqLite.deleteActivity(fileName);
-      sqLite.addActivity(activity);
-    }
-    if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
-    }
-  }
+	String editActivity(String fileName, String newName, String newType,
+			String newGarmin, String newCC, String newPhotos, boolean secure,
+			JSONObject mods) {
+		JSONObject activity = sqLite.getActivity(fileName);
+		if (activity == null) {
+			return null;
+		}
+		try {
+			if (mods != null) {
+				if (modifyActivity(activity, mods)) {
+					activity.put("name", newName);
+					activity.put("type", newType);
+					activity.put("garminLink", newGarmin.length() > 0 ? newGarmin
+							: "none");
+					activity.put("ccLink", newCC.length() > 0 ? newCC : "none");
+					activity.put("photosLink", newPhotos.length() > 0 ? newPhotos
+							: "none");
+					sqLite.deleteActivity(fileName);
+					sqLite.addActivity(activity);
+				} else {
+					sqLite.updateActivity(fileName, newName, newType, newGarmin, newCC,
+							newPhotos, secure);
+				}
+			} else if (revertActivityChanges(activity)) {
+				sqLite.deleteActivity(fileName);
+				sqLite.addActivity(activity);
+			}
+		} catch (Exception e) {
+			return "Error editing activity " + fileName + ": " + e.getMessage();
+		}
+		if (drive != null) {
+			drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+		}
+		return null;
+	}
   
   String setFeatures(String fileName, String descr, List<String> links) {
     try {

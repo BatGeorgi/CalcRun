@@ -713,8 +713,13 @@ class CalcDistHandler extends AbstractHandler {
       if (newLoss != null) {
         mods.put("loss", newLoss);
       }
-      rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, secureFlag, mods);
-      response.setStatus(HttpServletResponse.SC_OK);
+      String result = rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, secureFlag, mods);
+      if (result == null) {
+      	response.setStatus(HttpServletResponse.SC_OK);
+      } else {
+      	response.getWriter().println(result);
+      	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      }
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -731,8 +736,13 @@ class CalcDistHandler extends AbstractHandler {
     resetCache();
     String fileName = baseRequest.getHeader("File");
     if (fileName != null && fileName.length() > 0) {
-      rcUtils.editActivity(fileName, null, null, null, null, null, false, null);
-      response.setStatus(HttpServletResponse.SC_OK);
+      String result = rcUtils.editActivity(fileName, null, null, null, null, null, false, null);
+      if (result == null) {
+      	response.setStatus(HttpServletResponse.SC_OK);
+      } else {
+      	response.getWriter().println(result);
+      	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      }
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
