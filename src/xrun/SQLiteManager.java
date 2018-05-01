@@ -750,7 +750,7 @@ public class SQLiteManager {
 	  return result;
   }
 	
-	synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure) {
+	synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure) throws SQLException {
 	  StringBuffer sb = new StringBuffer();
 	  if (newGarmin == null || newGarmin.length() == 0) {
       newGarmin = "none";
@@ -761,10 +761,8 @@ public class SQLiteManager {
 	  if (newPhotos == null || newPhotos.length() == 0) {
       newPhotos = "none";
     }
-	  sb.append("UPDATE " + RUNS_TABLE_NAME + " SET name ='" + newName + "', type ='" + newType +
-	      "', garminLink='" + newGarmin + "', ccLink='" + newCC + "', photosLink='" + newPhotos);
-	  sb.append("' WHERE genby='" + fileName + '\'');
-	  executeQuery(sb.toString(), false);
+	  sb.append("UPDATE " + RUNS_TABLE_NAME + " SET name = ?, type = ?, garminLink = ?, ccLink = ?, photosLink = ? WHERE genby = ?");
+	  executePreparedQuery(sb.toString(), new Object[] {newName, newType, newGarmin, newCC, newPhotos, fileName});
 	  setSecureFlag(fileName, secure);
 	}
 	
@@ -943,7 +941,7 @@ public class SQLiteManager {
     if (MAIN_DASHBOARD.equals(name)) {
       throw new IllegalArgumentException("Cannot re-add main dashboard");
     }
-    executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + name + "')", false);
+    executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", new Object[] {name});
   }
 
   synchronized void renameDashboard(String name, String newName) throws SQLException {
@@ -991,7 +989,7 @@ public class SQLiteManager {
     if (MAIN_DASHBOARD.equals(name)) {
       throw new IllegalArgumentException("Cannot remove main dashboard");
     }
-    executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME + " WHERE name='" + name + "'", false);
+    executePreparedQuery("DELETE FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", new Object[] {name});
     ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
