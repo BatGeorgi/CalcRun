@@ -414,16 +414,18 @@ public class SQLiteManager {
 	  for (String link : links) {
 	    arr.put(link);
 	  }
-	  ResultSet rs = executeQueryExc("SELECT * FROM " + FEATURES_TABLE_NAME + " WHERE id='" + id + "'", true);
+	  ResultSet rs = executePreparedQuery("SELECT * FROM " + FEATURES_TABLE_NAME + " WHERE id=?", new Object[] {id});
 	  if (rs == null || !rs.next()) {
-	    executeQueryExc("INSERT INTO " + FEATURES_TABLE_NAME + " VALUES('" + id + "', '" + descr + "', '" + arr.toString() + "')", false);
+	    executePreparedQuery("INSERT INTO " + FEATURES_TABLE_NAME + " VALUES(?, ?, ?)",
+	    		new Object[] {id, descr, arr.toString()});
 	  } else {
-	    executeQueryExc("UPDATE " + FEATURES_TABLE_NAME + " SET descr='" + descr + "', links='" + arr.toString() + "' WHERE id='" + id + "'", false);
+	    executePreparedQuery("UPDATE " + FEATURES_TABLE_NAME + " SET descr=?, links=? WHERE id=?",
+	    		new Object[] {descr, arr.toString(), id});
 	  }
 	}
 	
 	synchronized private void removeFeatures(String id) throws SQLException {
-	  executeQueryExc("DELETE FROM " + FEATURES_TABLE_NAME + " WHERE id='" + id + "'", false);
+	  executePreparedQuery("DELETE FROM " + FEATURES_TABLE_NAME + " WHERE id=?", new Object[] {id});
 	}
 	
 	synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
@@ -433,27 +435,16 @@ public class SQLiteManager {
 	    updatePreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
 	    return false;
 	  }
-		StringBuffer sb = new StringBuffer("INSERT INTO " + PRESETS_TABLE_NAME + " VALUES(");
-		sb.append("'" + name + "', ");
-		sb.append("'" + types + "', ");
-		sb.append("'" + pattern + "', ");
-		sb.append("'" + startDate + "', ");
-		sb.append("'" + endDate + "', ");
-		sb.append(minDist + ", " + maxDist + ", " + top + ", '" + dashboard + "')");
-		executeQueryExc(sb.toString(), false);
+		executePreparedQuery("INSERT INTO " + PRESETS_TABLE_NAME + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
+				new Object[] {name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard});
 		return true;
 	}
 	
 	private void updatePreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
       int top, String dashboard) throws SQLException {
 	  StringBuffer sb = new StringBuffer("UPDATE " + PRESETS_TABLE_NAME + " SET ");
-    sb.append("types='" + types + "', ");
-    sb.append("pattern='" + pattern + "', ");
-    sb.append("startDate='" + startDate + "', ");
-    sb.append("endDate='" + endDate + "', ");
-    sb.append("minDist=" + minDist + ", maxDist=" + maxDist + ", top=" + top + ", dashboard='" + dashboard + "' ");
-    sb.append("WHERE name='" + name + "'");
-    executeQueryExc(sb.toString(), false);
+    sb.append("types=?, pattern=?, startDate=?, endDate=?, minDist=?, maxDist=?, top=?, dashboard=? WHERE name=?");
+    executePreparedQuery(sb.toString(), new Object[] {types, pattern, startDate, endDate, minDist, maxDist, top, dashboard, name});
 	}
 	
 	synchronized void renamePreset(String name, String newName) throws SQLException {
@@ -461,11 +452,11 @@ public class SQLiteManager {
 	  if (rs != null && rs.next()) {
 	    throw new IllegalArgumentException("Preset " + newName + " already exists");
 	  }
-		executeQueryExc("UPDATE " + PRESETS_TABLE_NAME + " SET name='" + newName + "' WHERE name='" + name + "'", false);
+		executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET name=? WHERE name=?", new Object[] {newName, name});
 	}
 	
 	synchronized void removePreset(String name) throws SQLException {
-		executeQueryExc("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name='" + name + "'", false);
+		executePreparedQuery("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name=?", new Object[] {name});
 	}
 	
 	synchronized JSONObject getPresetData(String name) {
@@ -561,7 +552,7 @@ public class SQLiteManager {
 	synchronized void reorderDashboards(List<String> dashboards) throws SQLException {
     executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME, false);
     for (String dashboard : dashboards) {
-      executeQueryExc("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + dashboard + "')", false);
+      executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", new Object[] {dashboard});
     }
   }
 	
@@ -596,9 +587,10 @@ public class SQLiteManager {
     }
 	}
 	
-	private Object executePreparedQuery(String statement, Object[] values)
+	private ResultSet executePreparedQuery(String statement, Object[] values)
 			throws SQLException {
-		Object result = null;
+		ensureActivitiesInit();
+		ResultSet result = null;
 		PreparedStatement prep = conn.prepareStatement(statement);
 		for (int i = 0; i < values.length; ++i) {
 			if (values[i] instanceof String) {
@@ -960,7 +952,7 @@ public class SQLiteManager {
       throw new IllegalArgumentException("Dashboard " + name + " doest not exist");
     }
     
-    executeQuery("UPDATE " + DASHBOARDS_TABLE_NAME + " SET name='" + newName + "' WHERE name='" + name + "'", false);
+    executePreparedQuery("UPDATE " + DASHBOARDS_TABLE_NAME + " SET name=? WHERE name=?", new Object[] {newName, name});
     rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
@@ -1004,10 +996,12 @@ public class SQLiteManager {
       }
       if (mod) {
         String genby = rs.getString(1);
-        executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards='" + arr.toString() + "' WHERE genby='" + genby + "'", false);
+        executePreparedQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards=? WHERE genby=?",
+        		new Object[] {arr.toString(), genby});
       }
     }
-    executeQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + MAIN_DASHBOARD + "' WHERE dashboard='" + name + "'", false);
+    executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + MAIN_DASHBOARD + "' WHERE dashboard=?",
+    		new Object[] {name});
   }
 
   synchronized JSONObject getDashboards() {
@@ -1035,8 +1029,8 @@ public class SQLiteManager {
       return false;
     }
     try {
-      ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME +
-          " WHERE name='" + dashboard + "'", true);
+      ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME +
+          " WHERE name=?", new Object[] {dashboard});
       return rs != null && rs.next();
     } catch (Exception e) {
       System.out.println("Error saving cookie");
@@ -1144,7 +1138,8 @@ public class SQLiteManager {
 	synchronized JSONObject getSplitsAndDist(String activity) {
 	  JSONObject json = null;
 	  try {
-	    ResultSet rs = executeQueryExc("SELECT splits, speedDist FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+	    ResultSet rs = executePreparedQuery("SELECT splits, speedDist FROM " + RUNS_TABLE_NAME + " WHERE genby=?",
+	    		new Object[] {activity});
 	    if (rs != null && rs.next()) {
 	      json = new JSONObject();
 	      JSONArray splits = new JSONArray(rs.getString("splits"));
@@ -1176,7 +1171,8 @@ public class SQLiteManager {
     List<DataEntry> entries = new ArrayList<>();
     boolean isFromExt = false;
     try {
-      ResultSet rs = executeQueryExc("SELECT dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME + " WHERE genby='" + activity + "'", true);
+      ResultSet rs = executePreparedQuery("SELECT dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME + " WHERE genby=?",
+      		new Object[] {activity});
       if (rs == null || !rs.next()) {
         return null;
       }
@@ -1235,8 +1231,7 @@ public class SQLiteManager {
       arr = new JSONArray();
       for (int i = 0; i < len; ++i) {
         String id = entries.get(i).getId();
-        rs = executeQueryExc("SELECT name, type, date, dist FROM " + RUNS_TABLE_NAME + " WHERE genby='" + id + "'",
-            true);
+        rs = executePreparedQuery("SELECT name, type, date, dist FROM " + RUNS_TABLE_NAME + " WHERE genby=?", new Object[] {id});
         if (rs != null && rs.next()) {
           JSONObject cr = new JSONObject();
           cr.put("id", id);
