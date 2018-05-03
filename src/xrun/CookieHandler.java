@@ -1,5 +1,6 @@
 package xrun;
 
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -35,7 +36,11 @@ class CookieHandler extends TimerTask {
   
   void removeCookie(Cookie cookie) {
   	if (COOKIE_NAME.equals(cookie.getName())) {
-  		sqLite.deleteCookie(cookie.getValue());
+  	  try {
+  	    sqLite.deleteCookie(cookie.getValue());
+  	  } catch (SQLException e) {
+  	    System.out.println("DB error deleting cookie");
+  	  }
   	}
   }
   

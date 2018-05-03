@@ -567,10 +567,6 @@ public class RunCalcUtils {
   	return sqLite.isSecured(fileName);
   }
   
-  void setSecureFlag(String fileName, boolean flag) {
-  	sqLite.setSecureFlag(fileName, flag);
-  }
-  
   void deleteActivity(String fileName) {
     File file = new File(gpxBase, fileName);
     if (file.isFile() && !file.delete()) {
