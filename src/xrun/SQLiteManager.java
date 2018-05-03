@@ -171,7 +171,7 @@ public class SQLiteManager {
       Calendar current = new GregorianCalendar(TimeZone.getDefault());
       int currentYear = current.get(Calendar.YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
-        rs = executeQuery("SELECT timeRawMs, type, distRaw, eleTotalPos, isExt FROM " + RUNS_TABLE_NAME + " WHERE year=" + years.get(i), true);
+        rs = executePreparedQuery("SELECT timeRawMs, type, distRaw, eleTotalPos, isExt FROM " + RUNS_TABLE_NAME + " WHERE year=?", years.get(i));
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
         if (years.get(i) == currentYear) {
@@ -760,9 +760,9 @@ public class SQLiteManager {
 	}
 	
 	synchronized void deleteActivity(String fileName) {
-	  executeQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby='" + fileName + '\'', false);
-	  executeQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id='" + fileName + '\'', false);
 	  try {
+	    executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
+	    executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
 	    removeFeatures(fileName);
 	  } catch (Exception e) {
 	    System.out.println("Error removing features for " + fileName);
@@ -1049,11 +1049,8 @@ public class SQLiteManager {
       boolean hasCookie = executePreparedQuery("SELECT uid FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", uid)
           .next();
       if (!hasCookie) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("INSERT INTO " + COOKIES_TABLE_NAME + " VALUES ('" + uid + "', '");
-        sb.append(expires.get(Calendar.YEAR) + "-" + expires.get(Calendar.MONTH) + "-" + expires.get(Calendar.DATE));
-        sb.append("')");
-        executeQuery(sb.toString(), false);
+        executePreparedQuery("INSERT INTO " + COOKIES_TABLE_NAME + " VALUES (?, ?)",
+            uid, expires.get(Calendar.YEAR) + "-" + expires.get(Calendar.MONTH) + "-" + expires.get(Calendar.DATE));
       }
       return !hasCookie;
     } catch (SQLException e) {
