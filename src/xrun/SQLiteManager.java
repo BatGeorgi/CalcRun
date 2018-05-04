@@ -138,7 +138,7 @@ public class SQLiteManager {
         ensureCoordsInit();
         ResultSet rs = connDB2.createStatement().executeQuery("SELECT data FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
         if (rs.next()) {
-          json = new JSONObject((String) rs.getString(1));
+          json = new JSONObject(JsonSanitizer.sanitize((String) rs.getString(1)));
         }
       }
     } catch (Exception e) {
@@ -262,7 +262,7 @@ public class SQLiteManager {
   }
   
   private static boolean isExternal(String dashboards) {
-    JSONArray arr = new JSONArray(dashboards);
+    JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dashboards));
     for (int i = 0; i < arr.length(); ++i) {
       if (EXTERNAL_DASHBOARD.equals(arr.getString(i))) {
         return true;
@@ -621,11 +621,11 @@ public class SQLiteManager {
 	    activity.put(KEYS[i], rs.getObject(i + 1));
 	  }
 	  if (includeSplitsAndDistr) {
-	    activity.put(KEYS[len - 3], new JSONArray(rs.getString(len - 2)));
-	    activity.put(KEYS[len - 2], new JSONArray(rs.getString(len - 1)));
+	    activity.put(KEYS[len - 3], new JSONArray(JsonSanitizer.sanitize(rs.getString(len - 2))));
+	    activity.put(KEYS[len - 2], new JSONArray(JsonSanitizer.sanitize(rs.getString(len - 1))));
 	  }
 	  String origData = rs.getString(len);
-	  activity.put(KEYS[len - 1], (origData != null ? new JSONObject(origData) : new JSONObject()));
+	  activity.put(KEYS[len - 1], (origData != null ? new JSONObject(JsonSanitizer.sanitize(origData)) : new JSONObject()));
 	  JSONObject data = activity.getJSONObject(KEYS[len - 1]);
 	  if (data != null && data.keys().hasNext()) {
 	    activity.put("isModified", "y");
@@ -878,7 +878,7 @@ public class SQLiteManager {
         JSONObject crnt = new JSONObject();
         crnt.put("name", rs.getString(1));
         crnt.put("date", rs.getString(2));
-        crnt.put("splits", new JSONArray(rs.getString(3)));
+        crnt.put("splits", new JSONArray(JsonSanitizer.sanitize(rs.getString(3))));
         crnt.put("genby", rs.getString(4));
         result.put(crnt);
       }
@@ -898,7 +898,7 @@ public class SQLiteManager {
 	  if (!rs.next()) {
 	    throw new IllegalArgumentException("Activity not found");
 	  }
-	  JSONArray dashboards = new JSONArray(rs.getString(1));
+	  JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(rs.getString(1)));
 	  if (RunCalcUtils.find(dashboards, dashboard) != -1) {
 	    throw new IllegalArgumentException("Activity already in dashboard");
 	  }
@@ -916,7 +916,7 @@ public class SQLiteManager {
     if (!rs.next()) {
       throw new IllegalArgumentException("Activity not found");
     }
-    JSONArray dashboards = new JSONArray(rs.getString(1));
+    JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(rs.getString(1)));
     int ind = RunCalcUtils.find(dashboards, dashboard);
     if (ind == -1) {
       throw new IllegalArgumentException("Activity not in dashboard");
@@ -990,7 +990,7 @@ public class SQLiteManager {
     ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
-      JSONArray arr = new JSONArray(dash);
+      JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dash));
       boolean mod = false;
       for (int i = 0; i < arr.length(); ++i) {
         if (name.equals(arr.get(i))) {
@@ -1144,7 +1144,7 @@ public class SQLiteManager {
 	    		activity);
 	    if (rs != null && rs.next()) {
 	      json = new JSONObject();
-	      JSONArray splits = new JSONArray(rs.getString("splits"));
+	      JSONArray splits = new JSONArray(JsonSanitizer.sanitize(rs.getString("splits")));
 	      double accEle = 0.0;
 	      for (int i = 0; i < splits.length(); ++i) {
 	        JSONObject split = splits.getJSONObject(i);
@@ -1155,7 +1155,7 @@ public class SQLiteManager {
 	        split.put("accumSpeed", split.getString("accumSpeed").replace(',', '.'));
 	      }
 	      json.put("splits", splits);
-	      json.put("speedDist", new JSONArray(rs.getString("speedDist")));
+	      json.put("speedDist", new JSONArray(JsonSanitizer.sanitize(rs.getString("speedDist"))));
 	    }
 	  } catch (SQLException e) {
       System.out.println("Error getting splits " + e);
@@ -1181,7 +1181,7 @@ public class SQLiteManager {
       type = rs.getString("type");
       dist = rs.getDouble("distRaw");
       speed = rs.getDouble("avgSpeedRaw");
-      JSONArray arr = new JSONArray(rs.getString("dashboards"));
+      JSONArray arr = new JSONArray(JsonSanitizer.sanitize(rs.getString("dashboards")));
       for (int i = 0; i < arr.length(); ++i) {
         String dash = arr.getString(i);
         if (!MAIN_DASHBOARD.equals(dash)) {
@@ -1208,7 +1208,7 @@ public class SQLiteManager {
         if (dist < 25 && (0.66 * speed > sspeed || 1.5 * speed < sspeed)) {
           continue;
         }
-        arr = new JSONArray(rs.getString("dashboards"));
+        arr = new JSONArray(JsonSanitizer.sanitize(rs.getString("dashboards")));
         boolean dashboardMatch = isFromExt;
 				if (!dashboardMatch) {
 					for (int i = 0; i < arr.length(); ++i) {
