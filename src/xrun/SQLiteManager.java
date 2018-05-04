@@ -959,7 +959,7 @@ public class SQLiteManager {
     rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
-      JSONArray arr = new JSONArray(dash);
+      JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dash));
       boolean mod = false;
       for (int i = 0; i < arr.length(); ++i) {
         if (name.equals(arr.get(i))) {
@@ -975,7 +975,7 @@ public class SQLiteManager {
         		arr.toString(), genby);
       }
     }
-    executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard=? WHERE dashboard=?" + name + "'",
+    executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard=? WHERE dashboard=?",
         newName, name);
   }
 
