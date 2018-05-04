@@ -14,7 +14,10 @@ public class WeekCalc {
 	};
 	
 	static final int[] identifyWeek(int day, int month, int year, String[] out) { // result - week number, week start day, week start month
-		int firstMondayNumber = (7 - STARTS[year - START_YEAR]) % 7 + 1;
+	  if (year < 2000) {
+	    year = 2000;
+	  }
+	  int firstMondayNumber = (7 - STARTS[year - START_YEAR]) % 7 + 1;
 		if (month == 1 && day < firstMondayNumber) {
 		  out[0] = "1-" + (firstMondayNumber - 1) + " Jan";
 			return new int[] {1, 1, 1};
