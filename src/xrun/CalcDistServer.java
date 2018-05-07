@@ -861,7 +861,10 @@ class CalcDistHandler extends AbstractHandler {
 					int to = template.indexOf("TBD", ind + 3);
 					if (to != -1) {
 					  pw.print(template.substring(ind + 3, to));
-					  pw.print(target.endsWith(".gpx") ? target : (target + ".gpx"));
+					  if (rcUtils.getActivity(target) == null) {
+				      target += ".gpx";
+				    }
+					  pw.print(target);
 					  pw.print(template.substring(to + 3));
 					} else {
 					  pw.println(template.substring(ind + 3));

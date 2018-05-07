@@ -386,6 +386,15 @@ function checkResetCacheNeeded(data) {
 	return false;
 }
 
+function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
+
 function initContent(data, skipCache) {
 	itemsDS = [];
 	$('#dataHolder').html('');
@@ -539,7 +548,7 @@ function initContent(data, skipCache) {
 		dashboardTags += '</span><hr>';
 		descrHtml = '';
 		if (item['descr'].length > 0) {
-			descrHtml = '<blockquote>' + decodeURIComponent(item['descr']) + '</blockquote><hr>';
+			descrHtml = '<blockquote>' + decodeURIComponent(item['descr']).replace(/\n/g, "<br />") + '</blockquote><hr>';
 		}
 		ilinks = $.parseJSON(item['links']);
 		linksHtml = '';
@@ -719,13 +728,13 @@ function initContent(data, skipCache) {
 			for (q = 0; q < dashCount; ++q) {
 				name = $('#dashboard' + q).attr('name');
 				if (dashboards.indexOf(encodeURIComponent(name)) == -1) {
-					optsAdd += '<option value="' + name + '">' + name + '</option>';
+					optsAdd += '<option value="' + escapeHtml(name) + '">' + name + '</option>';
 				} else {
-					optsRem += '<option value="' + name + '">' + name + '</option>';
+					optsRem += '<option value="' + escapeHtml(name) + '">' + name + '</option>';
 				}
 			}
 			checkBoxData = '<input type="checkbox" id="setProtected" ' + (item['secured'] ? 'checked' : '') + '/>';
-			$('#editable').html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + $('#item' + i).text() + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
+			$('#editable').html('<table><tbody><tr><td>Name </td><td><input type="text" id="chooseName" value="' + escapeHtml($('#item' + i).text()) + '"/></td></tr><tr><td>Type </td><td><select id="chooseType">' + getOption("Running", type) +
 				getOption("Trail", type) + getOption("Uphill", type) + getOption('Hiking', type) + getOption('Walking', type) + getOption('Other', type) + '</select></td>' +
 				'<tr><td>Garmin </td><td><input size="50" type="text" id="chooseGarmin" value="' + (item['garminLink'] != 'none' ? item['garminLink'] : "") + '"/></td></tr>' +
 				'<tr><td>Relive CC </td><td><input size="50" type="text" id="chooseCC" value="' + (item['ccLink'] != 'none' ? decodeURIComponent(item['ccLink']) : "") + '"/></td></tr>' +
@@ -1058,7 +1067,6 @@ function genRadioYear(year, ind, checked) {
 function getWeekData(data, type, fr, to) {
 	result = [];
 	len = data.length;
-	console.log(fr + ' ' + to);
 	for(i = fr; i < to && i < len; ++i) {
 			item = data[i];
 			ckey = 'count' + type;

@@ -73,7 +73,7 @@
 			$('#totDist').val(isMod ? origData['dist'] : item['dist']);
 			descrHtml = '';
 			if (item['descr'].length > 0) {
-				descrHtml = '<blockquote>' + decodeURIComponent(item['descr']) + '</blockquote><hr>';
+				descrHtml = '<blockquote>' + decodeURIComponent(item['descr']).replace(/\n/g, "<br />") + '</blockquote><hr>';
 			}
 			ilinks = $.parseJSON(item['links']);
 			linksHtml = '';
