@@ -1,4 +1,5 @@
 var compactDate = false;
+var compactElev = false;
 
 function compFast(file2) {
 	$.ajax({
@@ -480,7 +481,7 @@ function initContent(data, skipCache) {
 		runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div title="View details" class="runitem" id="item' + i + '">' + (isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
 			'</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
 			item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + (isAllTrail ? item['distRunning'] : item['avgSpeed']) + '</td>' +
-			'<td>' + formatEle(item['eleTotalPos'], item['eleTotalNeg']) + '</td>' +
+			'<td>' + (compactElev ? ('<span class="green">' + item['eleTotalPos'] + '</span>') : formatEle(item['eleTotalPos'], item['eleTotalNeg'])) + '</td>' +
 			'<td><div id="edit' + i + '" class="ui-icon ui-icon-pencil ui-state-hover runitem" title="Edit activity data"></div>' +
 			'<div id="feat' + i + '" class="ui-icon ui-icon-note ui-state-hover runitem" title="Set description and links"></div>' +
 			'<div id="compare' + i + '" class="ui-icon ui-icon-arrowthick-2-e-w ui-state-hover runitem" title="Compare with another activity"></div>' +
@@ -1242,8 +1243,10 @@ function checkWidth() {
 		});
 	}
 	if (wid < 1400) {
+		compactElev = true;
 		$('#runs').css({
 			'width': '95%'
 		});
+		$('#runs tr:eq(0) th:eq(8)').html("Elev+&nbsp;&nbsp;");
 	}
 }
