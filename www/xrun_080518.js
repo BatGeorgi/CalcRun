@@ -238,6 +238,70 @@ function changeDash(alias, activity, dashboard) {
 	});
 }
 
+function triggerPreset(item) {
+    name = decodeURIComponent(item['name']);
+    if ($('#search').button("option", "disabled")) {
+        return;
+    }
+    $('#preset' + name).addClass('selectedDash');
+    $('#searchName').val(decodeURIComponent(item['pattern']));
+    for (i = 1; i < 7; ++i) {
+        $('#checkbox-' + i).prop('checked', false).change();
+    }
+    if (item['run']) {
+        $('#checkbox-1').prop('checked', true).change();
+    }
+    if (item['trail']) {
+        $('#checkbox-2').prop('checked', true).change();
+    }
+    if (item['uphill']) {
+        $('#checkbox-3').prop('checked', true).change();
+    }
+    if (item['hike']) {
+        $('#checkbox-4').prop('checked', true).change();
+    }
+    if (item['walk']) {
+        $('#checkbox-5').prop('checked', true).change();
+    }
+    if (item['other']) {
+        $('#checkbox-6').prop('checked', true).change();
+    }
+    sd = item['startDate'];
+    if (sd.length > 0) {
+        si = sd.indexOf('/');
+        if (si == -1) {
+            $('#radio-' + (parseInt(sd) + 1)).prop('checked', true).change();
+        } else {
+            $('#radio-7').prop('checked', true).change();
+            $('#dtStart').val(sd);
+        }
+    } else {
+        $('#dtEnd').val('');
+    }
+    $('#dtEnd').val(item['endDate']);
+    if (item['minDist'] > 0) {
+        $('#spinnerMin').val(item['minDist']);
+    } else {
+        $('#spinnerMin').val('');
+    }
+    if (item['maxDist'] < 2147483647) {
+        $('#spinnerMax').val(item['maxDist']);
+    } else {
+        $('#spinnerMax').val('');
+    }
+    fetchAfterDashClick = false;
+    $('li[name="' + decodeURIComponent(item['dashboard']) + '"]').click();
+    fetchAfterDashClick = true;
+    $('#runs').hide();
+    $('#ht').html('<div class="loader"></div>');
+    $('#runs').trigger('pagerUpdate', 1);
+    $('#runs').trigger('pageSize', 20);
+    $('a').removeClass('current');
+    $('#defPage').addClass('current');
+    $('#pagerMenu').hide();
+    fetch(false);
+}
+
 function initPresets(presets) {
 	allPresetsHtml = '<ul id="sortable">';
 	$.each(presets, function (i, item) {
@@ -252,66 +316,7 @@ function initPresets(presets) {
 	$.each(presets, function (i, item) {
 		name = decodeURIComponent(item['name']);
 		$('#preset' + name).click(function () {
-			if ($('#search').button("option", "disabled")) {
-				return;
-			}
-			$(this).addClass('selectedDash');
-			$('#searchName').val(decodeURIComponent(item['pattern']));
-			for (i = 1; i < 7; ++i) {
-				$('#checkbox-' + i).prop('checked', false).change();
-			}
-			if (item['run']) {
-				$('#checkbox-1').prop('checked', true).change();
-			}
-			if (item['trail']) {
-				$('#checkbox-2').prop('checked', true).change();
-			}
-			if (item['uphill']) {
-				$('#checkbox-3').prop('checked', true).change();
-			}
-			if (item['hike']) {
-				$('#checkbox-4').prop('checked', true).change();
-			}
-			if (item['walk']) {
-				$('#checkbox-5').prop('checked', true).change();
-			}
-			if (item['other']) {
-				$('#checkbox-6').prop('checked', true).change();
-			}
-			sd = item['startDate'];
-			if (sd.length > 0) {
-				si = sd.indexOf('/');
-				if (si == -1) {
-					$('#radio-' + (parseInt(sd) + 1)).prop('checked', true).change();
-				} else {
-					$('#radio-7').prop('checked', true).change();
-					$('#dtStart').val(sd);
-				}
-			} else {
-				$('#dtEnd').val('');
-			}
-			$('#dtEnd').val(item['endDate']);
-			if (item['minDist'] > 0) {
-				$('#spinnerMin').val(item['minDist']);
-			} else {
-				$('#spinnerMin').val('');
-			}
-			if (item['maxDist'] < 2147483647) {
-				$('#spinnerMax').val(item['maxDist']);
-			} else {
-				$('#spinnerMax').val('');
-			}
-			fetchAfterDashClick = false;
-			$('li[name="' + decodeURIComponent(item['dashboard']) + '"]').click();
-			fetchAfterDashClick = true;
-			$('#runs').hide();
-			$('#ht').html('<div class="loader"></div>');
-			$('#runs').trigger('pagerUpdate', 1);
-			$('#runs').trigger('pageSize', 20);
-			$('a').removeClass('current');
-			$('#defPage').addClass('current');
-			$('#pagerMenu').hide();
-			fetch(false);
+			triggerPreset(item);
 		});
 	});
 }

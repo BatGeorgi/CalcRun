@@ -179,9 +179,6 @@
             });
             $('#dtStart').datepicker('disable');
             $('#dtEnd').datepicker('disable');
-            initDashboards();
-			getPresets();
-            fetch(true);
             
             $("#spinnerMin").spinner();
             $("#spinnerMax").spinner();
@@ -328,6 +325,9 @@
 				});
 				$('#pagerOut').html('Range ' + c.startRow + ' - ' + c.endRow);
 			});
+			initDashboards();
+			getPresets();
+			fetch(true);
 			$('#runs').trigger('pagerUpdate', 1);
 			$('#runs').trigger('pageSize', 20);
 	}); 
@@ -337,7 +337,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 3.81</strong></H1>
+        <H1><strong>Running Calc Tools 3.82</strong></H1>
 		<hr>
     </div>
 	
