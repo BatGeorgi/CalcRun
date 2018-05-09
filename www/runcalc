@@ -325,9 +325,28 @@
 				});
 				$('#pagerOut').html('Range ' + c.startRow + ' - ' + c.endRow);
 			});
-			initDashboards();
-			getPresets();
-			fetch(true);
+			initDashboards(false, true);
+			$.ajax({
+				url: 'getFilters',
+				method: 'POST',
+				dataType: 'json',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				success: function (data) {
+					presets = data['presets'];
+					initPresets(presets);
+					if (presets.length > 0) {
+						triggerPreset(presets[0]);
+					} else {
+						fetch(true);
+					}
+				},
+				error: function (data) {
+					fetch(true);
+				},
+				timeout: 5000
+			});
 			$('#runs').trigger('pagerUpdate', 1);
 			$('#runs').trigger('pageSize', 20);
 	}); 

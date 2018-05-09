@@ -238,7 +238,7 @@ function changeDash(alias, activity, dashboard) {
 	});
 }
 
-function triggerPreset(item) {
+function triggerPreset(item, getWMT) {
     name = decodeURIComponent(item['name']);
     if ($('#search').button("option", "disabled")) {
         return;
@@ -299,7 +299,7 @@ function triggerPreset(item) {
     $('a').removeClass('current');
     $('#defPage').addClass('current');
     $('#pagerMenu').hide();
-    fetch(false);
+    fetch(getWMT);
 }
 
 function initPresets(presets) {
@@ -316,7 +316,7 @@ function initPresets(presets) {
 	$.each(presets, function (i, item) {
 		name = decodeURIComponent(item['name']);
 		$('#preset' + name).click(function () {
-			triggerPreset(item);
+			triggerPreset(item, false);
 		});
 	});
 }
@@ -1143,11 +1143,12 @@ function initWeeklyTotals(data) {
 var dashCount = 0;
 var fetchAfterDashClick = true;
 
-function initDashboards(fetchAfterInit) {
+function initDashboards(fetchAfterInit, async) {
 	$.ajax({
 		url: 'getDash',
 		method: 'POST',
 		dataType: 'json',
+		async: async,
 		statusCode: {
 			200: function (data) {
 				arr = data['dashboards'];

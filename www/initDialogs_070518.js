@@ -22,7 +22,7 @@ function initDashboardDialogs() {
 					dataType: 'text',
 					statusCode: {
 						200: function (resp) {
-							initDashboards(true);
+							initDashboards(true, true);
 							$('#infoDialog').html(resp);
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
@@ -62,7 +62,7 @@ function initDashboardDialogs() {
 					dataType: 'text',
 					statusCode: {
 						200: function (resp) {
-							initDashboards(true);
+							initDashboards(true, true);
 							$('#infoDialog').html(resp);
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
@@ -100,7 +100,7 @@ function initDashboardDialogs() {
 					dataType: 'text',
 					statusCode: {
 						200: function (resp) {
-							initDashboards(true);
+							initDashboards(true, true);
 							$('#infoDialog').html(resp);
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
