@@ -306,7 +306,8 @@ function initPresets(presets) {
 	allPresetsHtml = '<ul id="sortable">';
 	$.each(presets, function (i, item) {
 		name = decodeURIComponent(item['name']);
-		allPresetsHtml += '<li class="presetButton" id="preset' + name + '">' + name + '</li>';
+		defp = (i > 0 ? '' : ' defPreset');
+		allPresetsHtml += '<li class="presetButton' + defp + '" id="preset' + name + '">' + name + '</li>';
 	});
 	$('#allPresets').html(allPresetsHtml + '</ul>');
 	$("#sortable").sortable();
