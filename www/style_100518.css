@@ -373,3 +373,9 @@ tr.border_bottom td {
 .xdash {
 	display: inline-block;
 }
+.defPreset {
+	font-style: italic;
+}
+.defPreset::after {
+  content: "(default)";
+}

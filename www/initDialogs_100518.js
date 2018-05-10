@@ -548,6 +548,8 @@ function initPresetDialogs() {
 							$('#infoDialog').html(resp);
 							$('#infoDialog').dialog('option', 'title', 'Status');
 							$('#infoDialog').dialog('open');
+							$("#sortable li").removeClass('defPreset');
+							$("#sortable li").first().addClass('defPreset');
 						},
 						401: function (resp) {
 							$('#infoDialog').html('Please sign in!');
