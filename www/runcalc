@@ -325,7 +325,7 @@
 				});
 				$('#pagerOut').html('Range ' + c.startRow + ' - ' + c.endRow);
 			});
-			initDashboards(false, true);
+			initDashboards(false, false);
 			$.ajax({
 				url: 'getFilters',
 				method: 'POST',
