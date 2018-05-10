@@ -337,7 +337,7 @@
 					presets = data['presets'];
 					initPresets(presets);
 					if (presets.length > 0) {
-						triggerPreset(presets[0]);
+						triggerPreset(presets[0], true);
 					} else {
 						fetch(true);
 					}
