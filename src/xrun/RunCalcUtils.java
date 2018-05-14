@@ -465,11 +465,11 @@ public class RunCalcUtils {
     result.put("maxAsc", getBest("eleTotalPos", "m"));
     result.put("maxRun", getBest("distRunningRaw", "km"));
     result.put("1K", getBest(0.99, 1.1));
-    result.put("2K5", getBest(2.49, 2.55));
-    result.put("5K", getBest(4.99, 5.2));
-    result.put("10K", getBest(9.98, 10.3));
-    result.put("21K", getBest(21, 21.8));
-    result.put("30K", getBest(30, 31));
+    result.put("2K5", getBest(2.47, 2.55));
+    result.put("5K", getBest(4.95, 5.2));
+    result.put("10K", getBest(9.88, 10.3));
+    result.put("21K", getBest(20.64, 21.8));
+    result.put("30K", getBest(29.4, 31));
     result.put("42K", getBest(42, 43.5));
     return result;
   }
