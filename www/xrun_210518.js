@@ -581,7 +581,7 @@ function initContent(data, skipCache) {
 			'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table></ul>');
 	});
-	var happc = '<div id="typesDistr" title="View results distribution">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div>';
+	var happc = '<div id="typesWrap"><div id="typesDistr" title="View results distribution">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div></div>';
 	$('#ht').append(happc);
 	charts = data['charts'];
 	$('#typesDistr').click(function () {
