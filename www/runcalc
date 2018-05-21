@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Running Calc Tools</title>
-    <link href="style_100518.css" type="text/css" rel="stylesheet" />
+    <link href="style_210518.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -18,7 +18,7 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun_100518.js"></script>
+	<script type="text/javascript" src="xrun_210518.js"></script>
 	<script type="text/javascript" src="initDialogs_100518.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
@@ -356,7 +356,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 3.82</strong></H1>
+        <H1><strong>Running Calc Tools 3.83</strong></H1>
 		<hr>
     </div>
 	

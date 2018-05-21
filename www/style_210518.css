@@ -355,7 +355,8 @@ tr.border_bottom td {
 #typesDistr {
 	color:#1c9e45;
 	text-decoration: underline;
-	text-align: center;
+	margin: auto;
+	width: 140px;
 	cursor: pointer;
 }
 #typesDialog {
