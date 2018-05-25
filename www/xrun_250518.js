@@ -243,7 +243,7 @@ function triggerPreset(item, getWMT) {
     if ($('#search').button("option", "disabled")) {
         return;
     }
-    $('#preset' + name).addClass('selectedDash');
+    $('#preset' + name).addClass('selectedPres');
     $('#searchName').val(decodeURIComponent(item['pattern']));
     for (i = 1; i < 7; ++i) {
         $('#checkbox-' + i).prop('checked', false).change();
@@ -809,7 +809,7 @@ function fetch(getWMTotals) {
 		},
 		statusCode: {
 			200: function (data) {
-				$(".presetButton").removeClass('selectedDash');
+				$(".presetButton").removeClass('selectedPres');
 				initContent(data);
 				$('#search').button("option", "disabled", false);
 				for (i = 0; i < dashCount; ++i) {
@@ -818,7 +818,7 @@ function fetch(getWMTotals) {
 				checkResetCacheNeeded(data);
 			},
 			400: function (data) {
-				$(".presetButton").removeClass('selectedDash');
+				$(".presetButton").removeClass('selectedPres');
 				$('#infoDialog').html('Invalid distance or period arguments!');
 				$('#infoDialog').dialog('option', 'title', 'Bad data');
 				$('#infoDialog').dialog('open');
@@ -829,7 +829,7 @@ function fetch(getWMTotals) {
 				initContent({'activities': [], 'filter': ''}, 'y');
 			},
 			401: function (data) {
-				$(".presetButton").removeClass('selectedDash');
+				$(".presetButton").removeClass('selectedPres');
 				$('#infoDialog').html('Must be logged in to view this dashboard');
 				$('#infoDialog').dialog('option', 'title', 'Not authorized');
 				$('#infoDialog').dialog('open');
