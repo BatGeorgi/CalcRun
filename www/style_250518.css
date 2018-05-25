@@ -346,13 +346,50 @@ tr.border_bottom td {
   justify-content: space-around;
 }
 #importButton:hover {
-    cursor: pointer;
+	cursor: pointer;
+	transform: scale(1.3);
 }
 #rescanButton:hover {
-    cursor: pointer;
+	cursor: pointer;
+	transform: scale(1.3);
+}
+#aboutButton:hover {
+	cursor: pointer;
+	transform: scale(1.3);
+}
+#createDashboardButton:hover {
+	cursor: pointer;
+	transform: scale(1.2);
+}
+#renameDashboardButton:hover {
+	cursor: pointer;
+	transform: scale(1.2);
+}
+#removeDashboardButton:hover {
+	cursor: pointer;
+	transform: scale(1.2);
+}
+#reorderDash:hover {
+	cursor: pointer;
+	transform: scale(1.2);
+}
+#renamePreset:hover {
+	cursor: pointer;
+	transform: scale(1.2);
+}
+#removePreset:hover {
+	cursor: pointer;
+	transform: scale(1.2);
+}
+#saveOrder:hover {
+	cursor: pointer;
+	transform: scale(1.2);
 }
 .hovs:hover {
-    cursor: pointer;
+	cursor: pointer;
+}
+.hovsMain:hover {
+	transform: scale(1.1);
 }
 #bestOf td:hover {
     cursor: pointer;
