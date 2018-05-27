@@ -19,7 +19,7 @@
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
 	<script type="text/javascript" src="xrun_250518.js"></script>
-	<script type="text/javascript" src="initDialogs_250518.js"></script>
+	<script type="text/javascript" src="initDialogs_270518.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
 	
@@ -76,7 +76,7 @@
 					renameOps += '<option value="' + pname + '">' + pname + '</option>';
 				});
 				renameOps += '</select>';
-				$('#renamePresetDlg').html('<table><tbody><tr><td>Choose preset</td><td>' + renameOps + '</td></tr><tr><td>New name</td><td><input type="text" id="setPresetName" /></td></tr></tbody></table>');
+				$('#renamePresetDlg').html('<table><tbody><tr><td>Choose preset</td><td>' + renameOps + '</td></tr><tr><td>Enter name</td><td><input type="text" id="setPresetName" /></td></tr></tbody></table>');
 				$('#renamePresetDlg').dialog('option', 'title', 'Rename filter preset');
 				$('#renamePresetDlg').dialog('open');
 			});
@@ -97,7 +97,7 @@
 					removeOps += '<option value="' + pname + '">' + pname + '</option>';
 				});
 				removeOps += '</select>';
-				$('#removePresetDlg').html('Choose preset ' + removeOps);
+				$('#removePresetDlg').html('Select preset ' + removeOps);
 				$('#removePresetDlg').dialog('option', 'title', 'Remove filter preset');
 				$('#removePresetDlg').dialog('open');
 			});
@@ -154,19 +154,19 @@
                 }
             });
 			$('#createDashboardButton').click(function () {
-				$('#createDashboard').html('Dashboard name&nbsp;<input type="text" id="cdName" />');
+				$('#createDashboard').html('Enter name&nbsp;<input type="text" id="cdName" />');
 				$('#createDashboard').dialog('option', 'title', 'Create new dashboard');
 				$('#createDashboard').dialog('open');
 			});
 			$('#renameDashboardButton').click(function () {
-				$('#renameDashboard').html('New name&nbsp;<input type="text" id="newDashName" />');
+				$('#renameDashboard').html('Enter name&nbsp;<input type="text" id="newDashName" />');
 				$('#renameDashboard').dialog('option', 'title', 'Rename dashboard ' + $('.selectedDash').attr('name'));
 				$('#renameDashboard').dialog('open');
 			});
 			$('#removeDashboardButton').click(function () {
 				crName = $('.selectedDash').attr('name');
 				$('#removeDashboard').html('Really remove dashboard ' + crName + '?');
-				$('#removeDashboard').dialog('option', 'title', 'Remove dashboard ' + $('.selectedDash').attr('name'));
+				$('#removeDashboard').dialog('option', 'title', 'Remove dashboard');
 				$('#removeDashboard').dialog('open');
 			});
             $('#dtStart').datepicker({
@@ -214,7 +214,7 @@
 				});
 			});
 			$('#aboutButton').click(function () {
-				$('#aboutDialog').html('Powered by <b><i>Raspberry PI 3, Garmin Forerunner 210</i></b><p>Using <b><i>Java, Jetty Server, SQLite DB, JQuery UI, Odometer, FusionCharts<p></i></b>'
+				$('#aboutDialog').html('Running on <b><i>Raspberry PI 3</i></b><p>Tracking by <b><i>Garmin Forerunner 210 &amp; Strava Android App</i></b><p>Using <b><i>Java, Jetty Server, SQLite DB, JQuery UI, Odometer, FusionCharts<p></i></b>'
 					+ '<ul><li><a href="https://connect.garmin.com/modern/profile/BatGeorgi" target="_blank">Garmin Connect</a></li>'
 					+ '<li><a href="https://www.strava.com/athletes/22679541" target="_blank">Strava</a></li>'
 					+ '<li><a href="https://drive.google.com/drive/folders/0B22GzCU9umn-SFJlOUd4REJGQUU" target="_blank">Google Drive</a></li></ul>'
@@ -356,7 +356,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 3.85</strong></H1>
+        <H1><strong>Running Calc Tools 3.86</strong></H1>
 		<hr>
     </div>
 	
@@ -420,9 +420,9 @@
                     <p>
                         <fieldset>
                             <legend class="legend-cap">Distance</legend>
-                            <label for="spinnerMin">Min km</label>
+                            <label for="spinnerMin">Min</label>
                             <input id="spinnerMin" name="dmin" />
-                            <label for="spinnerMax">Max km</label>
+                            <label for="spinnerMax">Max</label>
                             <input id="spinnerMax" name="dmax" />
                         </fieldset>
                         <p>

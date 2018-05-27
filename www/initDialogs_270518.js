@@ -826,7 +826,7 @@ function initAboutDialog() {
 			}
 		},
 		width: 450,
-		height: 350
+		height: 400
 	});
 }
 
