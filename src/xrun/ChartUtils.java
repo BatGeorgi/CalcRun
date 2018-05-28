@@ -91,7 +91,8 @@ class ChartUtils {
     for (Integer key : yearCnt.keySet()) {
       JSONObject current = new JSONObject();
       current.put("info", key);
-      current.put("data", String.valueOf(yearCnt.get(key)));
+      current.put("countData", String.valueOf(yearCnt.get(key)));
+      current.put("distData", String.format("%.1f", yearDist.get(key).doubleValue()));
       byYear.put(current);
     }
     result.put("byYear", byYear);
