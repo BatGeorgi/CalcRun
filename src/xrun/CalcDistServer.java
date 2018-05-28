@@ -759,8 +759,12 @@ class CalcDistHandler extends AbstractHandler {
       return;
     }
     if (fileName != null && fileName.length() > 0) {
-      rcUtils.deleteActivity(fileName);
-      response.setStatus(HttpServletResponse.SC_OK);
+      try {
+        rcUtils.deleteActivity(fileName);
+        response.setStatus(HttpServletResponse.SC_OK);
+      } catch (Exception e) {
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      }
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -948,18 +952,21 @@ class CalcDistHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    JSONObject data = rcUtils.retrieveCoords(name, "true".equals(baseRequest.getHeader("perc")));
     response.setContentType("application/json");
-    if (data == null) {
+    JSONObject data = null;
+    try {
+      data = rcUtils.retrieveCoords(name, "true".equals(baseRequest.getHeader("perc")));
+    } catch (Exception e) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-    } else {
-      PrintWriter pw = response.getWriter();
-      try {
-        pw.println(data.toString());
-        response.setStatus(HttpServletResponse.SC_OK);
-      } finally {
-        pw.flush();
-      }
+      baseRequest.setHandled(true);
+      return;
+    }
+    PrintWriter pw = response.getWriter();
+    try {
+      pw.println(data.toString());
+      response.setStatus(HttpServletResponse.SC_OK);
+    } finally {
+      pw.flush();
     }
     baseRequest.setHandled(true);
   }

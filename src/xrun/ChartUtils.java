@@ -60,6 +60,7 @@ class ChartUtils {
       fillInDay(dayCnt, dayDist, activity.getString("date"), currentDist);
       fillInHour(hourCnt, hourDist, activity.getString("startAt"), currentDist);
       ++monthCnt[activity.getInt("month")];
+      monthDist[activity.getInt("month")] += currentDist;
       int year = activity.getInt("year");
       Integer val = yearCnt.get(year);
       yearCnt.put(year, val != null ? val.intValue() + 1 : 1);

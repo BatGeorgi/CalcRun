@@ -512,7 +512,7 @@ function initAggregationDialogs() {
 			}
 		},
 		width: Math.min(900, $(window).width() * 0.85),
-		height: Math.min($(window).height() * 0.7, 550),
+		height: Math.min($(window).height() * 0.85, 900),
 		create: function (event) {
 			$(event.target).parent().css({
 				'position': 'fixed',
