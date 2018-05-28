@@ -29,51 +29,64 @@ class ChartUtils {
 	static JSONObject getResultCharts(JSONArray activities) {
 		JSONObject result = new JSONObject();
     int[] typesCnt = new int[TYPES.length];
+    double[] typesDist = new double[TYPES.length];
     int[] distCnt = new int[BOUNDS_DIST.length];
+    double[] distDist = new double[BOUNDS_DIST.length];
     int[] speedCnt = new int[BOUNDS_SPEED.length];
+    double[] speedDist = new double[BOUNDS_SPEED.length];
     int[] eleCnt = new int[BOUNDS_ELE.length];
+    double[] eleDist = new double[BOUNDS_ELE.length];
     int[] rundistCnt = new int[BOUNDS_RUNDIST.length];
+    double[] rundistDist = new double[BOUNDS_RUNDIST.length];
     int[] durationCnt = new int[BOUNDS_DURATION.length];
+    double[] durationDist = new double[BOUNDS_DURATION.length];
     int[] dayCnt = new int[7];
+    double[] dayDist = new double[7];
     int[] hourCnt = new int[BOUNDS_HOUR.length];
+    double[] hourDist = new double[BOUNDS_HOUR.length];
     int[] monthCnt = new int[12];
+    double[] monthDist = new double[12];
     Map<Integer, Integer> yearCnt = new TreeMap<Integer, Integer>();
+    Map<Integer, Double> yearDist = new TreeMap<Integer, Double>();
     for (int i = 0; i < activities.length(); ++i) {
       JSONObject activity = activities.getJSONObject(i);
-      fillInType(typesCnt, activity.getString("type"));
-      fillInDist(distCnt, activity.getDouble("distRaw"));
-      fillInSpeed(speedCnt, activity.getDouble("avgSpeedRaw"));
-      fillInEle(eleCnt, activity.getLong("eleTotalPos"));
-      fillInRun(rundistCnt, activity.getDouble("distRunningRaw"));
-      fillInDuration(durationCnt, activity.getDouble("timeTotalRaw"));
-      fillInDay(dayCnt, activity.getString("date"));
-      fillInHour(hourCnt, activity.getString("startAt"));
+      double currentDist = activity.getDouble("distRaw");
+      fillInType(typesCnt, typesDist, activity.getString("type"), currentDist);
+      fillInDist(distCnt, distDist, currentDist);
+      fillInSpeed(speedCnt, speedDist, activity.getDouble("avgSpeedRaw"), currentDist);
+      fillInEle(eleCnt, eleDist, activity.getLong("eleTotalPos"), currentDist);
+      fillInRun(rundistCnt, rundistDist, activity.getDouble("distRunningRaw"), currentDist);
+      fillInDuration(durationCnt, durationDist, activity.getDouble("timeTotalRaw"), currentDist);
+      fillInDay(dayCnt, dayDist, activity.getString("date"), currentDist);
+      fillInHour(hourCnt, hourDist, activity.getString("startAt"), currentDist);
       ++monthCnt[activity.getInt("month")];
       int year = activity.getInt("year");
       Integer val = yearCnt.get(year);
       yearCnt.put(year, val != null ? val.intValue() + 1 : 1);
+      Double val2 = yearDist.get(year);
+      yearDist.put(year, val2 != null ? val2.doubleValue() + currentDist : currentDist);
     }
-    result.put("byType", toJSONArray(typesCnt, TYPES));
-    result.put("byDist", toJSONArray(distCnt, BOUNDS_DIST));
-    result.put("bySpeed", toJSONArray(speedCnt, BOUNDS_SPEED));
-    result.put("byEle", toJSONArray(eleCnt, BOUNDS_ELE));
-    result.put("byRun", toJSONArray(rundistCnt, BOUNDS_RUNDIST));
-    JSONArray byDay = toJSONArray(dayCnt, CalcDist.DAYS, true);
+    result.put("byType", toJSONArray(typesCnt, typesDist, TYPES));
+    result.put("byDist", toJSONArray(distCnt, distDist, BOUNDS_DIST));
+    result.put("bySpeed", toJSONArray(speedCnt, speedDist, BOUNDS_SPEED));
+    result.put("byEle", toJSONArray(eleCnt, eleDist, BOUNDS_ELE));
+    result.put("byRun", toJSONArray(rundistCnt, rundistDist, BOUNDS_RUNDIST));
+    JSONArray byDay = toJSONArray(dayCnt, dayDist, CalcDist.DAYS, true);
     JSONObject sun = byDay.getJSONObject(0);
     for (int i = 0; i < 6; ++i) {
     	byDay.put(i, byDay.getJSONObject(i + 1));
     }
     byDay.put(6, sun);
     result.put("byDay", byDay);
-    result.put("byHour", toJSONArray(hourCnt, BOUNDS_HOUR));
+    result.put("byHour", toJSONArray(hourCnt, hourDist, BOUNDS_HOUR));
     String[] DUR = new String[BOUNDS_DURATION.length];
     for (int i = 0; i < BOUNDS_DURATION.length; ++i) {
     	double di = BOUNDS_DURATION[i];
     	double di1 = i < BOUNDS_DURATION.length - 1 ? BOUNDS_DURATION[i + 1] : -1;
     	DUR[i] = di1 >= 0 ? (getDuration(di) + "-" + getDuration(di1)) : (getDuration(di) + "+");
     }
-    result.put("byDuration", toJSONArray(durationCnt, DUR));
-    result.put("byMonth", toJSONArray(monthCnt, CalcDist.MONTHS, true));
+    result.put("byDuration", toJSONArray(durationCnt, durationDist, DUR));
+    result.put("byMonth", toJSONArray(monthCnt, monthDist, CalcDist.MONTHS, true));
     JSONArray byYear = new JSONArray();
     for (Integer key : yearCnt.keySet()) {
       JSONObject current = new JSONObject();
@@ -104,15 +117,18 @@ class ChartUtils {
 		return sb.toString();
 	}
 	
-	private static JSONArray toJSONArray(int[] cnt, Object bounds) {
-		return toJSONArray(cnt, bounds, false);
+	private static JSONArray toJSONArray(int[] cnt, double[] dists, Object bounds) {
+		return toJSONArray(cnt, dists, bounds, false);
 	}
 	
-	private static JSONArray toJSONArray(int[] cnt, Object bounds, boolean includeEmpty) {
+	private static JSONArray toJSONArray(int[] cnt, double dists[], Object bounds, boolean includeEmpty) {
 		boolean isInt = bounds instanceof int[];
 		boolean isString = bounds instanceof String[];
 		JSONArray result = new JSONArray();
 		int len = cnt.length;
+		for (int i = 0; i < len; ++i) {
+		  dists[i] = Double.parseDouble(String.format("%.1f", dists[i]).replace(',', '.'));
+		}
 		for (int i = 0; i < len; ++i) {
 			if (!includeEmpty && cnt[i] == 0) {
 				continue;
@@ -127,68 +143,75 @@ class ChartUtils {
 			}
 			JSONObject current = new JSONObject();
 			current.put("info", key);
-			current.put("data", cnt[i]);
+			current.put("countData", cnt[i]);
+			current.put("distData", dists[i]);
 			result.put(current);
 		}
 		return result;
 	}
   
-  private static void fillInType(int[] cnt, String type) {
+  private static void fillInType(int[] cnt, double[] dists, String type, double currentDist) {
     for (int i = 0; i < TYPES.length; ++i) {
       if (TYPES[i].equals(type)) {
         ++cnt[i];
+        dists[i] += currentDist;
         break;
       }
     }
   }
 
-  private static void fillInDist(int[] cnt, double dist) {
+  private static void fillInDist(int[] cnt, double[] dists, double dist) {
     for (int i = BOUNDS_DIST.length - 1; i >= 0; --i) {
       if (dist >= BOUNDS_DIST[i]) {
         ++cnt[i];
+        dists[i] += dist;
         break;
       }
     }
   }
 
-  private static void fillInSpeed(int[] cnt, double speed) {
+  private static void fillInSpeed(int[] cnt, double[] dists, double speed, double currentDist) {
     for (int i = BOUNDS_SPEED.length - 1; i >= 0; --i) {
       if (speed >= BOUNDS_SPEED[i]) {
         ++cnt[i];
+        dists[i] += currentDist;
         break;
       }
     }
   }
 
-  private static void fillInEle(int[] cnt, double ele) {
+  private static void fillInEle(int[] cnt, double[] dists, double ele, double currentDist) {
     for (int i = BOUNDS_ELE.length - 1; i >= 0; --i) {
       if (ele >= BOUNDS_ELE[i]) {
         ++cnt[i];
+        dists[i] += currentDist;
         break;
       }
     }
   }
 
-  private static void fillInRun(int[] cnt, double run) {
+  private static void fillInRun(int[] cnt, double[] dists, double run, double currentDist) {
     for (int i = BOUNDS_RUNDIST.length - 1; i >= 0; --i) {
       if (run >= BOUNDS_RUNDIST[i]) {
        ++cnt[i];
+       dists[i] += currentDist;
         break;
       }
     }
   }
 
-  private static void fillInDuration(int[] cnt, double duration) {
+  private static void fillInDuration(int[] cnt, double[] dists, double duration, double currentDist) {
     double toHours = duration / 3600;
     for (int i = BOUNDS_DURATION.length - 1; i >= 0; --i) {
       if (toHours >= BOUNDS_DURATION[i]) {
         ++cnt[i];
+        dists[i] += currentDist;
         break;
       }
     }
   }
   
-  private static void fillInDay(int[] cnt, String date) {
+  private static void fillInDay(int[] cnt, double[] dists, String date, double currentDist) {
     StringTokenizer st = new StringTokenizer(date, " " , false);
     st.nextToken(); // day
     st.nextToken(); // month
@@ -197,12 +220,13 @@ class ChartUtils {
     for (int i = 0; i < CalcDist.DAYS.length; ++i) {
     	if (CalcDist.DAYS[i].equals(day)) {
     		++cnt[i];
+    		dists[i] += currentDist;
     		break;
     	}
     }
   }
 
-  private static void fillInHour(int[] cnt, String startAt) {
+  private static void fillInHour(int[] cnt, double[] dists, String startAt, double currentDist) {
     StringTokenizer st = new StringTokenizer(startAt, " :", false);
     st.nextToken(); // day
     st.nextToken(); // month
@@ -211,6 +235,7 @@ class ChartUtils {
     for (int i = BOUNDS_HOUR.length - 1; i >= 0; --i) {
       if (hour >= BOUNDS_HOUR[i]) {
         ++cnt[i];
+        dists[i] += currentDist;
         break;
       }
     }
