@@ -114,7 +114,7 @@ public class RunCalcUtils {
     }
   }
   
-  JSONObject retrieveCoords(String activity, boolean percentage) {
+  JSONObject retrieveCoords(String activity, boolean percentage) throws SQLException {
     JSONObject coords = sqLite.getCoordsData(activity);
     if (coords == null) {
       coords = sqLite.getCoordsData(activity + ".gpx");
@@ -567,7 +567,7 @@ public class RunCalcUtils {
   	return sqLite.isSecured(fileName);
   }
   
-  void deleteActivity(String fileName) {
+  void deleteActivity(String fileName) throws Exception {
     File file = new File(gpxBase, fileName);
     if (file.isFile() && !file.delete()) {
       file.deleteOnExit();

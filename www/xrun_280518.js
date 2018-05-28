@@ -596,24 +596,38 @@ function initContent(data, skipCache) {
 			'<input type="radio" name="selectChart" value="byDay">Day' +
 			'<input type="radio" name="selectChart" value="byHour">Hour</fieldset><hr>' +
 			'<div id="byType"></div><div id="byDist"></div><div id="bySpeed"></div><div id="byEle"></div><div id="byRun"></div>' +
-			'<div id="byDuration"></div><div id="byMonth"></div><div id="byYear"></div><div id="byDay"></div><div id="byHour"></div>');
-		$('#byType').insertFusionCharts(getChart("Distribution", "By type", "Type", "Count", "", getChartData(charts['byType'])));
-		$('#byDist').insertFusionCharts(getChart("Distribution", "By distance", "KM", "Count", "", getChartData(charts['byDist'])));
-		$('#bySpeed').insertFusionCharts(getChart("Distribution", "By speed", "KM/H", "Count", "", getChartData(charts['bySpeed'])));
-		$('#byEle').insertFusionCharts(getChart("Distribution", "By positive denivelation", "Meters gained", "Count", "", getChartData(charts['byEle'])));
-		$('#byRun').insertFusionCharts(getChart("Distribution", "By running distance", "KM", "Count", "", getChartData(charts['byRun'])));
-		$('#byDuration').insertFusionCharts(getChart("Distribution", "By duration", "Time", "Count", "", getChartData(charts['byDuration'])));
-		$('#byMonth').insertFusionCharts(getChart("Distribution", "By month", "Month", "Count", "", getChartData(charts['byMonth'])));
-		$('#byYear').insertFusionCharts(getChart("Distribution", "By year", "Year", "Count", "", getChartData(charts['byYear'])));
-		$('#byDay').insertFusionCharts(getChart("Distribution", "By day of week", "Day of week", "Count", "", getChartData(charts['byDay'])));
-		$('#byHour').insertFusionCharts(getChart("Distribution", "By starting hour", "Period of day", "Count", "", getChartData(charts['byHour'])));
+			'<div id="byDuration"></div><div id="byMonth"></div><div id="byYear"></div><div id="byDay"></div><div id="byHour"></div>' +
+			'<div id="byTypeD"></div><div id="byDistD"></div><div id="bySpeedD"></div><div id="byEleD"></div><div id="byRunD"></div>' +
+			'<div id="byDurationD"></div><div id="byMonthD"></div><div id="byYearD"></div><div id="byDayD"></div><div id="byHourD"></div>');
+		$('#byType').insertFusionCharts(getChart("Distribution", "By type", "Type", "Count", "", getChartData(charts['byType'], 'countData')));
+		$('#byTypeD').insertFusionCharts(getChart("Distribution", "By type", "Type", "Kilometres", "", getChartData(charts['byType'], 'distData')));
+		$('#byDist').insertFusionCharts(getChart("Distribution", "By distance", "KM", "Count", "", getChartData(charts['byDist'], 'countData')));
+		$('#byDistD').insertFusionCharts(getChart("Distribution", "By distance", "KM", "Kilometres", "", getChartData(charts['byDist'], 'distData')));
+		$('#bySpeed').insertFusionCharts(getChart("Distribution", "By speed", "KM/H", "Count", "", getChartData(charts['bySpeed'], 'countData')));
+		$('#bySpeedD').insertFusionCharts(getChart("Distribution", "By speed", "KM/H", "Kilometres", "", getChartData(charts['bySpeed'], 'distData')));
+		$('#byEle').insertFusionCharts(getChart("Distribution", "By positive denivelation", "Meters gained", "Count", "", getChartData(charts['byEle'], 'countData')));
+		$('#byEleD').insertFusionCharts(getChart("Distribution", "By positive denivelation", "Meters gained", "Kilometres", "", getChartData(charts['byEle'], 'distData')));
+		$('#byRun').insertFusionCharts(getChart("Distribution", "By running distance", "KM", "Count", "", getChartData(charts['byRun'], 'countData')));
+		$('#byRunD').insertFusionCharts(getChart("Distribution", "By running distance", "KM", "Kilometres", "", getChartData(charts['byRun'], 'distData')));
+		$('#byDuration').insertFusionCharts(getChart("Distribution", "By duration", "Time", "Count", "", getChartData(charts['byDuration'], 'countData')));
+		$('#byDurationD').insertFusionCharts(getChart("Distribution", "By duration", "Time", "Kilometres", "", getChartData(charts['byDuration'], 'distData')));
+		$('#byMonth').insertFusionCharts(getChart("Distribution", "By month", "Month", "Count", "", getChartData(charts['byMonth'], 'countData')));
+		$('#byMonthD').insertFusionCharts(getChart("Distribution", "By month", "Month", "Kilometres", "", getChartData(charts['byMonth'], 'distData')));
+		$('#byYear').insertFusionCharts(getChart("Distribution", "By year", "Year", "Count", "", getChartData(charts['byYear'], 'countData')));
+		$('#byYearD').insertFusionCharts(getChart("Distribution", "By year", "Year", "Kilometres", "", getChartData(charts['byYear'], 'distData')));
+		$('#byDay').insertFusionCharts(getChart("Distribution", "By day of week", "Day of week", "Count", "", getChartData(charts['byDay'], 'countData')));
+		$('#byDayD').insertFusionCharts(getChart("Distribution", "By day of week", "Day of week", "Kilometres", "", getChartData(charts['byDay'], 'distData')));
+		$('#byHour').insertFusionCharts(getChart("Distribution", "By starting hour", "Period of day", "Count", "", getChartData(charts['byHour'], 'countData')));
+		$('#byHourD').insertFusionCharts(getChart("Distribution", "By starting hour", "Period of day", "Kilometres", "", getChartData(charts['byHour'], 'distData')));
 		$('input[name=selectChart]').change(function () {
 			chid = $('input[name=selectChart]:checked').val();
 			$("div[id^=by]").hide();
 			$('#' + chid).show();
+			$('#' + chid + 'D').show();
 		});
 		$("div[id^=by]").hide();
 		$('#byType').show();
+		$('#byTypeD').show();
 		$('#typesDialog').dialog('option', 'title', 'Results');
 		$('#typesDialog').dialog('open');
 	});
@@ -979,12 +993,12 @@ function getChart(caption, subcap, xname, yname, suff, data, id) {
 	}
 }
 
-function getChartData(chart) {
+function getChartData(chart, dataKey) {
 	result = [];
 	$.each(chart, function (i, item) {
 		result.push({
 			"label": item['info'].toString(),
-			"value": item['data']
+			"value": item[dataKey]
 		});
 	});
 	return result;

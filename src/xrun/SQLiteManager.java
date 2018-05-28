@@ -109,52 +109,45 @@ public class SQLiteManager {
         " (id text PRIMARY KEY NOT NULL, data text NOT NULL)");
   }
 	
-  private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray times, JSONArray markers) {
-    try {
-      synchronized (dbCoords) {
-        ensureCoordsInit();
-        JSONObject json = new JSONObject();
-        json.put("lats", lats);
-        json.put("lons", lons);
-        json.put("times", times);
-        json.put("markers", markers);
-        String str = json.toString();
-        ResultSet rs = connDB2.createStatement().executeQuery("SELECT * FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
-        if (!rs.next()) {
-          connDB2.createStatement().executeUpdate("INSERT INTO " + COORDS_TABLE_NAME + " VALUES ('" + id + "', '" + str + "')");
-        } else {
-          connDB2.createStatement().executeUpdate("UPDATE " + COORDS_TABLE_NAME + " SET data='" + str + "' WHERE id='" + id + "'");
-        }
+  private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray times, JSONArray markers)
+      throws SQLException {
+    synchronized (dbCoords) {
+      ensureCoordsInit();
+      JSONObject json = new JSONObject();
+      json.put("lats", lats);
+      json.put("lons", lons);
+      json.put("times", times);
+      json.put("markers", markers);
+      String str = json.toString();
+      ResultSet rs = connDB2.createStatement()
+          .executeQuery("SELECT * FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
+      if (!rs.next()) {
+        connDB2.createStatement()
+            .executeUpdate("INSERT INTO " + COORDS_TABLE_NAME + " VALUES ('" + id + "', '" + str + "')");
+      } else {
+        connDB2.createStatement()
+            .executeUpdate("UPDATE " + COORDS_TABLE_NAME + " SET data='" + str + "' WHERE id='" + id + "'");
       }
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 
-  JSONObject getCoordsData(String id) {
+  JSONObject getCoordsData(String id) throws SQLException {
     JSONObject json = null;
-    try {
-      synchronized (dbCoords) {
-        ensureCoordsInit();
-        ResultSet rs = connDB2.createStatement().executeQuery("SELECT data FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
-        if (rs.next()) {
-          json = new JSONObject(JsonSanitizer.sanitize((String) rs.getString(1)));
-        }
+    synchronized (dbCoords) {
+      ensureCoordsInit();
+      ResultSet rs = connDB2.createStatement()
+          .executeQuery("SELECT data FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
+      if (rs.next()) {
+        json = new JSONObject(JsonSanitizer.sanitize((String) rs.getString(1)));
       }
-    } catch (Exception e) {
-      e.printStackTrace();
     }
     return json;
   }
 
-  private void removeCoordsData(String id) {
-    try {
-      synchronized (dbCoords) {
-        ensureCoordsInit();
-        connDB2.createStatement().executeUpdate("DELETE FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+  private void removeCoordsData(String id) throws SQLException {
+    synchronized (dbCoords) {
+      ensureCoordsInit();
+      connDB2.createStatement().executeUpdate("DELETE FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
     }
   }
   
@@ -759,17 +752,12 @@ public class SQLiteManager {
 	  setSecureFlag(fileName, secure);
 	}
 	
-	synchronized void deleteActivity(String fileName) {
-	  try {
-	    executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
-	    executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
-	    removeFeatures(fileName);
-	  } catch (Exception e) {
-	    System.out.println("Error removing features for " + fileName);
-      e.printStackTrace();
-	  }
-	  removeCoordsData(fileName);
-	}
+  synchronized void deleteActivity(String fileName) throws SQLException {
+    executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
+    executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
+    removeFeatures(fileName);
+    removeCoordsData(fileName);
+  }
 	
 	synchronized boolean isSecured(String fileName) {
 		try {
