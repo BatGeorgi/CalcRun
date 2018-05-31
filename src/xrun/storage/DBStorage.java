@@ -1,4 +1,4 @@
-package xrun;
+package xrun.storage;
 
 import java.io.File;
 import java.sql.Connection;
@@ -21,8 +21,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import xrun.parser.TrackParser;
-import xrun.utils.WeekCalculator;
+import xrun.Constants;
+import xrun.RunCalcUtils;
+import xrun.utils.CalcUtils;
+import xrun.utils.CalendarUtils;
+import xrun.utils.JsonSanitizer;
 
 public class DBStorage {
   
@@ -34,8 +37,8 @@ public class DBStorage {
   private static final String FEATURES_TABLE_NAME = "features";
   private static final String SECURED_TABLE_NAME = "secured";
   
-  static final String EXTERNAL_DASHBOARD = "External";
-  static final String MAIN_DASHBOARD = "Main";
+  public static final String EXTERNAL_DASHBOARD = "External";
+  public static final String MAIN_DASHBOARD = "Main";
   
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -77,7 +80,7 @@ public class DBStorage {
 	private Connection conn = null;
 	private Connection connDB2 = null;
 
-	DBStorage(File base) {
+	public DBStorage(File base) {
 		dbActivities = new File(base, "activities.db");
 		dbCoords = new File(base, "coords.db");
 		if (!dbActivities.isFile()) {
@@ -134,7 +137,7 @@ public class DBStorage {
     }
   }
 
-  JSONObject getCoordsData(String id) throws SQLException {
+  public JSONObject getCoordsData(String id) throws SQLException {
     JSONObject json = null;
     synchronized (dbCoords) {
       ensureCoordsInit();
@@ -154,7 +157,7 @@ public class DBStorage {
     }
   }
   
-  synchronized JSONArray getWeeklyTotals() {
+  public synchronized JSONArray getWeeklyTotals() {
     JSONArray result = new JSONArray();
     try {
       ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + RUNS_TABLE_NAME, true);
@@ -171,9 +174,9 @@ public class DBStorage {
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
         if (years.get(i) == currentYear) {
-          maxWeek = WeekCalculator.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
+          maxWeek = CalendarUtils.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
         } else {
-        	maxWeek = WeekCalculator.getWeekCount(years.get(i));
+        	maxWeek = CalendarUtils.getWeekCount(years.get(i));
         }
         for (int w = 1; w <= maxWeek; ++w) {
           JSONObject data = new JSONObject();
@@ -201,7 +204,7 @@ public class DBStorage {
           Calendar cal = new GregorianCalendar();
           cal.setTimeInMillis(rs.getLong("timeRawMs"));
           String[] formatted = new String[1];
-          int[] idf = WeekCalculator.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), formatted);
+          int[] idf = CalendarUtils.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), formatted);
           int week = idf[0];
           JSONObject data = weekly.get(week);
           if ("Empty week".equals(data.getString("info"))) {
@@ -267,7 +270,7 @@ public class DBStorage {
     return false;
   }
 	
-	synchronized JSONArray getMonthlyTotals() {
+  public synchronized JSONArray getMonthlyTotals() {
 	  JSONArray result = new JSONArray();
 	  try {
 	    ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + RUNS_TABLE_NAME, true);
@@ -340,7 +343,7 @@ public class DBStorage {
 	  return result;
 	}
 	
-	synchronized void ensureActivitiesInit() throws SQLException {
+  public synchronized void ensureActivitiesInit() throws SQLException {
 	  if (conn != null) {
 	    return;
 	  }
@@ -406,7 +409,7 @@ public class DBStorage {
     }
 	}
 	
-	synchronized void setFeatures(String id, String descr, List<String> links) throws SQLException {
+	public synchronized void setFeatures(String id, String descr, List<String> links) throws SQLException {
 	  JSONArray arr = new JSONArray();
 	  for (String link : links) {
 	    arr.put(link);
@@ -425,7 +428,7 @@ public class DBStorage {
 	  executePreparedQuery("DELETE FROM " + FEATURES_TABLE_NAME + " WHERE id=?", id);
 	}
 	
-	synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
+	public synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist,
 	    int top, String dashboard) throws SQLException {
 	  ResultSet rs = executePreparedQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name=?", name);
 	  if (rs != null && rs.next()) {
@@ -444,7 +447,7 @@ public class DBStorage {
     executePreparedQuery(sb.toString(), types, pattern, startDate, endDate, minDist, maxDist, top, dashboard, name);
 	}
 	
-	synchronized void renamePreset(String name, String newName) throws SQLException {
+	public synchronized void renamePreset(String name, String newName) throws SQLException {
 	  ResultSet rs = executePreparedQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name=?", newName);
 	  if (rs != null && rs.next()) {
 	    throw new IllegalArgumentException("Preset " + newName + " already exists");
@@ -452,11 +455,11 @@ public class DBStorage {
 		executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET name=? WHERE name=?", newName, name);
 	}
 	
-	synchronized void removePreset(String name) throws SQLException {
+	public synchronized void removePreset(String name) throws SQLException {
 		executePreparedQuery("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name=?", name);
 	}
 	
-	synchronized JSONObject getPresetData(String name) {
+	public synchronized JSONObject getPresetData(String name) {
 		try {
 		  ResultSet rs = executePreparedQuery("SELECT * FROM " + PRESETS_TABLE_NAME
 	        + " WHERE name=?", name);
@@ -487,7 +490,7 @@ public class DBStorage {
 		}
 	}
 	
-	synchronized JSONArray getPresets(Map<String, JSONObject> out) {
+	public synchronized JSONArray getPresets(Map<String, JSONObject> out) {
 		JSONArray result = new JSONArray();
 		ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME, true);
 		if (rs == null) {
@@ -529,7 +532,7 @@ public class DBStorage {
 		return result;
 	}
 	
-	synchronized void reorderPresets(List<String> presets) throws SQLException {
+	public synchronized void reorderPresets(List<String> presets) throws SQLException {
 	  Map<String, JSONObject> current = new LinkedHashMap<String, JSONObject>();
 	  getPresets(current);
 	  executeQueryExc("DELETE FROM " + PRESETS_TABLE_NAME, false);
@@ -546,14 +549,14 @@ public class DBStorage {
 	  }
 	}
 	
-	synchronized void reorderDashboards(List<String> dashboards) throws SQLException {
+	public synchronized void reorderDashboards(List<String> dashboards) throws SQLException {
     executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME, false);
     for (String dashboard : dashboards) {
       executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", dashboard);
     }
   }
 	
-	synchronized void addActivity(JSONObject entry) throws SQLException {
+	public synchronized void addActivity(JSONObject entry) throws SQLException {
 	  boolean isExt = isExternal(entry.getJSONArray("dashboards").toString());
 	  entry.put("isExt", isExt ? 1 : 0);
 	  StringBuffer sb = new StringBuffer();
@@ -645,12 +648,12 @@ public class DBStorage {
 	  cal.setTimeInMillis(activity.getLong("timeRawMs"));
 	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER : Constants.CORRECTION_BG_WINTER;
 	  cal.setTimeInMillis(activity.getLong("timeRawMs") + corr);
-	  activity.put("startAt", TrackParser.formatDate(cal, true));
+	  activity.put("startAt", CalcUtils.formatDate(cal, true));
 	  fillInFeatures(activity);
 	  return activity;
 	}
 	
-	synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
+	public synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
 	  List<JSONObject> result = new ArrayList<JSONObject>();
 	  StringBuffer selectClause = new StringBuffer();
@@ -739,7 +742,7 @@ public class DBStorage {
 	  return result;
   }
 	
-	synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure) throws SQLException {
+	public synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin, String newCC, String newPhotos, boolean secure) throws SQLException {
 	  StringBuffer sb = new StringBuffer();
 	  if (newGarmin == null || newGarmin.length() == 0) {
       newGarmin = "none";
@@ -755,14 +758,14 @@ public class DBStorage {
 	  setSecureFlag(fileName, secure);
 	}
 	
-  synchronized void deleteActivity(String fileName) throws SQLException {
+	public synchronized void deleteActivity(String fileName) throws SQLException {
     executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
     executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
     removeFeatures(fileName);
     removeCoordsData(fileName);
   }
 	
-	synchronized boolean isSecured(String fileName) {
+	public synchronized boolean isSecured(String fileName) {
 		try {
 			ResultSet rs = executePreparedQuery("SELECT * FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
 			return rs != null && rs.next();
@@ -772,7 +775,7 @@ public class DBStorage {
 		return true;
 	}
 	
-	synchronized void setSecureFlag(String fileName, boolean flag) throws SQLException {
+	public synchronized void setSecureFlag(String fileName, boolean flag) throws SQLException {
 		boolean isSecured = isSecured(fileName);
 		if (flag) {
 			if (!isSecured) {
@@ -783,15 +786,15 @@ public class DBStorage {
 		}
 	}
 	
-	File getActivitiesDBFile() {
+	public File getActivitiesDBFile() {
 	  return dbActivities;
 	}
 	
-	File getCoordsDBFile() {
+	public File getCoordsDBFile() {
 	  return dbCoords;
 	}
 	
-	synchronized JSONObject getActivity(String fileName) {
+	public synchronized JSONObject getActivity(String fileName) {
 	  try {
 	    return readActivity(executePreparedQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName), true);
 	  } catch (Exception e) {
@@ -801,7 +804,7 @@ public class DBStorage {
 	  return null;
 	}
 	
-	synchronized boolean hasActivity(String fileName) {
+	public synchronized boolean hasActivity(String fileName) {
 	  try {
       return executePreparedQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName).next();
     } catch (SQLException e) {
@@ -809,7 +812,7 @@ public class DBStorage {
     }
 	}
 	
-	synchronized JSONObject getBestActivities(String columnName) {
+	public synchronized JSONObject getBestActivities(String columnName) {
 	  JSONArray extArr = new JSONArray();
 	  extArr.put(EXTERNAL_DASHBOARD);
 	  String extS = extArr.toString();
@@ -833,7 +836,7 @@ public class DBStorage {
     return null;
 	}
 	
-	synchronized JSONObject getBestActivities(double distMin, double distMax) {
+	public synchronized JSONObject getBestActivities(double distMin, double distMax) {
 	  try {
 	    ResultSet rs = executeQuery("SELECT genby, date, timeTotal, isExt FROM " + RUNS_TABLE_NAME +
           " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw", true);
@@ -857,7 +860,7 @@ public class DBStorage {
 	  return null;
 	}
 	
-	synchronized JSONArray getActivitySplits() {
+	public synchronized JSONArray getActivitySplits() {
 	  JSONArray result = new JSONArray();
 	  ResultSet rs = executeQuery("SELECT name, date, splits, genby, isExt FROM " + RUNS_TABLE_NAME +
 	      " WHERE (type='Running' OR type='Trail')", true);
@@ -880,7 +883,7 @@ public class DBStorage {
 	  return result;
 	}
 	
-	synchronized void addToDashboard(String activity, String dashboard) throws SQLException {
+	public synchronized void addToDashboard(String activity, String dashboard) throws SQLException {
 	  ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", dashboard);
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard not found");
@@ -898,7 +901,7 @@ public class DBStorage {
 	  		dashboards.toString(), activity);
 	}
 	
-	synchronized void removeFromDashboard(String activity, String dashboard) throws SQLException {
+	public synchronized void removeFromDashboard(String activity, String dashboard) throws SQLException {
 	  ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", dashboard);
     if (!rs.next()) {
       throw new IllegalArgumentException("Dashboard not found");
@@ -920,7 +923,7 @@ public class DBStorage {
     		dashboards.toString(), activity);
   }
 	
-  synchronized void addDashboard(String name) throws SQLException {
+	public synchronized void addDashboard(String name) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
@@ -930,7 +933,7 @@ public class DBStorage {
     executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", name);
   }
 
-  synchronized void renameDashboard(String name, String newName) throws SQLException {
+	public synchronized void renameDashboard(String name, String newName) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
@@ -970,7 +973,7 @@ public class DBStorage {
         newName, name);
   }
 
-  synchronized void removeDashboard(String name) throws SQLException {
+	public synchronized void removeDashboard(String name) throws SQLException {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
@@ -1000,7 +1003,7 @@ public class DBStorage {
     		name);
   }
 
-  synchronized JSONObject getDashboards() {
+	public synchronized JSONObject getDashboards() {
     JSONArray arr = new JSONArray();
     try {
       ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
@@ -1020,7 +1023,7 @@ public class DBStorage {
     return result;
   }
   
-  synchronized boolean dashboardExists(String dashboard) {
+	public synchronized boolean dashboardExists(String dashboard) {
     if (dashboard == null) {
       return false;
     }
@@ -1035,7 +1038,7 @@ public class DBStorage {
     return false;
   }
 	
-  synchronized boolean saveCookie(String uid, Calendar expires) {
+	public synchronized boolean saveCookie(String uid, Calendar expires) {
     try {
       boolean hasCookie = executePreparedQuery("SELECT uid FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", uid)
           .next();
@@ -1077,7 +1080,7 @@ public class DBStorage {
     return false;
   }
 	
-	synchronized boolean isValidCookie(String uid) {
+	public synchronized boolean isValidCookie(String uid) {
 	  try {
 	    ResultSet rs = executePreparedQuery("SELECT expires FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", uid);
 	    if (!rs.next()) {
@@ -1094,11 +1097,11 @@ public class DBStorage {
 	  return false;
 	}
 	
-	synchronized void deleteCookie(String uid) throws SQLException {
+	public synchronized void deleteCookie(String uid) throws SQLException {
 	  executePreparedQuery("DELETE FROM "+ COOKIES_TABLE_NAME + " WHERE uid=?", uid);
 	}
 	
-	synchronized void checkForExpiredCookies() {
+	public synchronized void checkForExpiredCookies() {
 	  ResultSet rs = executeQuery("SELECT * FROM " + COOKIES_TABLE_NAME, true);
 	  try {
 	    while (rs.next()) {
@@ -1128,7 +1131,7 @@ public class DBStorage {
 	  return false;
 	}
 	
-	synchronized JSONObject getSplitsAndDist(String activity) {
+	public synchronized JSONObject getSplitsAndDist(String activity) {
 	  JSONObject json = null;
 	  try {
 	    ResultSet rs = executePreparedQuery("SELECT splits, speedDist FROM " + RUNS_TABLE_NAME + " WHERE genby=?",
@@ -1155,7 +1158,7 @@ public class DBStorage {
     return json;
 	}
 	
-  synchronized JSONObject getCompOptions(String activity, boolean searchOnlyExt) {
+	public synchronized JSONObject getCompOptions(String activity, boolean searchOnlyExt) {
     JSONObject json = null;
     Map<String, Boolean> dashboards = new HashMap<String, Boolean>();
     String type = null;
@@ -1242,7 +1245,7 @@ public class DBStorage {
     return json;
   }
 	
-	synchronized void close() {
+	public synchronized void close() {
 	  try {
       if (conn != null) {
         conn.close();
@@ -1261,7 +1264,7 @@ public class DBStorage {
 	  connDB2 = null;
 	}
 	
-  synchronized void cleanupReliveCCBefore(Calendar cal) {
+	public synchronized void cleanupReliveCCBefore(Calendar cal) {
     int day = cal.get(Calendar.DAY_OF_MONTH);
     int month = cal.get(Calendar.MONTH);
     int year = cal.get(Calendar.YEAR);

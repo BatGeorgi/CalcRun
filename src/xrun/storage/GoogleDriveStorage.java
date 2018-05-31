@@ -12,7 +12,7 @@
  * accordance with the terms of the license agreement you
  * entered into with Bosch Software Innovations.
  */
-package xrun;
+package xrun.storage;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -86,7 +86,7 @@ public class GoogleDriveStorage {
               .build();
   }
   
-  GoogleDriveStorage(java.io.File clientSecret) {
+  public GoogleDriveStorage(java.io.File clientSecret) {
     try {
       service = getDriveService(clientSecret);
     } catch (IOException ioe) {
@@ -95,7 +95,7 @@ public class GoogleDriveStorage {
     }
   }
   
-  void backupDB(final java.io.File db, String pref) {
+  public void backupDB(final java.io.File db, String pref) {
     final File fileMetadata = new File();
     Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("EET"));
     fileMetadata.setName(pref + '_' + cal.get(Calendar.YEAR) + '_' + (cal.get(Calendar.MONTH) + 1) + '_' +
@@ -114,7 +114,7 @@ public class GoogleDriveStorage {
     }).start();
   }
   
-  void backupTrack(final java.io.File track) {
+  public void backupTrack(final java.io.File track) {
     final File fileMetadata = new File();
     fileMetadata.setName(track.getName());
     fileMetadata.setParents(Collections.singletonList(TRACKS_FOLDER_ID));

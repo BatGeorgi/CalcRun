@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import javax.servlet.http.Cookie;
 
+import xrun.storage.DBStorage;
+
 class CookieHandler extends TimerTask {
   
   private static final String COOKIE_NAME = "xruncalc";

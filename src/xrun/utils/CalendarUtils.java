@@ -2,7 +2,7 @@ package xrun.utils;
 
 import xrun.Constants;
 
-public class WeekCalculator {
+public class CalendarUtils {
 	
 	private static final int[] LENS = new int[] {
 		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31

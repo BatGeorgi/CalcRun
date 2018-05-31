@@ -30,8 +30,9 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 
-import xrun.parser.TrackParser;
-import xrun.utils.WeekCalculator;
+import xrun.storage.DBStorage;
+import xrun.utils.CalcUtils;
+import xrun.utils.CalendarUtils;
 
 class RequestHandler extends AbstractHandler {
   
@@ -360,7 +361,7 @@ class RequestHandler extends AbstractHandler {
       resetCache();
       return;
     } else {
-      int currentWeek = WeekCalculator.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
+      int currentWeek = CalendarUtils.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
       if (currentWeek != week) {
         response.setStatus(HttpServletResponse.SC_CONFLICT);
         resetCache();
@@ -606,7 +607,7 @@ class RequestHandler extends AbstractHandler {
         }
       }
       if (actTime != null && actTime.trim().length() > 0) {
-        newTime = new Long(TrackParser.getRealTime(actTime.trim()));
+        newTime = new Long(CalcUtils.getRealTime(actTime.trim()));
         if (newTime.intValue() <= 0) {
           throw new IllegalArgumentException("Bad data");
         }

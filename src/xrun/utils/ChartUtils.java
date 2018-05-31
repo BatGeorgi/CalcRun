@@ -1,4 +1,4 @@
-package xrun;
+package xrun.utils;
 
 import java.lang.reflect.Array;
 import java.util.Map;
@@ -8,7 +8,9 @@ import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-class ChartUtils {
+import xrun.Constants;
+
+public class ChartUtils {
 	
 	private static final String[] TYPES = new String[] { Constants.RUNNING,
 	    Constants.TRAIL, Constants.UPHILL, Constants.HIKING,
@@ -26,7 +28,7 @@ class ChartUtils {
 	private static final int[] BOUNDS_HOUR = new int[] { 0, 8, 9, 10, 12, 15, 18,
 			19, 20 };
 	
-	static JSONObject getResultCharts(JSONArray activities) {
+	public static JSONObject getResultCharts(JSONArray activities) {
 		JSONObject result = new JSONObject();
     int[] typesCnt = new int[TYPES.length];
     double[] typesDist = new double[TYPES.length];
