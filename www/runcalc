@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Running Calc Tools</title>
     <link href="style_250518.css" type="text/css" rel="stylesheet" />
+	<link href="style_cube.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
@@ -18,7 +19,7 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun_280518.js"></script>
+	<script type="text/javascript" src="xrun_310518.js"></script>
 	<script type="text/javascript" src="initDialogs_280518.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
@@ -356,7 +357,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 3.9</strong></H1>
+        <H1><strong>Running Calc Tools 3.91</strong></H1>
 		<hr>
     </div>
 	
@@ -458,7 +459,7 @@
     <div id="activities">
 		
 		<h2>
-            <div id="ht"><div class="loader"></div></div>
+            <div id="ht"><div class="sk-cube-grid"><div class="sk-cube sk-cube1"></div><div class="sk-cube sk-cube2"></div><div class="sk-cube sk-cube3"></div><div class="sk-cube sk-cube4"></div><div class="sk-cube sk-cube5"></div><div class="sk-cube sk-cube6"></div><div class="sk-cube sk-cube7"></div><div class="sk-cube sk-cube8"></div><div class="sk-cube sk-cube9"></div></div></div>
         </h2>
         <table class="tablesorter tablesorter-pager highlight" id="runs" cellspacing="0" summary="Running and hiking activities" style="display:none">
             <thead>
