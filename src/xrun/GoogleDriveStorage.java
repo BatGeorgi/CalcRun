@@ -40,7 +40,7 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 
-public class GoogleDrive {
+public class GoogleDriveStorage {
 
   private static final String APPLICATION_NAME = "Drive API XRunCalc";
   private static final java.io.File DATA_STORE_DIR = new java.io.File(
@@ -86,7 +86,7 @@ public class GoogleDrive {
               .build();
   }
   
-  GoogleDrive(java.io.File clientSecret) {
+  GoogleDriveStorage(java.io.File clientSecret) {
     try {
       service = getDriveService(clientSecret);
     } catch (IOException ioe) {

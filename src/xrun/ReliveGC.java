@@ -9,12 +9,12 @@ import java.util.TimerTask;
 public class ReliveGC extends TimerTask {
 
   private RunCalcUtils     rcUtils;
-  private SQLiteManager    sqLite;
+  private DBStorage    sqLite;
   private Timer            timer          = new Timer();
 
   private static final int CLEANUP_PERIOD = 24 * 3600 * 1000; // one day
 
-  ReliveGC(RunCalcUtils rcUtils, SQLiteManager sqLite) {
+  ReliveGC(RunCalcUtils rcUtils, DBStorage sqLite) {
     this.rcUtils = rcUtils;
     this.sqLite = sqLite;
     run();

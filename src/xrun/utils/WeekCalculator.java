@@ -1,6 +1,8 @@
-package xrun;
+package xrun.utils;
 
-public class WeekCalc {
+import xrun.Constants;
+
+public class WeekCalculator {
 	
 	private static final int[] LENS = new int[] {
 		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
@@ -13,7 +15,7 @@ public class WeekCalc {
 		5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2, 4, 5, 6, 0, 2, 3, 4, 5, 0, 1, 2, 3, 5, 6, 0, 1, 3, 4, 5, 6, 1, 2, 3, 4, 6, 0, 1, 2
 	};
 	
-	static final int[] identifyWeek(int day, int month, int year, String[] out) { // result - week number, week start day, week start month
+	public static final int[] identifyWeek(int day, int month, int year, String[] out) { // result - week number, week start day, week start month
 	  if (year < 2000) {
 	    year = 2000;
 	  }
@@ -43,15 +45,15 @@ public class WeekCalc {
 	private static String formatWeek(int dayBegin, int month, int year) {
 	  int len = month == 2 && year % 4 == 0 && year != 2100 ? 29 : LENS[month - 1];
 	  if (dayBegin + 7 <= len) {
-	    return dayBegin + "-" + (dayBegin + 6) + " " + CalcDist.MONTHS[month - 1];
+	    return dayBegin + "-" + (dayBegin + 6) + " " + Constants.MONTHS[month - 1];
 	  }
 	  if (month == 12) {
 	    return dayBegin + "-31 Dec";
 	  }
-	  return dayBegin + " " + CalcDist.MONTHS[month - 1] + "-" + (6 - len + dayBegin) + " " + CalcDist.MONTHS[month];
+	  return dayBegin + " " + Constants.MONTHS[month - 1] + "-" + (6 - len + dayBegin) + " " + Constants.MONTHS[month];
 	}
 
-	static int getWeekCount(int year) {
+	public static int getWeekCount(int year) {
 		int firstMondayNumber = (7 - STARTS[year - START_YEAR]) % 7 + 1;
 		boolean isLeap = year % 4 == 0 && year != 2100;
 		return isLeap && firstMondayNumber == 2 ? 54 : 53;
