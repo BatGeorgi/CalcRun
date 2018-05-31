@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package xrun;
+package xrun.utils;
 
 /**
  * Given JSON-like content, converts it to valid JSON.

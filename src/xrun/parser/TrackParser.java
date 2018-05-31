@@ -21,6 +21,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import xrun.Constants;
+import xrun.utils.CalcUtils;
 
 public class TrackParser {
   
@@ -71,93 +72,6 @@ public class TrackParser {
       return null;
   }
   
-  public static double distance(double lat1, double lat2, double lon1,
-      double lon2) {
-    final int R = 6371; // Radius of the earth
-    double latDistance = Math.toRadians(lat2 - lat1);
-    double lonDistance = Math.toRadians(lon2 - lon1);
-    double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-        + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-            * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c * 1000.0; // convert to meters
-  }
-  
-  private static String formatTime(long seconds) {
-    return formatTime(seconds, true, false);
-  }
-  
-  public static String formatTime(long seconds, boolean includeHours) {
-    return formatTime(seconds, includeHours, false);
-  }
-    
-  public static String formatTime(long seconds, boolean includeHours, boolean includeDays) {
-    int hours = (int) (seconds / 3600);
-    int minutes = (int) ((seconds % 3600) / 60);
-    seconds = (int) seconds % 60;
-    StringBuffer sb = new StringBuffer();
-    if (includeDays && hours >= 24) {
-      int days = hours / 24;
-      hours %= 24;
-      sb.append(days + "d, ");
-    }
-    if (includeHours || hours > 0) {
-      if (hours < 10) {
-        sb.append('0');
-      }
-      sb.append(hours);
-      sb.append(':');
-    }
-    if (minutes < 10) {
-      sb.append('0');
-    }
-    sb.append(minutes);
-    sb.append(':');
-    if (seconds < 10) {
-      sb.append('0');
-    }
-    sb.append(seconds);
-    if (includeDays) {
-      
-    }
-    return sb.toString();
-  }
-  
-  public static long getRealTime(String formattedTime) {
-    StringTokenizer st = new StringTokenizer(formattedTime, ":", false);
-    long total = 0;
-    long[] mults = new long[] {
-        3600, 60, 1
-    };
-    int it = 0;
-    if (st.countTokens() < 3) {
-      ++it;
-    }
-    while (st.hasMoreTokens()) {
-      total += mults[it++] * (long) Integer.parseInt(st.nextToken());
-    }
-    return total;
-  }
-  
-  public static String formatPace(double pace) {
-    int minutes = (int) pace;
-    int seconds = (int) ((pace - minutes) * 60.0);
-    StringBuffer sb = new StringBuffer();
-    sb.append(minutes);
-    sb.append(':');
-    if (seconds < 10) {
-      sb.append('0');
-    }
-    sb.append(seconds);
-    return sb.toString();
-  }
-  
-  private static int[] formatPaceRaw(double pace) {
-    int minutes = (int) pace;
-    int seconds = (int) ((pace - minutes) * 60.0);
-    return new int[] {minutes, seconds};
-  }
-  
   private String convertName(String name) {
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < name.length(); ++i) {
@@ -169,18 +83,6 @@ public class TrackParser {
       }
     }
     return sb.toString().trim();
-  }
-  
-  public static String speedToPace(double speed/*km/h*/) {
-    double pace = 60.0 / speed;
-    int mins = (int) pace;
-    double seconds = (pace - mins) * 60.0;
-    if (seconds < 0) {
-      seconds = 0;
-    }
-    int s = (int) seconds;
-    String ss = (s < 10 ? "0" + s : String.valueOf(s));
-    return String.format("%d:%s", mins, ss);
   }
   
   private static int[] speedToPaceRaw(double speed/*km/h*/) {
@@ -205,32 +107,8 @@ public class TrackParser {
     }
   }
   
-  private static void appUnit(StringBuffer sb, int unit) {
-    if (unit < 10) {
-      sb.append('0');
-    }
-    sb.append(unit);
-  }
   
-  public static String formatDate(Calendar cal, boolean startTime) {
-    StringBuffer sb = new StringBuffer();
-    appUnit(sb, cal.get(Calendar.DAY_OF_MONTH));
-    sb.append(' ');
-    sb.append(Constants.MONTHS[cal.get(Calendar.MONTH)]);
-    sb.append(' ');
-    sb.append(cal.get(Calendar.YEAR));
-    sb.append(' ');
-    if (startTime) {
-      appUnit(sb, cal.get(Calendar.HOUR_OF_DAY));
-      sb.append(':');
-      appUnit(sb, cal.get(Calendar.MINUTE));
-    } else {
-      sb.append(Constants.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
-    }
-    return sb.toString();
-  }
-  
-  static Calendar getDateWithCorrection(long timeRawMs) {
+  private static Calendar getDateWithCorrection(long timeRawMs) {
     Calendar cal = new GregorianCalendar();
     cal.setTimeInMillis(timeRawMs);
     long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER : Constants.CORRECTION_BG_WINTER;
@@ -315,13 +193,13 @@ public class TrackParser {
         if (i == 0) {
           data.put("timeRawMs", cal.getTimeInMillis());
           Calendar corrected = getDateWithCorrection(cal.getTimeInMillis());
-          data.put("date", formatDate(corrected, false));
+          data.put("date", CalcUtils.formatDate(corrected, false));
           data.put("year", corrected.get(Calendar.YEAR));
           data.put("month", corrected.get(Calendar.MONTH));
           data.put("day", corrected.get(Calendar.DAY_OF_MONTH));
         }
         if (i > 0) {
-          double tempDist = distance(prev[0], lat, prev[1], lon);
+          double tempDist = CalcUtils.distance(prev[0], lat, prev[1], lon);
           currentDist += tempDist;
           currentDistSplits += tempDist;
           double timeDiff = (cal.getTimeInMillis() - lastTime) / 1000.0;
@@ -397,13 +275,13 @@ public class TrackParser {
       data.put("distRaw", distTotal / 1000.0);
       data.put("distRunning", String.format("%.3f", (distRunning / 1000.0)));
       data.put("distRunningRaw", distRunning / 1000.0);
-      data.put("timeRunning", formatTime((long) timeRunning));
-      data.put("timeTotal", formatTime((long) timeTotal));
+      data.put("timeRunning", CalcUtils.formatTime((long) timeRunning));
+      data.put("timeTotal", CalcUtils.formatTime((long) timeTotal));
       data.put("timeTotalRaw", timeTotal);
-      data.put("timeRest", formatTime((long) timeRest));
+      data.put("timeRest", CalcUtils.formatTime((long) timeRest));
       data.put("avgSpeed", String.format("%.3f", (distTotal / timeTotal) / COEF));
       data.put("avgSpeedRaw", (distTotal / timeTotal) / COEF);
-      data.put("avgPace", speedToPace((distTotal / timeTotal) / COEF));
+      data.put("avgPace", CalcUtils.speedToPace((distTotal / timeTotal) / COEF));
       data.put("avgPaceRaw", speedToPaceRaw((distTotal / timeTotal) / COEF));
       data.put("eleRunningPos", (long) eleRunningPos);
       data.put("eleRunningNeg", (long) eleRunningNeg);
@@ -425,7 +303,7 @@ public class TrackParser {
   	return data;
   }
   
-  static void run(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
+  private static void run(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
@@ -443,7 +321,7 @@ public class TrackParser {
               : "+");
       sp.put("range", range);
       sp.put("dist", String.format("%.3f", cd.histDist[i] / 1000.0));
-      sp.put("time", formatTime((long) cd.histTime[i]));
+      sp.put("time", CalcUtils.formatTime((long) cd.histTime[i]));
       sp.put("timeRaw", (long) cd.histTime[i]);
       sp.put("elePos", (long) cd.histElePos[i]);
       sp.put("eleNeg", (long) cd.histEleNeg[i]);
@@ -468,15 +346,15 @@ public class TrackParser {
       sp.put("total", String.format("%.3f", tot));
       sp.put("totalRaw", tot);
       sp.put("len", String.format("%.3f", currentLen));
-      String splitTime = formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
+      String splitTime = CalcUtils.formatTime((long) cd.splitTimes.get(i).doubleValue(), false);
       sp.put("time", splitTime);
       sp.put("timeRaw", Math.round(cd.splitTimes.get(i).doubleValue()));
       timeTotalRaw += cd.splitTimes.get(i).doubleValue();
       sp.put("timeTotalRaw", Math.round(timeTotalRaw));
-      sp.put("timeTotal", formatTime(Math.round(timeTotalRaw), true));
+      sp.put("timeTotal", CalcUtils.formatTime(Math.round(timeTotalRaw), true));
       double splitPace = (cd.splitTimes.get(i).doubleValue() / 60.0) / currentLen;
-      sp.put("pace", formatPace(splitPace));
-      sp.put("paceRaw", formatPaceRaw(splitPace));
+      sp.put("pace", CalcUtils.formatPace(splitPace));
+      sp.put("paceRaw", CalcUtils.formatPaceRaw(splitPace));
       sp.put("speed", String.format("%.3f", 60.0 / splitPace));
       sp.put("accumSpeed", String.format("%.3f", tot / (timeTotalRaw / 3600.0)));
       double ele = cd.splitEle.get(i);

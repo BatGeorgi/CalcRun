@@ -6,7 +6,9 @@ import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class ReliveGC extends TimerTask {
+import xrun.storage.DBStorage;
+
+public class ReliveGarbageCollector extends TimerTask {
 
   private RunCalcUtils     rcUtils;
   private DBStorage    sqLite;
@@ -14,7 +16,7 @@ public class ReliveGC extends TimerTask {
 
   private static final int CLEANUP_PERIOD = 24 * 3600 * 1000; // one day
 
-  ReliveGC(RunCalcUtils rcUtils, DBStorage sqLite) {
+  ReliveGarbageCollector(RunCalcUtils rcUtils, DBStorage sqLite) {
     this.rcUtils = rcUtils;
     this.sqLite = sqLite;
     run();
