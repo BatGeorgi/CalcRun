@@ -15,7 +15,8 @@ import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.MultiPartInputStreamParser;
 
 public class MultipartConfigInjectionHandler extends HandlerWrapper {
-  public static final String MULTIPART_FORMDATA_TYPE = "multipart/form-data";
+  
+  private static final String MULTIPART_FORMDATA_TYPE = "multipart/form-data";
 
   private static final MultipartConfigElement MULTI_PART_CONFIG = new MultipartConfigElement(
       System.getProperty("java.io.tmpdir"));

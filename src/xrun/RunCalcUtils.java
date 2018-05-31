@@ -20,31 +20,26 @@ import javax.servlet.http.Cookie;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import xrun.parser.TrackParser;
+
 public class RunCalcUtils {
   
-  static final String RUNNING = "Running";
-  static final String TRAIL = "Trail";
-  static final String UPHILL = "Uphill";
-  static final String HIKING = "Hiking";
-  static final String WALKING = "Walking";
-  static final String OTHER = "Other";
-  
   private File gpxBase;
-  private SQLiteManager sqLite;
-  private GoogleDrive drive;
+  private DBStorage sqLite;
+  private GoogleDriveStorage drive;
   private CookieHandler cookieHandler;
   private ReliveGC reliveGC;
-  private CalcDistHandler handler;
+  private RequestHandler handler;
   
-  RunCalcUtils(CalcDistHandler handler, File base, File clientSecret) {
+  RunCalcUtils(RequestHandler handler, File base, File clientSecret) {
     this.handler = handler;
-    sqLite = new SQLiteManager(base);
+    sqLite = new DBStorage(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
     cookieHandler = new CookieHandler(sqLite);
     reliveGC = new ReliveGC(this, sqLite);
     if (clientSecret != null) {
-      drive = new GoogleDrive(clientSecret);
+      drive = new GoogleDriveStorage(clientSecret);
     }
   }
 
@@ -94,8 +89,8 @@ public class RunCalcUtils {
       }
       System.out.println("Process file " + targ);
       try {
-        JSONObject current = CalcDist.run(targ);
-        current.put("type", RUNNING);
+        JSONObject current = TrackParser.run(targ);
+        current.put("type", Constants.RUNNING);
         current.put("ccLink", "none");
         current.put("photosLink", "none");
         sqLite.addActivity(current);
@@ -130,13 +125,13 @@ public class RunCalcUtils {
     JSONArray perc = new JSONArray();
     double dist = 0.0;
     for (int i = 1; i < lats.length(); ++i) {
-      dist += CalcDist.distance(lats.getDouble(i - 1), lats.getDouble(i),
+      dist += TrackParser.distance(lats.getDouble(i - 1), lats.getDouble(i),
           lons.getDouble(i - 1), lons.getDouble(i));
     }
 		perc.put(0);
 		double cdist = 0.0;
 		for (int i = 1; i < lats.length(); ++i) {
-			cdist += CalcDist.distance(lats.getDouble(i - 1), lats.getDouble(i),
+			cdist += TrackParser.distance(lats.getDouble(i - 1), lats.getDouble(i),
 					lons.getDouble(i - 1), lons.getDouble(i));
 			perc.put((cdist / dist) * 100.0);
 		}
@@ -149,7 +144,7 @@ public class RunCalcUtils {
   		String sname = null;
   		int i;
   		for (i = 0; i < 1000; ++i) {
-  			sname = name + CalcDist.FILE_SUFF + i;
+  			sname = name + Constants.FILE_SUFF + i;
   			if (!sqLite.hasActivity(sname)) {
   				name = sname;
   				break;
@@ -196,7 +191,7 @@ public class RunCalcUtils {
   	  return "DB error";
   	}
     try {
-      JSONObject current = CalcDist.run(file);
+      JSONObject current = TrackParser.run(file);
       if (activityName != null) {
         current.put("name", activityName);
       }
@@ -204,12 +199,12 @@ public class RunCalcUtils {
       current.put("ccLink", reliveCC);
       current.put("photosLink", photos);
       if (!sqLite.dashboardExists(dashboard)) {
-        dashboard = SQLiteManager.MAIN_DASHBOARD;
+        dashboard = DBStorage.MAIN_DASHBOARD;
       }
       JSONArray arr = new JSONArray();
       arr.put(dashboard);
-      if (!SQLiteManager.EXTERNAL_DASHBOARD.equals(dashboard) && !SQLiteManager.MAIN_DASHBOARD.equals(dashboard)) {
-        arr.put(SQLiteManager.MAIN_DASHBOARD);
+      if (!DBStorage.EXTERNAL_DASHBOARD.equals(dashboard) && !DBStorage.MAIN_DASHBOARD.equals(dashboard)) {
+        arr.put(DBStorage.MAIN_DASHBOARD);
       }
       current.put("dashboards", arr);
       sqLite.addActivity(current);
@@ -249,7 +244,7 @@ public class RunCalcUtils {
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen, boolean getWMT,
       boolean isLoggedIn) {
     if (dashboard == null || dashboard.trim().length() == 0) {
-      dashboard = SQLiteManager.MAIN_DASHBOARD;
+      dashboard = DBStorage.MAIN_DASHBOARD;
     }
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
@@ -276,13 +271,13 @@ public class RunCalcUtils {
     }
     if (totals != null) {
       totals.put("avgSpeed", String.format("%.3f", totals.getDouble("totalDistance") / (totals.getLong("totalTime") / 3600.0)));
-      totals.put("totalTime", CalcDist.formatTime(totals.getLong("totalTime"), true, true));
+      totals.put("totalTime", TrackParser.formatTime(totals.getLong("totalTime"), true, true));
       totals.put("avgDist", String.format("%.3f", totals.getDouble("totalDistance") / (double) count));
     }
     for (int i = 1; i < matched.size(); ++i) {
       JSONObject jobj = matched.get(i);
       activities.put(jobj);
-      if (!RunCalcUtils.TRAIL.equals(jobj.getString("type"))) {
+      if (!Constants.TRAIL.equals(jobj.getString("type"))) {
         isAllTrail = false;
       }
     }
@@ -412,9 +407,9 @@ public class RunCalcUtils {
       diff.put("time2", sp2.getString("time"));
       diff.put("point", String.format("%.3f", total1));
       long currentDiff = sp1.getLong("timeRaw") - sp2.getLong("timeRaw");
-      diff.put("currentDiff", (currentDiff > 0 ? "+" : (currentDiff < 0 ? "-" : "")) + CalcDist.formatTime(Math.abs(currentDiff), false));
+      diff.put("currentDiff", (currentDiff > 0 ? "+" : (currentDiff < 0 ? "-" : "")) + TrackParser.formatTime(Math.abs(currentDiff), false));
       long totalDiff = sp1.getLong("timeTotalRaw") - sp2.getLong("timeTotalRaw");
-      diff.put("totalDiff", (totalDiff > 0 ? "+" : (totalDiff < 0 ? "-" : "")) + CalcDist.formatTime(Math.abs(totalDiff), false));
+      diff.put("totalDiff", (totalDiff > 0 ? "+" : (totalDiff < 0 ? "-" : "")) + TrackParser.formatTime(Math.abs(totalDiff), false));
       diffsByTime.put(diff);
     }
     result.put("general", general);
@@ -506,9 +501,9 @@ public class RunCalcUtils {
       ach.put("date", ba[1]);
       ach.put("genby", ba[2].endsWith(".gpx") ? ba[2].substring(0, ba[2].length() - 4) : ba[2]);
       long seconds = entry.getValue();
-      ach.put("ach", CalcDist.formatTime(seconds, true));
+      ach.put("ach", TrackParser.formatTime(seconds, true));
       ach.put("speed", String.format("%.3f", entry.getKey() / (seconds / 3600.0)));
-      ach.put("pace", CalcDist.formatPace((seconds / 60.0) / entry.getKey()));
+      ach.put("pace", TrackParser.formatPace((seconds / 60.0) / entry.getKey()));
       arr.put(ach);
     }
     result.put("totals", arr);
@@ -702,12 +697,12 @@ public class RunCalcUtils {
       double time = mods.has("time") ? mods.getLong("time") : activity.getDouble("timeTotalRaw");
       activity.put("dist", String.format("%.3f", dist));
       activity.put("distRaw", dist);
-      activity.put("timeTotal", CalcDist.formatTime((long) time, true));
+      activity.put("timeTotal", TrackParser.formatTime((long) time, true));
       activity.put("timeTotalRaw", time);
       double speed = dist / (time / 3600.0);
       activity.put("avgSpeed", String.format("%.3f", speed));
       activity.put("avgSpeedRaw", speed);
-      activity.put("avgPace", CalcDist.speedToPace(speed));
+      activity.put("avgPace", TrackParser.speedToPace(speed));
       result = true;
     }
     if (mods.has("gain")) {
@@ -809,7 +804,7 @@ public class RunCalcUtils {
           sqLite.reorderPresets(ordered);
           break;
         case 2:
-          ordered.add(0, SQLiteManager.MAIN_DASHBOARD);
+          ordered.add(0, DBStorage.MAIN_DASHBOARD);
           sqLite.reorderDashboards(ordered);
       }
     } catch (SQLException e) {

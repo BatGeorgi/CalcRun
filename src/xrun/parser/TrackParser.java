@@ -1,4 +1,4 @@
-package xrun;
+package xrun.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,31 +20,19 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class CalcDist {
+import xrun.Constants;
+
+public class TrackParser {
   
-  static final String FILE_SUFF = "_-REV-_";
-  
-  static final String[] MONTHS = new String[] {
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-  };
-  
-  static final double DEFAULT_MIN_SPEED = 9;
-  static final double DEFAULT_INTERVAL = 100;
-  static final double DEFAULT_SPLIT = 1;
-  
-  static final String[] DAYS = new String[] {
-    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-  };
+  private static final double DEFAULT_MIN_SPEED = 9;
+  private static final double DEFAULT_INTERVAL = 100;
+  private static final double DEFAULT_SPLIT = 1;
   
   private static final double COEF = 5.0 / 18.0; // km/h to m/s
   
   private static final double[] BOUNDS = new double[] {
       0.0, 6.0 * COEF, 7.0 * COEF, 8.0 * COEF, 9.0 * COEF, 10.0 * COEF, 11.0 * COEF, 12.0 * COEF
   }; // m/s
-  
-  static final long CORRECTION_BG_WINTER = 2 * 3600 * 1000; // 2 hours
-  static final long CORRECTION_BG_SUMMER = 3 * 3600 * 1000; // 3 hours
   
   private File file;
   private double minRunningSpeed; // m/s
@@ -67,7 +55,7 @@ public class CalcDist {
   private JSONArray times = new JSONArray();
   private JSONArray markers = new JSONArray();
   
-  private CalcDist(File file, double minRunningSpeed, double interval, double splitM) {
+  private TrackParser(File file, double minRunningSpeed, double interval, double splitM) {
     this.file = file;
     this.minRunningSpeed = (minRunningSpeed * 5.0) / 18.0; // convert to m/s
     this.interval = interval;
@@ -83,7 +71,7 @@ public class CalcDist {
       return null;
   }
   
-  static double distance(double lat1, double lat2, double lon1,
+  public static double distance(double lat1, double lat2, double lon1,
       double lon2) {
     final int R = 6371; // Radius of the earth
     double latDistance = Math.toRadians(lat2 - lat1);
@@ -99,11 +87,11 @@ public class CalcDist {
     return formatTime(seconds, true, false);
   }
   
-  static String formatTime(long seconds, boolean includeHours) {
+  public static String formatTime(long seconds, boolean includeHours) {
     return formatTime(seconds, includeHours, false);
   }
     
-  static String formatTime(long seconds, boolean includeHours, boolean includeDays) {
+  public static String formatTime(long seconds, boolean includeHours, boolean includeDays) {
     int hours = (int) (seconds / 3600);
     int minutes = (int) ((seconds % 3600) / 60);
     seconds = (int) seconds % 60;
@@ -135,7 +123,7 @@ public class CalcDist {
     return sb.toString();
   }
   
-  static long getRealTime(String formattedTime) {
+  public static long getRealTime(String formattedTime) {
     StringTokenizer st = new StringTokenizer(formattedTime, ":", false);
     long total = 0;
     long[] mults = new long[] {
@@ -151,7 +139,7 @@ public class CalcDist {
     return total;
   }
   
-  static String formatPace(double pace) {
+  public static String formatPace(double pace) {
     int minutes = (int) pace;
     int seconds = (int) ((pace - minutes) * 60.0);
     StringBuffer sb = new StringBuffer();
@@ -183,7 +171,7 @@ public class CalcDist {
     return sb.toString().trim();
   }
   
-  static String speedToPace(double speed/*km/h*/) {
+  public static String speedToPace(double speed/*km/h*/) {
     double pace = 60.0 / speed;
     int mins = (int) pace;
     double seconds = (pace - mins) * 60.0;
@@ -224,11 +212,11 @@ public class CalcDist {
     sb.append(unit);
   }
   
-  static String formatDate(Calendar cal, boolean startTime) {
+  public static String formatDate(Calendar cal, boolean startTime) {
     StringBuffer sb = new StringBuffer();
     appUnit(sb, cal.get(Calendar.DAY_OF_MONTH));
     sb.append(' ');
-    sb.append(CalcDist.MONTHS[cal.get(Calendar.MONTH)]);
+    sb.append(Constants.MONTHS[cal.get(Calendar.MONTH)]);
     sb.append(' ');
     sb.append(cal.get(Calendar.YEAR));
     sb.append(' ');
@@ -237,7 +225,7 @@ public class CalcDist {
       sb.append(':');
       appUnit(sb, cal.get(Calendar.MINUTE));
     } else {
-      sb.append(CalcDist.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
+      sb.append(Constants.DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]);
     }
     return sb.toString();
   }
@@ -245,7 +233,7 @@ public class CalcDist {
   static Calendar getDateWithCorrection(long timeRawMs) {
     Calendar cal = new GregorianCalendar();
     cal.setTimeInMillis(timeRawMs);
-    long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CORRECTION_BG_SUMMER : CORRECTION_BG_WINTER;
+    long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER : Constants.CORRECTION_BG_WINTER;
     cal.setTimeInMillis(timeRawMs + corr);
     return cal;
   }
@@ -253,7 +241,7 @@ public class CalcDist {
   private void process(JSONObject data) throws Exception {
     String fileName = file.getName();
     String garminName = fileName;
-    int ind = garminName.indexOf(FILE_SUFF);
+    int ind = garminName.indexOf(Constants.FILE_SUFF);
     if (ind != -1) {
       garminName = garminName.substring(0, ind);
     }
@@ -403,7 +391,7 @@ public class CalcDist {
       }
       data.put("name", convertName(name));
       data.put("starttime", timeStart);
-      data.put("type", RunCalcUtils.RUNNING);
+      data.put("type", Constants.RUNNING);
       String distKm = String.format("%.3f", (distTotal / 1000.0));
       data.put("dist", distKm);
       data.put("distRaw", distTotal / 1000.0);
@@ -431,7 +419,7 @@ public class CalcDist {
     }
   }
   
-  static JSONObject run(File file) throws Exception {
+  public static JSONObject run(File file) throws Exception {
   	JSONObject data = new JSONObject();
   	run(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
   	return data;
@@ -441,7 +429,7 @@ public class CalcDist {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
-    CalcDist cd = new CalcDist(file, minSpeed, intR, splitS * 1000.0);
+    TrackParser cd = new TrackParser(file, minSpeed, intR, splitS * 1000.0);
     cd.process(data);
     data.put("lats", cd.lats);
     data.put("lons", cd.lons);

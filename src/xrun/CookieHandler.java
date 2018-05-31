@@ -16,10 +16,10 @@ class CookieHandler extends TimerTask {
   private static final int MONTH_SEC = 3600 * 24 * 31;
   private static final int CLEANUP_PERIOD = 3600 * 1000; // one hour
   
-  private SQLiteManager sqLite;
+  private DBStorage sqLite;
   private Timer timer = new Timer();
   
-  CookieHandler(SQLiteManager sqLite) {
+  CookieHandler(DBStorage sqLite) {
     this.sqLite = sqLite;
     timer.scheduleAtFixedRate(this, CLEANUP_PERIOD, CLEANUP_PERIOD);
   }

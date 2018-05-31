@@ -21,7 +21,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class SQLiteManager {
+import xrun.parser.TrackParser;
+import xrun.utils.WeekCalculator;
+
+public class DBStorage {
   
   private static final String RUNS_TABLE_NAME = "runs";
   private static final String COOKIES_TABLE_NAME = "cookies";
@@ -74,7 +77,7 @@ public class SQLiteManager {
 	private Connection conn = null;
 	private Connection connDB2 = null;
 
-	SQLiteManager(File base) {
+	DBStorage(File base) {
 		dbActivities = new File(base, "activities.db");
 		dbCoords = new File(base, "coords.db");
 		if (!dbActivities.isFile()) {
@@ -168,9 +171,9 @@ public class SQLiteManager {
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
         if (years.get(i) == currentYear) {
-          maxWeek = WeekCalc.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
+          maxWeek = WeekCalculator.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
         } else {
-        	maxWeek = WeekCalc.getWeekCount(years.get(i));
+        	maxWeek = WeekCalculator.getWeekCount(years.get(i));
         }
         for (int w = 1; w <= maxWeek; ++w) {
           JSONObject data = new JSONObject();
@@ -198,7 +201,7 @@ public class SQLiteManager {
           Calendar cal = new GregorianCalendar();
           cal.setTimeInMillis(rs.getLong("timeRawMs"));
           String[] formatted = new String[1];
-          int[] idf = WeekCalc.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), formatted);
+          int[] idf = WeekCalculator.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.YEAR), formatted);
           int week = idf[0];
           JSONObject data = weekly.get(week);
           if ("Empty week".equals(data.getString("info"))) {
@@ -206,20 +209,20 @@ public class SQLiteManager {
           }
           String type = rs.getString("type");
           double dist = rs.getDouble("distRaw");
-          if (RunCalcUtils.RUNNING.equals(type)) {
+          if (Constants.RUNNING.equals(type)) {
             data.put("r", data.getDouble("r") + dist);
             data.put("rt", data.getDouble("rt") + dist);
             data.put("countr", data.getInt("countr") + 1);
             data.put("countrt", data.getInt("countrt") + 1);
-          } else if (RunCalcUtils.TRAIL.equals(type)) {
+          } else if (Constants.TRAIL.equals(type)) {
             data.put("t", data.getDouble("t") + dist);
             data.put("rt", data.getDouble("rt") + dist);
             data.put("countt", data.getInt("countt") + 1);
             data.put("countrt", data.getInt("countrt") + 1);
-          } else if (RunCalcUtils.UPHILL.equals(type)) {
+          } else if (Constants.UPHILL.equals(type)) {
             data.put("u", data.getDouble("u") + dist);
             data.put("countu", data.getInt("countu") + 1);
-          } else if (RunCalcUtils.HIKING.equals(type)) {
+          } else if (Constants.HIKING.equals(type)) {
             data.put("h", data.getDouble("h") + dist);
             data.put("counth", data.getInt("counth") + 1);
           }
@@ -273,11 +276,11 @@ public class SQLiteManager {
         years.add(rs.getInt(1));
       }
 	    Collections.sort(years);
-	    String[] filters = new String[] {"type='" + RunCalcUtils.RUNNING + '\'',
-	        "type='" + RunCalcUtils.TRAIL + '\'',
-	        "type='" + RunCalcUtils.UPHILL + '\'',
-	        "type='" + RunCalcUtils.HIKING + '\'',
-	        "type='" + RunCalcUtils.RUNNING + "' OR type='" + RunCalcUtils.TRAIL + '\'',
+	    String[] filters = new String[] {"type='" + Constants.RUNNING + '\'',
+	        "type='" + Constants.TRAIL + '\'',
+	        "type='" + Constants.UPHILL + '\'',
+	        "type='" + Constants.HIKING + '\'',
+	        "type='" + Constants.RUNNING + "' OR type='" + Constants.TRAIL + '\'',
 	        null
 	    };
 	    String[] acms = new String[] {
@@ -289,7 +292,7 @@ public class SQLiteManager {
 	      JSONObject[] months = new JSONObject[12];
 	      for (int j = 0; j < 12; ++j) {
 	        months[j] = new JSONObject();
-	        months[j].put("name", CalcDist.MONTHS[j] + ' ' + year);
+	        months[j].put("name", Constants.MONTHS[j] + ' ' + year);
 	        for (int k = 0; k < acms.length; ++k) {
 	          months[j].put(acms[k], "0");
 	          months[j].put("count" + acms[k], 0);
@@ -322,7 +325,7 @@ public class SQLiteManager {
 				}
         for (int j = 0; j < months.length; ++j) {
           JSONObject monthData = new JSONObject();
-          monthData.put("month", CalcDist.MONTHS[j]);
+          monthData.put("month", Constants.MONTHS[j]);
           monthData.put("data", months[j]);
           yearData.put(monthData);
         }
@@ -640,9 +643,9 @@ public class SQLiteManager {
     }
 	  Calendar cal = new GregorianCalendar();
 	  cal.setTimeInMillis(activity.getLong("timeRawMs"));
-	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? CalcDist.CORRECTION_BG_SUMMER : CalcDist.CORRECTION_BG_WINTER;
+	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER : Constants.CORRECTION_BG_WINTER;
 	  cal.setTimeInMillis(activity.getLong("timeRawMs") + corr);
-	  activity.put("startAt", CalcDist.formatDate(cal, true));
+	  activity.put("startAt", TrackParser.formatDate(cal, true));
 	  fillInFeatures(activity);
 	  return activity;
 	}
@@ -660,22 +663,22 @@ public class SQLiteManager {
 	    whereClause.append('(');
 	    List<String> types = new ArrayList<String>();
 	    if (run) {
-        types.add(RunCalcUtils.RUNNING);
+        types.add(Constants.RUNNING);
       }
       if (trail) {
-        types.add(RunCalcUtils.TRAIL);
+        types.add(Constants.TRAIL);
       }
       if (uphill) {
-        types.add(RunCalcUtils.UPHILL);
+        types.add(Constants.UPHILL);
       }
       if (hike) {
-        types.add(RunCalcUtils.HIKING);
+        types.add(Constants.HIKING);
       }
       if (walk) {
-        types.add(RunCalcUtils.WALKING);
+        types.add(Constants.WALKING);
       }
       if (other) {
-        types.add(RunCalcUtils.OTHER);
+        types.add(Constants.OTHER);
       }
       for (int i = 0; i < types.size(); ++i) {
         whereClause.append("type = '" + types.get(i) + '\'');
@@ -1113,14 +1116,14 @@ public class SQLiteManager {
 	  if (type1.equals(type2)) {
 	    return true;
 	  }
-	  if (RunCalcUtils.TRAIL.equals(type1)) {
-	    return RunCalcUtils.HIKING.equals(type2) || RunCalcUtils.UPHILL.equals(type2);
+	  if (Constants.TRAIL.equals(type1)) {
+	    return Constants.HIKING.equals(type2) || Constants.UPHILL.equals(type2);
 	  }
-	  if (RunCalcUtils.HIKING.equals(type1)) {
-	    return RunCalcUtils.TRAIL.equals(type2) || RunCalcUtils.UPHILL.equals(type2);
+	  if (Constants.HIKING.equals(type1)) {
+	    return Constants.TRAIL.equals(type2) || Constants.UPHILL.equals(type2);
 	  }
-	  if (RunCalcUtils.UPHILL.equals(type1)) {
-	    return RunCalcUtils.HIKING.equals(type2) || RunCalcUtils.TRAIL.equals(type2);
+	  if (Constants.UPHILL.equals(type1)) {
+	    return Constants.HIKING.equals(type2) || Constants.TRAIL.equals(type2);
 	  }
 	  return false;
 	}

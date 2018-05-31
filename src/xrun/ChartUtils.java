@@ -10,9 +10,9 @@ import org.json.JSONObject;
 
 class ChartUtils {
 	
-	private static final String[] TYPES = new String[] { RunCalcUtils.RUNNING,
-			RunCalcUtils.TRAIL, RunCalcUtils.UPHILL, RunCalcUtils.HIKING,
-			RunCalcUtils.WALKING, RunCalcUtils.OTHER };
+	private static final String[] TYPES = new String[] { Constants.RUNNING,
+	    Constants.TRAIL, Constants.UPHILL, Constants.HIKING,
+	    Constants.WALKING, Constants.OTHER };
 	private static final int[] BOUNDS_DIST = new int[] { 0, 4, 5, 6, 7, 8, 10,
 			12, 15, 20, 30, 40, 50 };
 	private static final double[] BOUNDS_SPEED = new double[] { 0, 4, 5, 6, 9,
@@ -72,7 +72,7 @@ class ChartUtils {
     result.put("bySpeed", toJSONArray(speedCnt, speedDist, BOUNDS_SPEED));
     result.put("byEle", toJSONArray(eleCnt, eleDist, BOUNDS_ELE));
     result.put("byRun", toJSONArray(rundistCnt, rundistDist, BOUNDS_RUNDIST));
-    JSONArray byDay = toJSONArray(dayCnt, dayDist, CalcDist.DAYS, true);
+    JSONArray byDay = toJSONArray(dayCnt, dayDist, Constants.DAYS, true);
     JSONObject sun = byDay.getJSONObject(0);
     for (int i = 0; i < 6; ++i) {
     	byDay.put(i, byDay.getJSONObject(i + 1));
@@ -87,7 +87,7 @@ class ChartUtils {
     	DUR[i] = di1 >= 0 ? (getDuration(di) + "-" + getDuration(di1)) : (getDuration(di) + "+");
     }
     result.put("byDuration", toJSONArray(durationCnt, durationDist, DUR));
-    result.put("byMonth", toJSONArray(monthCnt, monthDist, CalcDist.MONTHS, true));
+    result.put("byMonth", toJSONArray(monthCnt, monthDist, Constants.MONTHS, true));
     JSONArray byYear = new JSONArray();
     for (Integer key : yearCnt.keySet()) {
       JSONObject current = new JSONObject();
@@ -219,8 +219,8 @@ class ChartUtils {
     st.nextToken(); // month
     st.nextToken(); // year
     String day = st.nextToken();
-    for (int i = 0; i < CalcDist.DAYS.length; ++i) {
-    	if (CalcDist.DAYS[i].equals(day)) {
+    for (int i = 0; i < Constants.DAYS.length; ++i) {
+    	if (Constants.DAYS[i].equals(day)) {
     		++cnt[i];
     		dists[i] += currentDist;
     		break;
