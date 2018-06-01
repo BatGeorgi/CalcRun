@@ -1,4 +1,4 @@
-package xrun;
+package xrun.app;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,6 +19,8 @@ import javax.servlet.http.Cookie;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import xrun.common.Constants;
+import xrun.common.XRuntimeCache;
 import xrun.parser.TrackParser;
 import xrun.storage.CookieHandler;
 import xrun.storage.DBStorage;
@@ -35,10 +37,10 @@ public class RunCalcApplication {
   private GoogleDriveStorage drive;
   private CookieHandler cookieHandler;
   private ReliveCCGarbageCollector reliveGC;
-  private RequestHandler handler;
+  private XRuntimeCache cache;
   
-  RunCalcApplication(RequestHandler handler, File base, File clientSecret) {
-    this.handler = handler;
+  public RunCalcApplication(XRuntimeCache cache, File base, File clientSecret) {
+    this.cache = cache;
     sqLite = new DBStorage(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
@@ -61,12 +63,12 @@ public class RunCalcApplication {
   }
   
   void resetHandlerCache() {
-    if (handler != null) {
-      handler.resetCache();
+    if (cache != null) {
+      cache.reset();
     }
   }
   
-  Cookie generateCookie() {
+  public Cookie generateCookie() {
     Cookie cookie = cookieHandler.generateCookie();
     if (cookie != null && drive != null) {
       drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
@@ -74,15 +76,15 @@ public class RunCalcApplication {
     return cookie;
   }
   
-  boolean isValidCookie(Cookie cookie) {
+  public boolean isValidCookie(Cookie cookie) {
     return cookieHandler.isAuthorized(cookie);
   }
   
-  void removeCookie(Cookie cookie) {
+  public void removeCookie(Cookie cookie) {
   	cookieHandler.removeCookie(cookie);
   }
   
-  void rescan() {
+  public void rescan() {
     String[] all = gpxBase.list();
     boolean entriesAdded = false;
     for (String fileName : all) {
@@ -95,7 +97,7 @@ public class RunCalcApplication {
       }
       System.out.println("Process file " + targ);
       try {
-        JSONObject current = TrackParser.run(targ);
+        JSONObject current = TrackParser.parse(targ);
         current.put("type", Constants.RUNNING);
         current.put("ccLink", "none");
         current.put("photosLink", "none");
@@ -115,7 +117,7 @@ public class RunCalcApplication {
     }
   }
   
-  JSONObject retrieveCoords(String activity, boolean percentage) throws SQLException {
+  public JSONObject retrieveCoords(String activity, boolean percentage) throws SQLException {
     JSONObject coords = sqLite.getCoordsData(activity);
     if (coords == null) {
       coords = sqLite.getCoordsData(activity + ".gpx");
@@ -185,7 +187,7 @@ public class RunCalcApplication {
   	return file;
   }
   
-  String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,
+  public String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,
       String dashboard, boolean secure) {
   	File file = null;
   	try {
@@ -197,7 +199,7 @@ public class RunCalcApplication {
   	  return "DB error";
   	}
     try {
-      JSONObject current = TrackParser.run(file);
+      JSONObject current = TrackParser.parse(file);
       if (activityName != null) {
         current.put("name", activityName);
       }
@@ -205,12 +207,12 @@ public class RunCalcApplication {
       current.put("ccLink", reliveCC);
       current.put("photosLink", photos);
       if (!sqLite.dashboardExists(dashboard)) {
-        dashboard = DBStorage.MAIN_DASHBOARD;
+        dashboard = Constants.MAIN_DASHBOARD;
       }
       JSONArray arr = new JSONArray();
       arr.put(dashboard);
-      if (!DBStorage.EXTERNAL_DASHBOARD.equals(dashboard) && !DBStorage.MAIN_DASHBOARD.equals(dashboard)) {
-        arr.put(DBStorage.MAIN_DASHBOARD);
+      if (!Constants.EXTERNAL_DASHBOARD.equals(dashboard) && !Constants.MAIN_DASHBOARD.equals(dashboard)) {
+        arr.put(Constants.MAIN_DASHBOARD);
       }
       current.put("dashboards", arr);
       sqLite.addActivity(current);
@@ -246,11 +248,11 @@ public class RunCalcApplication {
     return sqLite.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance);
   }
   
-  JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
+  public JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance, String dashboard, int periodLen, boolean getWMT,
       boolean isLoggedIn) {
     if (dashboard == null || dashboard.trim().length() == 0) {
-      dashboard = DBStorage.MAIN_DASHBOARD;
+      dashboard = Constants.MAIN_DASHBOARD;
     }
     JSONObject result = new JSONObject();
     JSONArray activities = new JSONArray();
@@ -324,7 +326,7 @@ public class RunCalcApplication {
     return result;
   }
 
-  JSONObject getActivity(String fileName) {
+  public JSONObject getActivity(String fileName) {
     return sqLite.getActivity(fileName);
   }
   
@@ -349,7 +351,7 @@ public class RunCalcApplication {
     return CommonUtils.find(new JSONArray(JsonSanitizer.sanitize(activity.getString("dashboards"))), dashboard) != -1;
   }
   
-  JSONObject compare(JSONObject run1, JSONObject run2) {
+  public JSONObject compare(JSONObject run1, JSONObject run2) {
     JSONObject result = new JSONObject();
     JSONObject general = new JSONObject();
     general.put("name1", run1.get("name"));
@@ -436,7 +438,7 @@ public class RunCalcApplication {
     return result;
   }
   
-  JSONObject getBest() {
+  public JSONObject getBest() {
     JSONObject result = new JSONObject();
     result.put("longest", getBest("distRaw", "km"));
     result.put("fastest", getBest("avgSpeedRaw", "km/h"));
@@ -452,7 +454,7 @@ public class RunCalcApplication {
     return result;
   }
   
-  JSONObject getBestSplits() {
+  public JSONObject getBestSplits() {
     JSONArray arr = sqLite.getActivitySplits();
     Map<Integer, Long> best = new TreeMap<Integer, Long>();
     Map<Integer, String[]> bestAttrs = new TreeMap<Integer, String[]>();
@@ -493,7 +495,7 @@ public class RunCalcApplication {
     return result;
   }
   
-	String editActivity(String fileName, String newName, String newType,
+  public String editActivity(String fileName, String newName, String newType,
 			String newGarmin, String newCC, String newPhotos, boolean secure,
 			JSONObject mods) {
 		JSONObject activity = sqLite.getActivity(fileName);
@@ -529,7 +531,7 @@ public class RunCalcApplication {
 		return null;
 	}
   
-  String setFeatures(String fileName, String descr, List<String> links) {
+  public String setFeatures(String fileName, String descr, List<String> links) {
     try {
       sqLite.setFeatures(fileName, descr != null ? descr : "", links);
     } catch (SQLException e) {
@@ -541,11 +543,11 @@ public class RunCalcApplication {
     return null;
   }
   
-  boolean isSecured(String fileName) {
+  public boolean isSecured(String fileName) {
   	return sqLite.isSecured(fileName);
   }
   
-  void deleteActivity(String fileName) throws Exception {
+  public void deleteActivity(String fileName) throws Exception {
     File file = new File(gpxBase, fileName);
     if (file.isFile() && !file.delete()) {
       file.deleteOnExit();
@@ -557,7 +559,7 @@ public class RunCalcApplication {
     }
   }
   
-  String addDashboard(String name) {
+  public String addDashboard(String name) {
     try {
       sqLite.addDashboard(name);
     } catch (SQLException e) {
@@ -571,7 +573,7 @@ public class RunCalcApplication {
     return null;
   }
   
-  String renameDashboard(String name, String newName) {
+  public String renameDashboard(String name, String newName) {
     try {
       sqLite.renameDashboard(name, newName);
     } catch (SQLException e) {
@@ -585,7 +587,7 @@ public class RunCalcApplication {
     return null;
   }
   
-  String removeDashboard(String name) {
+  public String removeDashboard(String name) {
     try {
       sqLite.removeDashboard(name);
     } catch (SQLException e) {
@@ -599,19 +601,19 @@ public class RunCalcApplication {
     return null;
   }
   
-  JSONObject getDashboards() {
+  public JSONObject getDashboards() {
     return sqLite.getDashboards();
   }
   
-  JSONObject getCompOptions(String activity, boolean ext) {
+  public JSONObject getCompOptions(String activity, boolean ext) {
     return sqLite.getCompOptions(activity, ext);
   }
   
-  JSONObject getSplitsAndDist(String activity) {
+  public JSONObject getSplitsAndDist(String activity) {
     return sqLite.getSplitsAndDist(activity);
   }
   
-  String addToDashboard(String activity, String dashboard) {
+  public String addToDashboard(String activity, String dashboard) {
     if (activity == null || dashboard == null) {
       return "Invalid parameters";
     }
@@ -628,7 +630,7 @@ public class RunCalcApplication {
     return null;
   }
   
-  String removeFromDashboard(String activity, String dashboard) {
+  public String removeFromDashboard(String activity, String dashboard) {
     if (activity == null || dashboard == null) {
       return "Invalid parameters";
     }
@@ -645,7 +647,7 @@ public class RunCalcApplication {
     return null;
   }
   
-  void dispose() {
+  public void dispose() {
     if (sqLite != null) {
       sqLite.close();
     }
@@ -717,11 +719,11 @@ public class RunCalcApplication {
     return true;
   }
   
-  JSONArray getPresets() {
+  public JSONArray getPresets() {
     return sqLite.getPresets(null);
   }
   
-  JSONObject fetchPreset(String presetName) {
+  public JSONObject fetchPreset(String presetName) {
   	JSONObject preset = sqLite.getPresetData(presetName);
   	if (preset == null) {
   		return null;
@@ -729,7 +731,7 @@ public class RunCalcApplication {
   	return null;
   }
   
-  String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
+  public String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
       String dashboard) {
   	try {
   		return sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard) ? null :
@@ -745,7 +747,7 @@ public class RunCalcApplication {
   	}
   }
   
-  String renamePreset(String name, String newName) {
+  public String renamePreset(String name, String newName) {
   	try {
   		sqLite.renamePreset(name, newName);
   	} catch (SQLException e) {
@@ -759,7 +761,7 @@ public class RunCalcApplication {
   	return null;
   }
   
-  String removePreset(String name) {
+  public String removePreset(String name) {
   	try {
   		sqLite.removePreset(name);
   	} catch (SQLException e) {
@@ -773,7 +775,7 @@ public class RunCalcApplication {
   	return null;
   }
   
-  String reorder(String elements, int option) {
+  public String reorder(String elements, int option) {
     int ind = -1;
     int next = 0;
     List<String> ordered = new LinkedList<String> ();
@@ -787,7 +789,7 @@ public class RunCalcApplication {
           sqLite.reorderPresets(ordered);
           break;
         case 2:
-          ordered.add(0, DBStorage.MAIN_DASHBOARD);
+          ordered.add(0, Constants.MAIN_DASHBOARD);
           sqLite.reorderDashboards(ordered);
       }
     } catch (SQLException e) {

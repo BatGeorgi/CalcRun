@@ -1,4 +1,4 @@
-package xrun;
+package xrun.common;
 
 public class Constants {
 
@@ -22,5 +22,8 @@ public class Constants {
 
   public static final long     CORRECTION_BG_WINTER = 2 * 3600 * 1000; // 2 hours
   public static final long     CORRECTION_BG_SUMMER = 3 * 3600 * 1000; // 3 hours
+  
+  public static final String EXTERNAL_DASHBOARD = "External";
+  public static final String MAIN_DASHBOARD = "Main";
 
 }
