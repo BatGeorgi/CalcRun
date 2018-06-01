@@ -1,4 +1,4 @@
-package xrun;
+package xrun.server;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.MultiPartInputStreamParser;
 
-public class MultipartConfigInjectionHandler extends HandlerWrapper {
+class MultipartConfigInjectionHandler extends HandlerWrapper {
   
   private static final String MULTIPART_FORMDATA_TYPE = "multipart/form-data";
 

@@ -1,4 +1,4 @@
-package xrun;
+package xrun.server;
 
 import java.io.File;
 import java.util.GregorianCalendar;
@@ -13,7 +13,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 
-public class CalcDistServer {
+public class RCToolsServer {
 
   // args[0] - port, args[1] - tracks base, args[2] - client secret path
   public static void main(String[] args) throws Exception {

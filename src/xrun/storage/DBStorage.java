@@ -21,8 +21,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import xrun.Constants;
 import xrun.utils.TimeUtils;
+import xrun.common.Constants;
 import xrun.utils.CalendarUtils;
 import xrun.utils.JsonSanitizer;
 import xrun.utils.CommonUtils;
@@ -36,9 +36,6 @@ public class DBStorage {
   private static final String COORDS_TABLE_NAME = "coords";
   private static final String FEATURES_TABLE_NAME = "features";
   private static final String SECURED_TABLE_NAME = "secured";
-  
-  public static final String EXTERNAL_DASHBOARD = "External";
-  public static final String MAIN_DASHBOARD = "Main";
   
   private static final String[] KEYS = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -263,7 +260,7 @@ public class DBStorage {
   private static boolean isExternal(String dashboards) {
     JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dashboards));
     for (int i = 0; i < arr.length(); ++i) {
-      if (EXTERNAL_DASHBOARD.equals(arr.getString(i))) {
+      if (Constants.EXTERNAL_DASHBOARD.equals(arr.getString(i))) {
         return true;
       }
     }
@@ -814,7 +811,7 @@ public class DBStorage {
 	
 	public synchronized JSONObject getBestActivities(String columnName) {
 	  JSONArray extArr = new JSONArray();
-	  extArr.put(EXTERNAL_DASHBOARD);
+	  extArr.put(Constants.EXTERNAL_DASHBOARD);
 	  String extS = extArr.toString();
     try {
       ResultSet rs = executePreparedQuery("SELECT date, genby, " + columnName + " FROM " + RUNS_TABLE_NAME +
@@ -927,7 +924,7 @@ public class DBStorage {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
-    if (MAIN_DASHBOARD.equals(name)) {
+    if (Constants.MAIN_DASHBOARD.equals(name)) {
       throw new IllegalArgumentException("Cannot re-add main dashboard");
     }
     executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", name);
@@ -937,7 +934,7 @@ public class DBStorage {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
-    if (MAIN_DASHBOARD.equals(name) || MAIN_DASHBOARD.equals(newName)) {
+    if (Constants.MAIN_DASHBOARD.equals(name) || Constants.MAIN_DASHBOARD.equals(newName)) {
       throw new IllegalArgumentException("Cannot rename main dashboard");
     }
     ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", newName);
@@ -977,7 +974,7 @@ public class DBStorage {
     if (name == null) {
       throw new IllegalArgumentException("No name specified");
     }
-    if (MAIN_DASHBOARD.equals(name)) {
+    if (Constants.MAIN_DASHBOARD.equals(name)) {
       throw new IllegalArgumentException("Cannot remove main dashboard");
     }
     executePreparedQuery("DELETE FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", name);
@@ -999,7 +996,7 @@ public class DBStorage {
         		arr.toString(), genby);
       }
     }
-    executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + MAIN_DASHBOARD + "' WHERE dashboard=?",
+    executePreparedQuery("UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + Constants.MAIN_DASHBOARD + "' WHERE dashboard=?",
     		name);
   }
 
@@ -1008,7 +1005,7 @@ public class DBStorage {
     try {
       ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
       if (rs == null) {
-        executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + MAIN_DASHBOARD + "')", false);
+        executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + Constants.MAIN_DASHBOARD + "')", false);
         rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
       }
       while (rs.next()) {
@@ -1178,10 +1175,10 @@ public class DBStorage {
       JSONArray arr = new JSONArray(JsonSanitizer.sanitize(rs.getString("dashboards")));
       for (int i = 0; i < arr.length(); ++i) {
         String dash = arr.getString(i);
-        if (!MAIN_DASHBOARD.equals(dash)) {
+        if (!Constants.MAIN_DASHBOARD.equals(dash)) {
           dashboards.put(dash, Boolean.TRUE);
         }
-        if (EXTERNAL_DASHBOARD.equals(dash)) {
+        if (Constants.EXTERNAL_DASHBOARD.equals(dash)) {
         	isFromExt = true;
         }
       }
@@ -1207,7 +1204,7 @@ public class DBStorage {
 				if (!dashboardMatch) {
 					for (int i = 0; i < arr.length(); ++i) {
 						String cdash = arr.getString(i);
-						if (searchOnlyExt && EXTERNAL_DASHBOARD.equals(cdash)) {
+						if (searchOnlyExt && Constants.EXTERNAL_DASHBOARD.equals(cdash)) {
 							dashboardMatch = true;
 							break;
 						}

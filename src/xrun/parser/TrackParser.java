@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import xrun.Constants;
+import xrun.common.Constants;
 import xrun.utils.TimeUtils;
 
 public class TrackParser {
@@ -297,13 +297,13 @@ public class TrackParser {
     }
   }
   
-  public static JSONObject run(File file) throws Exception {
+  public static JSONObject parse(File file) throws Exception {
   	JSONObject data = new JSONObject();
-  	run(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
+  	parse(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
   	return data;
   }
   
-  private static void run(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
+  private static void parse(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }

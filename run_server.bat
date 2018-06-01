@@ -1,1 +1,1 @@
-java -cp "bin;jetty-all-9.4.6.v20170531-uber.jar;json.jar;sqlite-jdbc-3.20.0.jar;commons-io-1.3.2.jar;commons-fileupload-1.3.3.jar;drive_deps/*" xrun.CalcDistServer 3865 C:/GBV/Tracks C:/GBV/Tracks/client_secret.json 87.121.104.226
+java -cp "bin;jetty-all-9.4.6.v20170531-uber.jar;json.jar;sqlite-jdbc-3.20.0.jar;commons-io-1.3.2.jar;commons-fileupload-1.3.3.jar;drive_deps/*" xrun.server.RCToolsServer 3865 C:/GBV/Tracks C:/GBV/Tracks/client_secret.json 87.121.104.226

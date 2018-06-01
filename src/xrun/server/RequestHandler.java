@@ -1,4 +1,4 @@
-package xrun;
+package xrun.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,12 +30,14 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 
-import xrun.storage.DBStorage;
+import xrun.app.RunCalcApplication;
+import xrun.common.Constants;
+import xrun.common.XRuntimeCache;
 import xrun.utils.TimeUtils;
 import xrun.utils.CalendarUtils;
 import xrun.utils.CommonUtils;
 
-class RequestHandler extends AbstractHandler {
+class RequestHandler extends AbstractHandler implements XRuntimeCache {
   
   private static final byte[] CODE = new byte[] {-55, -85, 122, -120, -106, -44, 81, -78, 90, 79, -73, -54, 34, -42,
       -110, -67, 6, 56, -102, -7};
@@ -90,7 +92,7 @@ class RequestHandler extends AbstractHandler {
     return counter;
   }
   
-  synchronized void resetCache() { // MUST be called once before modification and once after
+  public synchronized void reset() { // MUST be called once before modification and once after
     cachedDefaultFetchLoggedIn = null;
     cachedDefaultFetchNotLoggedIn = null;
     ++counter;
@@ -234,7 +236,7 @@ class RequestHandler extends AbstractHandler {
       photos = "none";
     }
     PrintWriter pw = response.getWriter();
-    resetCache();
+    reset();
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
@@ -257,7 +259,7 @@ class RequestHandler extends AbstractHandler {
     } finally {
       pw.flush();
     }
-    resetCache();
+    reset();
     baseRequest.setHandled(true);
 	}
 	
@@ -352,20 +354,20 @@ class RequestHandler extends AbstractHandler {
       year = Integer.parseInt(yearS);
     } catch (Exception e) {
       response.setStatus(HttpServletResponse.SC_CONFLICT);
-      resetCache();
+      reset();
       return;
     }
     Calendar current = new GregorianCalendar(TimeZone.getDefault());
     int currentYear = current.get(Calendar.YEAR);
     if (currentYear != year) {
       response.setStatus(HttpServletResponse.SC_CONFLICT);
-      resetCache();
+      reset();
       return;
     } else {
       int currentWeek = CalendarUtils.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
       if (currentWeek != week) {
         response.setStatus(HttpServletResponse.SC_CONFLICT);
-        resetCache();
+        reset();
         return;
       }
     }
@@ -407,7 +409,7 @@ class RequestHandler extends AbstractHandler {
   
   private JSONObject processFetch0(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
   	String dash = baseRequest.getHeader("dashboard");
-  	if (DBStorage.EXTERNAL_DASHBOARD.equals(dash) && !isLoggedIn(baseRequest)) {
+  	if (Constants.EXTERNAL_DASHBOARD.equals(dash) && !isLoggedIn(baseRequest)) {
   		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return null;
@@ -584,7 +586,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     String fileName = baseRequest.getHeader("File");
     String name = baseRequest.getHeader("Name");
     String type = baseRequest.getHeader("Type");
@@ -656,7 +658,7 @@ class RequestHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processRevert(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
@@ -665,7 +667,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     String fileName = baseRequest.getHeader("File");
     if (fileName != null && fileName.length() > 0) {
       String result = rcUtils.editActivity(fileName, null, null, null, null, null, false, null);
@@ -679,11 +681,11 @@ class RequestHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processDelete(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-    resetCache();
+    reset();
     String fileName = baseRequest.getHeader("File");
     if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -701,7 +703,7 @@ class RequestHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     }
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processCompare(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
@@ -725,11 +727,11 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-  	resetCache();
+  	reset();
     rcUtils.rescan();
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processLogin(Request baseRequest, HttpServletResponse response) {
@@ -910,7 +912,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -921,7 +923,7 @@ class RequestHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
 
   private void processRenameDashboard(Request baseRequest, HttpServletResponse response)
@@ -931,7 +933,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -942,7 +944,7 @@ class RequestHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
 
   private void processRemoveDashboard(Request baseRequest, HttpServletResponse response)
@@ -952,7 +954,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
@@ -963,7 +965,7 @@ class RequestHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processGetDashboards(Request baseRequest, HttpServletResponse response)
@@ -1008,7 +1010,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
   	PrintWriter pw = response.getWriter();
   	String name = baseRequest.getHeader("name");
   	String dashboard = baseRequest.getHeader("dashboard");
@@ -1070,7 +1072,7 @@ class RequestHandler extends AbstractHandler {
   	}
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processRenameFilter(Request baseRequest, HttpServletResponse response)
@@ -1080,7 +1082,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
   	PrintWriter pw = response.getWriter();
   	try {
   		String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
@@ -1090,7 +1092,7 @@ class RequestHandler extends AbstractHandler {
   	}
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
@@ -1100,7 +1102,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
   	PrintWriter pw = response.getWriter();
   	try {
   		String status = rcUtils.removePreset(baseRequest.getHeader("name"));
@@ -1110,7 +1112,7 @@ class RequestHandler extends AbstractHandler {
   	}
   	response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processGetFilters(Request baseRequest, HttpServletResponse response)
@@ -1135,7 +1137,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     PrintWriter pw = response.getWriter();
     try {
       String status = rcUtils.reorder(baseRequest.getHeader("elements"), option);
@@ -1145,7 +1147,7 @@ class RequestHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
 
   private void processSetFeatures(Request baseRequest, HttpServletResponse response)
@@ -1155,7 +1157,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-    resetCache();
+    reset();
     List<String> links = new ArrayList<String>(4);
     PrintWriter pw = response.getWriter();
     try {
@@ -1173,7 +1175,7 @@ class RequestHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processRemoveCookie(Request baseRequest, HttpServletResponse response)
@@ -1183,7 +1185,7 @@ class RequestHandler extends AbstractHandler {
       baseRequest.setHandled(true);
       return;
     }
-  	resetCache();
+  	reset();
     PrintWriter pw = response.getWriter();    
     try {
     	Cookie[] cookies = baseRequest.getCookies();
@@ -1198,7 +1200,7 @@ class RequestHandler extends AbstractHandler {
     }
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
-    resetCache();
+    reset();
   }
   
   private void processGetComps(Request baseRequest, HttpServletResponse response)
@@ -1340,7 +1342,7 @@ class RequestHandler extends AbstractHandler {
       } else if ("/getSplitsAndDist".equals(target)) {
         processGetSplitsAndDist(baseRequest, response);
       } else if ("/resetCache".equals(target)) {
-        resetCache();
+        reset();
         response.setStatus(HttpServletResponse.SC_OK);
         baseRequest.setHandled(true);
       } else if ("/checkCache".equals(target)) {
