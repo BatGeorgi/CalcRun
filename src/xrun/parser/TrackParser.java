@@ -24,54 +24,54 @@ import xrun.common.Constants;
 import xrun.utils.TimeUtils;
 
 public class TrackParser {
-  
-  private static final double DEFAULT_MIN_SPEED = 9;
-  private static final double DEFAULT_INTERVAL = 100;
-  private static final double DEFAULT_SPLIT = 1;
-  
-  private static final double COEF = 5.0 / 18.0; // km/h to m/s
-  
-  private static final double[] BOUNDS = new double[] {
+
+  private static final double   DEFAULT_MIN_SPEED = 9;
+  private static final double   DEFAULT_INTERVAL  = 100;
+  private static final double   DEFAULT_SPLIT     = 1;
+
+  private static final double   COEF              = 5.0 / 18.0;                                 // km/h to m/s
+
+  private static final double[] BOUNDS            = new double[] {
       0.0, 6.0 * COEF, 7.0 * COEF, 8.0 * COEF, 9.0 * COEF, 10.0 * COEF, 11.0 * COEF, 12.0 * COEF
-  }; // m/s
-  
-  private File file;
-  private double minRunningSpeed; // m/s
-  private double interval; // meters
-  private double splitM; // meters
-  
-  private double[] histDist = new double[BOUNDS.length];
-  private double[] histElePos = new double[BOUNDS.length];
-  private double[] histEleNeg = new double[BOUNDS.length];
-  private double[] histTime = new double[BOUNDS.length];
-  private List<Double> splitTimes = new ArrayList<Double> ();
-  private List<Double> splitEle = new ArrayList<Double>();
-  private List<Double> splitAccElePos = new ArrayList<Double>();
-  private List<Double> splitAccEleNeg = new ArrayList<Double>();
-  private double splitRem;
-  private boolean isGarminTrack = false;
-  
-  private JSONArray lats = new JSONArray();
-  private JSONArray lons = new JSONArray();
-  private JSONArray times = new JSONArray();
-  private JSONArray markers = new JSONArray();
-  
+  };                                                                                            // m/s
+
+  private File                  file;
+  private double                minRunningSpeed;                                                // m/s
+  private double                interval;                                                       // meters
+  private double                splitM;                                                         // meters
+
+  private double[]              histDist          = new double[BOUNDS.length];
+  private double[]              histElePos        = new double[BOUNDS.length];
+  private double[]              histEleNeg        = new double[BOUNDS.length];
+  private double[]              histTime          = new double[BOUNDS.length];
+  private List<Double>          splitTimes        = new ArrayList<Double>();
+  private List<Double>          splitEle          = new ArrayList<Double>();
+  private List<Double>          splitAccElePos    = new ArrayList<Double>();
+  private List<Double>          splitAccEleNeg    = new ArrayList<Double>();
+  private double                splitRem;
+  private boolean               isGarminTrack     = false;
+
+  private JSONArray             lats              = new JSONArray();
+  private JSONArray             lons              = new JSONArray();
+  private JSONArray             times             = new JSONArray();
+  private JSONArray             markers           = new JSONArray();
+
   private TrackParser(File file, double minRunningSpeed, double interval, double splitM) {
     this.file = file;
     this.minRunningSpeed = (minRunningSpeed * 5.0) / 18.0; // convert to m/s
     this.interval = interval;
     this.splitM = splitM;
   }
-  
+
   private Node getDirectChild(Node parent, String name) {
-      for(Node child = parent.getFirstChild(); child != null; child = child.getNextSibling()) {
-          if(name.equals(child.getNodeName())) {
-            return child;
-          }
+    for (Node child = parent.getFirstChild(); child != null; child = child.getNextSibling()) {
+      if (name.equals(child.getNodeName())) {
+        return child;
       }
-      return null;
+    }
+    return null;
   }
-  
+
   private String convertName(String name) {
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < name.length(); ++i) {
@@ -84,14 +84,16 @@ public class TrackParser {
     }
     return sb.toString().trim();
   }
-  
+
   private int[] speedToPaceRaw(double speed/*km/h*/) {
     double pace = 60.0 / speed;
     int mins = (int) pace;
     double seconds = (pace - mins) * 60.0;
-    return new int[] {mins, (int) seconds};
+    return new int[] {
+        mins, (int) seconds
+    };
   }
-  
+
   private void hist(double speed, double dist, double time, double ele) {
     for (int i = BOUNDS.length - 1; i >= 0; --i) {
       if (speed >= BOUNDS[i]) {
@@ -106,12 +108,12 @@ public class TrackParser {
       }
     }
   }
-  
-  
+
   private Calendar getDateWithCorrection(long timeRawMs) {
     Calendar cal = new GregorianCalendar();
     cal.setTimeInMillis(timeRawMs);
-    long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER : Constants.CORRECTION_BG_WINTER;
+    long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER
+        : Constants.CORRECTION_BG_WINTER;
     cal.setTimeInMillis(timeRawMs + corr);
     return cal;
   }
@@ -153,13 +155,13 @@ public class TrackParser {
       double currentDistSplits = 0.0;
       double currentTimeSplits = 0.0;
       double currentEleSplits = 0.0;
-      
+
       double currentEle = 0.0;
       double eleRunningPos = 0.0;
       double eleRunningNeg = 0.0;
       double eleTotalPos = 0.0;
       double eleTotalNeg = 0.0;
-      
+
       long stt = 0;
       for (int i = 0; i < list.getLength(); ++i) {
         Node node = list.item(i);
@@ -235,9 +237,9 @@ public class TrackParser {
             currentEle = 0.0;
           }
           if (currentDistSplits >= splitM) {
-          	markers.put(i);
-          	splitAccElePos.add(eleTotalPos);
-          	splitAccEleNeg.add(eleTotalNeg);
+            markers.put(i);
+            splitAccElePos.add(eleTotalPos);
+            splitAccEleNeg.add(eleTotalNeg);
             double coef = splitM / currentDistSplits;
             double speed = currentDistSplits / currentTimeSplits;
             double ctime = splitM / speed;
@@ -247,14 +249,16 @@ public class TrackParser {
             currentTimeSplits -= ctime;
             currentEleSplits -= currentEleSplits * coef;
           } else if (lastOne) {
-          	splitAccElePos.add(eleTotalPos);
-          	splitAccEleNeg.add(eleTotalNeg);
+            splitAccElePos.add(eleTotalPos);
+            splitAccEleNeg.add(eleTotalNeg);
             splitRem = currentDistSplits;
             splitTimes.add(currentTimeSplits);
             splitEle.add(currentEleSplits);
           }
         }
-        prev = new double[] {lat, lon, ele};
+        prev = new double[] {
+            lat, lon, ele
+        };
         lastTime = cal.getTimeInMillis();
       }
       data.put("genby", file.getName());
@@ -296,13 +300,13 @@ public class TrackParser {
       }
     }
   }
-  
+
   public static JSONObject parse(File file) throws Exception {
-  	JSONObject data = new JSONObject();
-  	parse(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
-  	return data;
+    JSONObject data = new JSONObject();
+    parse(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
+    return data;
   }
-  
+
   private static void parse(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");

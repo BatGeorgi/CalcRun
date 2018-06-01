@@ -38,15 +38,17 @@ import xrun.utils.CalendarUtils;
 import xrun.utils.CommonUtils;
 
 class RequestHandler extends AbstractHandler implements XRuntimeCache {
-  
-  private static final byte[] CODE = new byte[] {-55, -85, 122, -120, -106, -44, 81, -78, 90, 79, -73, -54, 34, -42,
-      -110, -67, 6, 56, -102, -7};
-  
-  private static final String SEP = "#$^";
-  
-  private String cachedDefaultFetchLoggedIn;
-  private String cachedDefaultFetchNotLoggedIn;
-  private long counter = 0;
+
+  private static final byte[] CODE    = new byte[] {
+      -55, -85, 122, -120, -106, -44, 81, -78, 90, 79, -73, -54, 34, -42,
+      -110, -67, 6, 56, -102, -7
+  };
+
+  private static final String SEP     = "#$^";
+
+  private String              cachedDefaultFetchLoggedIn;
+  private String              cachedDefaultFetchNotLoggedIn;
+  private long                counter = 0;
 
   private static boolean isAuthorized(String password) {
     if (password == null) {
@@ -71,33 +73,34 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
   }
 
   private RunCalcApplication rcUtils;
-  private File activityTemplateFile;
-  private File comparisonTemplateFile;
-  private long actTempLastMod = Long.MIN_VALUE;
-  private long compTempLastMod = Long.MIN_VALUE;
-  private String activityTemplate = "Not loaded :(";
-  private String comparisonTemplate = "Not loaded :(";
-  private List<String> allowedRefs;
+  private File               activityTemplateFile;
+  private File               comparisonTemplateFile;
+  private long               actTempLastMod     = Long.MIN_VALUE;
+  private long               compTempLastMod    = Long.MIN_VALUE;
+  private String             activityTemplate   = "Not loaded :(";
+  private String             comparisonTemplate = "Not loaded :(";
+  private List<String>       allowedRefs;
 
-  public RequestHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile, List<String> allowedRefs)
-  		throws IOException {
+  public RequestHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile,
+      List<String> allowedRefs)
+      throws IOException {
     rcUtils = new RunCalcApplication(this, tracksBase, clientSecret);
     this.activityTemplateFile = activityTemplateFile;
     this.comparisonTemplateFile = comparisonTemplateFile;
     this.allowedRefs = allowedRefs;
     System.out.println("Initialize finished!");
   }
-  
+
   private synchronized long getCounter() {
     return counter;
   }
-  
+
   public synchronized void reset() { // MUST be called once before modification and once after
     cachedDefaultFetchLoggedIn = null;
     cachedDefaultFetchNotLoggedIn = null;
     ++counter;
   }
-  
+
   private synchronized void trySetNewCache(long oldCounter, String cache, boolean loggedIn) {
     if (oldCounter == counter) {
       if (loggedIn) {
@@ -107,33 +110,33 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       }
     }
   }
-  
+
   private boolean isAllowed(String refIP) {
-  	return allowedRefs == null || allowedRefs.contains(refIP);
+    return allowedRefs == null || allowedRefs.contains(refIP);
   }
-  
+
   private String getActivityTemplate() {
-  	String result = getTemplate(activityTemplateFile, actTempLastMod, "Not loaded :(".equals(activityTemplate));
-  	if (result == null) {
-  		result = activityTemplate;
-  	} else {
-  		actTempLastMod = activityTemplateFile.lastModified();
-  	}
-  	return result;
+    String result = getTemplate(activityTemplateFile, actTempLastMod, "Not loaded :(".equals(activityTemplate));
+    if (result == null) {
+      result = activityTemplate;
+    } else {
+      actTempLastMod = activityTemplateFile.lastModified();
+    }
+    return result;
   }
-  
+
   private String getComparisionTemplate() {
-  	String result = getTemplate(comparisonTemplateFile, compTempLastMod, "Not loaded :(".equals(comparisonTemplate));
-  	if (result == null) {
-  		result = comparisonTemplate;
-  	} else {
-  		compTempLastMod = comparisonTemplateFile.lastModified();
-  	}
-  	return result;
+    String result = getTemplate(comparisonTemplateFile, compTempLastMod, "Not loaded :(".equals(comparisonTemplate));
+    if (result == null) {
+      result = comparisonTemplate;
+    } else {
+      compTempLastMod = comparisonTemplateFile.lastModified();
+    }
+    return result;
   }
-  
+
   private String getTemplate(File file, long lastMod, boolean isRequired) {
-  	String result = null;
+    String result = null;
     if (isRequired || (file.isFile() && file.lastModified() != lastMod)) {
       InputStream is = null;
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -149,17 +152,17 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         // silent catch
       } finally {
         CommonUtils.silentClose(is);
-      } 
+      }
     }
     return result;
   }
-  
+
   void dispose() {
     if (rcUtils != null) {
       rcUtils.dispose();
     }
   }
-  
+
   private Calendar parseDate(String dt) {
     StringTokenizer st = new StringTokenizer(dt, "/,;", false);
     if (st.countTokens() != 3) {
@@ -176,29 +179,29 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     return null;
   }
-  
-	private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-	    String activityName, String activityType, String reliveCC, String photos, String dashboard, boolean secure) {
-	  if (activityName != null && activityName.length() == 0) {
-	    activityName = null;
-	  }
-		ServletFileUpload upload = new ServletFileUpload();
-		try {
-			FileItemIterator iter = upload.getItemIterator(request);
-			while (iter.hasNext()) {
-				FileItemStream item = iter.next();
-				if (!item.isFormField()) {
-					return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
-					    dashboard, secure);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	
-	private void processUpload(String target, Request baseRequest, HttpServletRequest request,
+
+  private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
+      String activityName, String activityType, String reliveCC, String photos, String dashboard, boolean secure) {
+    if (activityName != null && activityName.length() == 0) {
+      activityName = null;
+    }
+    ServletFileUpload upload = new ServletFileUpload();
+    try {
+      FileItemIterator iter = upload.getItemIterator(request);
+      while (iter.hasNext()) {
+        FileItemStream item = iter.next();
+        if (!item.isFormField()) {
+          return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
+              dashboard, secure);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  private void processUpload(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
     String name = null;
     String type = null;
@@ -209,19 +212,19 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     target = target.substring(ind + 1);
     ind = target.indexOf(SEP);
     name = target.substring(0, ind);
-    
+
     int to = target.indexOf(SEP, ind + SEP.length());
     type = target.substring(ind + SEP.length(), to);
     ind = to;
-    
+
     to = target.indexOf(SEP, ind + SEP.length());
     reliveCC = target.substring(ind + SEP.length(), to);
     ind = to;
-    
+
     to = target.indexOf(SEP, ind + SEP.length());
     photos = target.substring(ind + SEP.length(), to);
     ind = to;
-    
+
     to = target.indexOf(SEP, ind + SEP.length());
     dashboard = target.substring(ind + SEP.length(), to);
     ind = to;
@@ -240,7 +243,8 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     try {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
-        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos, dashboard, secure);
+        String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos, dashboard,
+            secure);
         if (result == null) { // all normal
           pw.println("<h2>Upload finished!</h2>");
           pw.println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");
@@ -261,8 +265,8 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     reset();
     baseRequest.setHandled(true);
-	}
-	
+  }
+
   private void processBest(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     PrintWriter pw = response.getWriter();
     try {
@@ -275,8 +279,9 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
-  private void processBestSplits(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+
+  private void processBestSplits(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
     PrintWriter pw = response.getWriter();
     try {
       response.setContentType("application/json");
@@ -288,7 +293,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
+
   private String getDateStr(Calendar date, String def) {
     if (date == null) {
       return def;
@@ -301,16 +306,18 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     sb.append(date.get(Calendar.YEAR));
     return sb.toString();
   }
-  
-  private static final int[] MT_LEN = new int[] {31, -1, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-  
+
+  private static final int[] MT_LEN = new int[] {
+      31, -1, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+  };
+
   private static int getMonthLen(int month, int year) {
-  	if (month != 1) {
-  		return MT_LEN[month];
-  	}
-  	return year % 4 == 0 ? 29 : 28;
+    if (month != 1) {
+      return MT_LEN[month];
+    }
+    return year % 4 == 0 ? 29 : 28;
   }
-  
+
   private boolean isDefaultFetch(Request baseRequest) {
     if (!"true".equals(baseRequest.getHeader("run")) || !"true".equals(baseRequest.getHeader("trail")) ||
         !"true".equals(baseRequest.getHeader("uphill")) || !"true".equals(baseRequest.getHeader("hike")) ||
@@ -342,8 +349,9 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     return true;
   }
-  
-  private void chechCacheUpToDate(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+
+  private void chechCacheUpToDate(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
     response.setContentType("application/txt");
     String weekS = baseRequest.getHeader("maxWeek");
     String yearS = baseRequest.getHeader("maxYear");
@@ -364,7 +372,8 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       reset();
       return;
     } else {
-      int currentWeek = CalendarUtils.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1, current.get(Calendar.YEAR), new String[1])[0];
+      int currentWeek = CalendarUtils.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1,
+          current.get(Calendar.YEAR), new String[1])[0];
       if (currentWeek != week) {
         response.setStatus(HttpServletResponse.SC_CONFLICT);
         reset();
@@ -373,7 +382,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     response.setStatus(HttpServletResponse.SC_OK);
   }
-  
+
   private void processFetch(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     boolean isLoggedIn = isLoggedIn(baseRequest);
     String result = null;
@@ -401,19 +410,21 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     } finally {
       pw.flush();
     }
-    if (response.getStatus() != HttpServletResponse.SC_UNAUTHORIZED && response.getStatus() != HttpServletResponse.SC_BAD_REQUEST) {
-    	response.setStatus(HttpServletResponse.SC_OK);
-    	baseRequest.setHandled(true);
+    if (response.getStatus() != HttpServletResponse.SC_UNAUTHORIZED
+        && response.getStatus() != HttpServletResponse.SC_BAD_REQUEST) {
+      response.setStatus(HttpServletResponse.SC_OK);
+      baseRequest.setHandled(true);
     }
   }
-  
-  private JSONObject processFetch0(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-  	String dash = baseRequest.getHeader("dashboard");
-  	if (Constants.EXTERNAL_DASHBOARD.equals(dash) && !isLoggedIn(baseRequest)) {
-  		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
+  private JSONObject processFetch0(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    String dash = baseRequest.getHeader("dashboard");
+    if (Constants.EXTERNAL_DASHBOARD.equals(dash) && !isLoggedIn(baseRequest)) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return null;
-  	}
+    }
     boolean getWMT = "true".equals(baseRequest.getHeader("getWMTotals"));
     boolean run = "true".equals(baseRequest.getHeader("run"));
     boolean trail = "true".equals(baseRequest.getHeader("trail"));
@@ -451,7 +462,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         filterStr.append(" for this year");
         break;
       case 2: // last 30
-      	startDate.add(Calendar.DAY_OF_MONTH, 1);
+        startDate.add(Calendar.DAY_OF_MONTH, 1);
         mt = startDate.get(Calendar.MONTH);
         if (mt > 0) {
           startDate.set(Calendar.MONTH, mt - 1);
@@ -464,7 +475,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         filterStr.append(" after " + getDateStr(startDate, ""));
         break;
       case 3: // last 3m
-      	startDate.add(Calendar.DAY_OF_MONTH, 1);
+        startDate.add(Calendar.DAY_OF_MONTH, 1);
         mt = startDate.get(Calendar.MONTH);
         if (mt >= 3) {
           startDate.set(Calendar.MONTH, mt - 3);
@@ -489,39 +500,41 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         startDate = null;
         break;
       case 6: // custom
-      	String dts = baseRequest.getHeader("dtStart");
-      	String dte = baseRequest.getHeader("dtEnd");
-      	Calendar tempED = new GregorianCalendar(TimeZone.getDefault());
-      	if (dts != null && dts.trim().length() > 0) {
-      		startDate = parseDate(dts);
-      		if (startDate == null) {
-      			err = true;
-      		}
-      	} else {
-      		periodLen = 0;
-      		startDate = null;
-      	}
-      	if (dte != null && dte.trim().length() > 0) {
-      		endDate = parseDate(dte);
-      		if (endDate == null) {
-      			err = true;
-      		} else {
-      			tempED = endDate;
-      		}
-      	} else {
-      		endDate = null;
-      	}
-      	if (startDate != null) {
-      		ZonedDateTime zd1 = ZonedDateTime.of(startDate.get(Calendar.YEAR), startDate.get(Calendar.MONTH) + 1, startDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
-      		ZonedDateTime zd2 = ZonedDateTime.of(tempED.get(Calendar.YEAR), tempED.get(Calendar.MONTH) + 1, tempED.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
-      		periodLen =  (int) Duration.between(zd1, zd2).toDays() + 1;
-      	}
+        String dts = baseRequest.getHeader("dtStart");
+        String dte = baseRequest.getHeader("dtEnd");
+        Calendar tempED = new GregorianCalendar(TimeZone.getDefault());
+        if (dts != null && dts.trim().length() > 0) {
+          startDate = parseDate(dts);
+          if (startDate == null) {
+            err = true;
+          }
+        } else {
+          periodLen = 0;
+          startDate = null;
+        }
+        if (dte != null && dte.trim().length() > 0) {
+          endDate = parseDate(dte);
+          if (endDate == null) {
+            err = true;
+          } else {
+            tempED = endDate;
+          }
+        } else {
+          endDate = null;
+        }
+        if (startDate != null) {
+          ZonedDateTime zd1 = ZonedDateTime.of(startDate.get(Calendar.YEAR), startDate.get(Calendar.MONTH) + 1,
+              startDate.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
+          ZonedDateTime zd2 = ZonedDateTime.of(tempED.get(Calendar.YEAR), tempED.get(Calendar.MONTH) + 1,
+              tempED.get(Calendar.DATE), 0, 0, 0, 0, TimeZone.getDefault().toZoneId());
+          periodLen = (int) Duration.between(zd1, zd2).toDays() + 1;
+        }
         filterStr.append(" in period " + getDateStr(startDate, "Begining") + " - " + getDateStr(endDate, "Now"));
     }
     if (err) {
-    	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    	baseRequest.setHandled(true);
-    	return null;
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      baseRequest.setHandled(true);
+      return null;
     }
     String smin = baseRequest.getHeader("dmin");
     String smax = baseRequest.getHeader("dmax");
@@ -579,7 +592,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     data.put("filter", filterStr.toString());
     return data;
   }
-  
+
   private void processEdit(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -649,10 +662,10 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       }
       String result = rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, secureFlag, mods);
       if (result == null) {
-      	response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_OK);
       } else {
-      	response.getWriter().println(result);
-      	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(result);
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       }
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -660,7 +673,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processRevert(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -672,10 +685,10 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     if (fileName != null && fileName.length() > 0) {
       String result = rcUtils.editActivity(fileName, null, null, null, null, null, false, null);
       if (result == null) {
-      	response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_OK);
       } else {
-      	response.getWriter().println(result);
-      	response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.getWriter().println(result);
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       }
     } else {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -683,7 +696,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processDelete(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     reset();
     String fileName = baseRequest.getHeader("File");
@@ -705,7 +718,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processCompare(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
     JSONObject item1 = rcUtils.getActivity(baseRequest.getHeader("file1"));
     JSONObject item2 = rcUtils.getActivity(baseRequest.getHeader("file2"));
@@ -719,21 +732,21 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       baseRequest.setHandled(true);
     }
   }
-  
+
   /* TODO - deprecate this */
   private void processRescan(Request baseRequest, HttpServletResponse response) {
-  	if (!isLoggedIn(baseRequest)) {
+    if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
     }
-  	reset();
+    reset();
     rcUtils.rescan();
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processLogin(Request baseRequest, HttpServletResponse response) {
     if (!isLoggedIn(baseRequest)) {
       if ("BatGeorgi".equals(baseRequest.getHeader("User")) && isAuthorized(baseRequest.getHeader("Password"))) {
@@ -753,14 +766,14 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
+
   private boolean isLoggedIn(Request baseRequest) {
-  	if(!isAllowed(baseRequest)) {
-  		return false;
-  	}
-  	return isLoggedIn0(baseRequest);
+    if (!isAllowed(baseRequest)) {
+      return false;
+    }
+    return isLoggedIn0(baseRequest);
   }
-  
+
   private boolean isLoggedIn0(Request baseRequest) {
     Cookie[] cookies = baseRequest.getCookies();
     if (cookies == null) {
@@ -773,7 +786,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     return false;
   }
-  
+
   private void checkCookie(Request baseRequest, HttpServletResponse response) {
     if (isLoggedIn0(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_OK);
@@ -782,76 +795,79 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
-  private void processGetActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-  	if (rcUtils.getActivity(target) == null && rcUtils.getActivity(target + ".gpx") == null) {
-  		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-  		baseRequest.setHandled(true);
-  	} else {
-  		response.setContentType("text/html");
-  		PrintWriter pw = response.getWriter();
-			try {
-			  String template = getActivityTemplate();
-				int ind = template.indexOf("TBD");
-				if (ind != -1) {
-					pw.print(template.substring(0, ind));
-					pw.print("fa/" + target);
-					int to = template.indexOf("TBD", ind + 3);
-					if (to != -1) {
-					  pw.print(template.substring(ind + 3, to));
-					  if (rcUtils.getActivity(target) == null) {
-				      target += ".gpx";
-				    }
-					  pw.print(target);
-					  pw.print(template.substring(to + 3));
-					} else {
-					  pw.println(template.substring(ind + 3));
-					}
-				}
-			} finally {
-				pw.flush();
-			}
-  		response.setStatus(HttpServletResponse.SC_OK);
-  		baseRequest.setHandled(true);
-  	}
+
+  private void processGetActivity(String target, Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    if (rcUtils.getActivity(target) == null && rcUtils.getActivity(target + ".gpx") == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      baseRequest.setHandled(true);
+    } else {
+      response.setContentType("text/html");
+      PrintWriter pw = response.getWriter();
+      try {
+        String template = getActivityTemplate();
+        int ind = template.indexOf("TBD");
+        if (ind != -1) {
+          pw.print(template.substring(0, ind));
+          pw.print("fa/" + target);
+          int to = template.indexOf("TBD", ind + 3);
+          if (to != -1) {
+            pw.print(template.substring(ind + 3, to));
+            if (rcUtils.getActivity(target) == null) {
+              target += ".gpx";
+            }
+            pw.print(target);
+            pw.print(template.substring(to + 3));
+          } else {
+            pw.println(template.substring(ind + 3));
+          }
+        }
+      } finally {
+        pw.flush();
+      }
+      response.setStatus(HttpServletResponse.SC_OK);
+      baseRequest.setHandled(true);
+    }
   }
-  
-  private void processGetComparison(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-  	String name1 = baseRequest.getParameter("a1");
-  	String name2 = baseRequest.getParameter("a2");
-  	if (name1 == null || name2 == null) {
-  		response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-  		baseRequest.setHandled(true);
-  	}
-  	if (rcUtils.getActivity(name1) == null) {
+
+  private void processGetComparison(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    String name1 = baseRequest.getParameter("a1");
+    String name2 = baseRequest.getParameter("a2");
+    if (name1 == null || name2 == null) {
+      response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      baseRequest.setHandled(true);
+    }
+    if (rcUtils.getActivity(name1) == null) {
       name1 += ".gpx";
     }
     if (rcUtils.getActivity(name2) == null) {
       name2 += ".gpx";
     }
-  	response.setContentType("text/html");
-  	String template = getComparisionTemplate();
-  	String fixed = template.replace("TBD1", name1).replace("TBD2", name2);
-  	PrintWriter pw = response.getWriter();
-  	try {
-  		pw.println(fixed);
-  	} finally {
-  		pw.flush();
-  	}
-  	response.setStatus(HttpServletResponse.SC_OK);
-		baseRequest.setHandled(true);
+    response.setContentType("text/html");
+    String template = getComparisionTemplate();
+    String fixed = template.replace("TBD1", name1).replace("TBD2", name2);
+    PrintWriter pw = response.getWriter();
+    try {
+      pw.println(fixed);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
+    baseRequest.setHandled(true);
   }
-  
-  private void processFetchActivity(String target, Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-  	String name = target.substring(4);
-  	boolean isProtected = false;
-  	JSONObject json = rcUtils.getActivity(name);
-  	if (json == null) {
-  		json = rcUtils.getActivity(name + ".gpx");
-  		isProtected = rcUtils.isSecured(name + ".gpx");
-  	} else {
-  	  isProtected = rcUtils.isSecured(name);
-  	}
+
+  private void processFetchActivity(String target, Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
+    String name = target.substring(4);
+    boolean isProtected = false;
+    JSONObject json = rcUtils.getActivity(name);
+    if (json == null) {
+      json = rcUtils.getActivity(name + ".gpx");
+      isProtected = rcUtils.isSecured(name + ".gpx");
+    } else {
+      isProtected = rcUtils.isSecured(name);
+    }
     if (isProtected && !isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     } else {
@@ -869,10 +885,11 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         pw.flush();
       }
     }
-  	baseRequest.setHandled(true);
+    baseRequest.setHandled(true);
   }
-  
-  private void processGetGoords(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
+
+  private void processGetGoords(Request baseRequest, HttpServletResponse response)
+      throws IOException, ServletException {
     String name = baseRequest.getHeader("activity");
     boolean isProtected = false;
     JSONObject json = rcUtils.getActivity(name);
@@ -904,7 +921,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
+
   private void processAddDashboard(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
@@ -967,7 +984,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processGetDashboards(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     response.setContentType("application/json");
@@ -980,7 +997,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
-  
+
   private void processChangeDash(Request baseRequest, HttpServletResponse response, boolean add)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
@@ -1002,7 +1019,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
-  
+
   private void processSaveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
@@ -1011,19 +1028,19 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       return;
     }
     reset();
-  	PrintWriter pw = response.getWriter();
-  	String name = baseRequest.getHeader("name");
-  	String dashboard = baseRequest.getHeader("dashboard");
-  	String pattern = baseRequest.getHeader("pattern");
-  	String dateOpt = baseRequest.getHeader("dateOpt");
-  	String startDate = baseRequest.getHeader("startDate");
-  	String endDate = baseRequest.getHeader("endDate");
-  	String rec = baseRequest.getHeader("records");
-  	String smin = baseRequest.getHeader("dmin");
+    PrintWriter pw = response.getWriter();
+    String name = baseRequest.getHeader("name");
+    String dashboard = baseRequest.getHeader("dashboard");
+    String pattern = baseRequest.getHeader("pattern");
+    String dateOpt = baseRequest.getHeader("dateOpt");
+    String startDate = baseRequest.getHeader("startDate");
+    String endDate = baseRequest.getHeader("endDate");
+    String rec = baseRequest.getHeader("records");
+    String smin = baseRequest.getHeader("dmin");
     String smax = baseRequest.getHeader("dmax");
-  	int records = Integer.MAX_VALUE;
-  	int minDist = 0;
-  	int maxDist = Integer.MAX_VALUE;
+    int records = Integer.MAX_VALUE;
+    int minDist = 0;
+    int maxDist = Integer.MAX_VALUE;
     try {
       if (rec != null && rec.length() > 0) {
         records = Integer.parseInt(rec);
@@ -1039,22 +1056,22 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     StringBuffer types = new StringBuffer();
     if ("true".equals(baseRequest.getHeader("run"))) {
-    	types.append("run,");
+      types.append("run,");
     }
     if ("true".equals(baseRequest.getHeader("trail"))) {
-    	types.append("trail,");
+      types.append("trail,");
     }
     if ("true".equals(baseRequest.getHeader("uphill"))) {
-    	types.append("uphill,");
+      types.append("uphill,");
     }
     if ("true".equals(baseRequest.getHeader("hike"))) {
-    	types.append("hike,");
+      types.append("hike,");
     }
     if ("true".equals(baseRequest.getHeader("walk"))) {
-    	types.append("walk,");
+      types.append("walk,");
     }
     if ("true".equals(baseRequest.getHeader("other"))) {
-    	types.append("other,");
+      types.append("other,");
     }
     try {
       if (new Integer(dateOpt) < 6) {
@@ -1064,17 +1081,18 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     } catch (Exception ignore) {
       // silent catch
     }
-  	try {
-  		String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records, dashboard);
-  		pw.println(status == null ? "Preset added" : status);
-  	} finally {
-  		pw.flush();
-  	}
-  	response.setStatus(HttpServletResponse.SC_OK);
+    try {
+      String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records,
+          dashboard);
+      pw.println(status == null ? "Preset added" : status);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processRenameFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
@@ -1083,18 +1101,18 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       return;
     }
     reset();
-  	PrintWriter pw = response.getWriter();
-  	try {
-  		String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
-  		pw.println(status == null ? "Preset renamed" : status);
-  	} finally {
-  		pw.flush();
-  	}
-  	response.setStatus(HttpServletResponse.SC_OK);
+    PrintWriter pw = response.getWriter();
+    try {
+      String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
+      pw.println(status == null ? "Preset renamed" : status);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processRemoveFilter(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
@@ -1103,18 +1121,18 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       return;
     }
     reset();
-  	PrintWriter pw = response.getWriter();
-  	try {
-  		String status = rcUtils.removePreset(baseRequest.getHeader("name"));
-  		pw.println(status == null ? "Preset removed" : status);
-  	} finally {
-  		pw.flush();
-  	}
-  	response.setStatus(HttpServletResponse.SC_OK);
+    PrintWriter pw = response.getWriter();
+    try {
+      String status = rcUtils.removePreset(baseRequest.getHeader("name"));
+      pw.println(status == null ? "Preset removed" : status);
+    } finally {
+      pw.flush();
+    }
+    response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processGetFilters(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     response.setContentType("application/json");
@@ -1129,7 +1147,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
   }
-  
+
   private void processReorder(Request baseRequest, HttpServletResponse response, int option)
       throws IOException, ServletException {
     if (!isLoggedIn(baseRequest)) {
@@ -1177,23 +1195,23 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processRemoveCookie(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
-  	if (!isLoggedIn(baseRequest)) {
+    if (!isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       baseRequest.setHandled(true);
       return;
     }
-  	reset();
-    PrintWriter pw = response.getWriter();    
+    reset();
+    PrintWriter pw = response.getWriter();
     try {
-    	Cookie[] cookies = baseRequest.getCookies();
-  		if (cookies != null) {
-  			for (Cookie cookie : cookies) {
-  				rcUtils.removeCookie(cookie);
-  			}
-  		}
+      Cookie[] cookies = baseRequest.getCookies();
+      if (cookies != null) {
+        for (Cookie cookie : cookies) {
+          rcUtils.removeCookie(cookie);
+        }
+      }
       pw.println("Logged out!");
     } finally {
       pw.flush();
@@ -1202,7 +1220,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     baseRequest.setHandled(true);
     reset();
   }
-  
+
   private void processGetComps(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     String activity = baseRequest.getHeader("activity");
@@ -1213,7 +1231,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       return;
     }
     response.setContentType("application/json");
-    PrintWriter pw = response.getWriter();    
+    PrintWriter pw = response.getWriter();
     try {
       JSONObject json = rcUtils.getCompOptions(activity, ext);
       if (json == null) {
@@ -1227,12 +1245,12 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
+
   private void processGetSplitsAndDist(Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
     String activity = baseRequest.getHeader("activity");
     response.setContentType("application/json");
-    PrintWriter pw = response.getWriter();    
+    PrintWriter pw = response.getWriter();
     try {
       JSONObject json = rcUtils.getSplitsAndDist(activity);
       if (json == null) {
@@ -1246,86 +1264,86 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     baseRequest.setHandled(true);
   }
-  
-	private boolean isAllowed(Request baseRequest) {
-		String origin = baseRequest.getHeader("Origin");
-		if (origin == null) {
-			origin = baseRequest.getHeader("Referer");
-		}
-		if (origin == null) {
-			return false;
-		}
-		int start = -1;
-		for (int i = 5; i < origin.length(); ++i) {
-			if (origin.charAt(i) != '/') {
-				start = i;
-				break;
-			}
-		}
-		if (start == -1) {
-			return false;
-		}
-		for (int i = start + 1; i < origin.length(); ++i) {
-			if (origin.charAt(i) == ':' || origin.charAt(i) == '/') {
-				return isAllowed(origin.substring(start, i));
-			}
-		}
-		return false;
-	}
+
+  private boolean isAllowed(Request baseRequest) {
+    String origin = baseRequest.getHeader("Origin");
+    if (origin == null) {
+      origin = baseRequest.getHeader("Referer");
+    }
+    if (origin == null) {
+      return false;
+    }
+    int start = -1;
+    for (int i = 5; i < origin.length(); ++i) {
+      if (origin.charAt(i) != '/') {
+        start = i;
+        break;
+      }
+    }
+    if (start == -1) {
+      return false;
+    }
+    for (int i = start + 1; i < origin.length(); ++i) {
+      if (origin.charAt(i) == ':' || origin.charAt(i) == '/') {
+        return isAllowed(origin.substring(start, i));
+      }
+    }
+    return false;
+  }
 
   public void handle(String target, Request baseRequest, HttpServletRequest request,
       HttpServletResponse response) throws IOException, ServletException {
-  	if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
-  		if (target.startsWith("/compare")) {
-  			processGetComparison(baseRequest, response);
-  		} else {
-  			processGetActivity(target.substring(1), baseRequest, response);
-  		}
-  	}
-		if ("POST".equals(baseRequest.getMethod())) {
-			if (target.startsWith("/fa/") && target.length() > 4) {
-				processFetchActivity(target, baseRequest, response);
-			} else if (target.startsWith("/upload") && target.length() > 8) {
-				processUpload(target, baseRequest, request, response);
-			} else if ("/best".equalsIgnoreCase(target)) {
-				processBest(baseRequest, response);
-			} else if ("/bestSplits".equalsIgnoreCase(target)) {
-				processBestSplits(baseRequest, response);
-			} else if ("/fetch".equalsIgnoreCase(target)) {
-				processFetch(baseRequest, response);
-			} else if ("/rescanActivities".equalsIgnoreCase(target)) {
-				processRescan(baseRequest, response);
-			} else if ("/editActivity".equalsIgnoreCase(target)) {
-				processEdit(baseRequest, response);
-			} else if ("/deleteActivity".equalsIgnoreCase(target)) {
-				processDelete(baseRequest, response);
-			} else if ("/compare".equalsIgnoreCase(target)) {
-				processCompare(baseRequest, response);
-			} else if ("/login".equalsIgnoreCase(target)) {
-				processLogin(baseRequest, response);
-			} else if ("/checkCookie".equalsIgnoreCase(target)) {
-				checkCookie(baseRequest, response);
-			} else if ("/revert".equalsIgnoreCase(target)) {
-			  processRevert(baseRequest, response);
-			} else if ("/coords".equalsIgnoreCase(target)) {
-			  processGetGoords(baseRequest, response);
-			} else if ("/addDash".equalsIgnoreCase(target)) {
-			  processAddDashboard(baseRequest, response);
-			} else if ("/renameDash".equalsIgnoreCase(target)) {
+    if ("GET".equals(baseRequest.getMethod()) && target.length() > 1) {
+      if (target.startsWith("/compare")) {
+        processGetComparison(baseRequest, response);
+      } else {
+        processGetActivity(target.substring(1), baseRequest, response);
+      }
+    }
+    if ("POST".equals(baseRequest.getMethod())) {
+      if (target.startsWith("/fa/") && target.length() > 4) {
+        processFetchActivity(target, baseRequest, response);
+      } else if (target.startsWith("/upload") && target.length() > 8) {
+        processUpload(target, baseRequest, request, response);
+      } else if ("/best".equalsIgnoreCase(target)) {
+        processBest(baseRequest, response);
+      } else if ("/bestSplits".equalsIgnoreCase(target)) {
+        processBestSplits(baseRequest, response);
+      } else if ("/fetch".equalsIgnoreCase(target)) {
+        processFetch(baseRequest, response);
+      } else if ("/rescanActivities".equalsIgnoreCase(target)) {
+        processRescan(baseRequest, response);
+      } else if ("/editActivity".equalsIgnoreCase(target)) {
+        processEdit(baseRequest, response);
+      } else if ("/deleteActivity".equalsIgnoreCase(target)) {
+        processDelete(baseRequest, response);
+      } else if ("/compare".equalsIgnoreCase(target)) {
+        processCompare(baseRequest, response);
+      } else if ("/login".equalsIgnoreCase(target)) {
+        processLogin(baseRequest, response);
+      } else if ("/checkCookie".equalsIgnoreCase(target)) {
+        checkCookie(baseRequest, response);
+      } else if ("/revert".equalsIgnoreCase(target)) {
+        processRevert(baseRequest, response);
+      } else if ("/coords".equalsIgnoreCase(target)) {
+        processGetGoords(baseRequest, response);
+      } else if ("/addDash".equalsIgnoreCase(target)) {
+        processAddDashboard(baseRequest, response);
+      } else if ("/renameDash".equalsIgnoreCase(target)) {
         processRenameDashboard(baseRequest, response);
       } else if ("/removeDash".equalsIgnoreCase(target)) {
-			  processRemoveDashboard(baseRequest, response);
-			} else if ("/getDash".equalsIgnoreCase(target)) {
-			  processGetDashboards(baseRequest, response);
-			} else if ("/addToDash".equalsIgnoreCase(target)) {
-			  processChangeDash(baseRequest, response, true);
-			} else if ("/removeFromDash".equalsIgnoreCase(target)) {
-			  processChangeDash(baseRequest, response, false);
-			} else if ("/saveFilter".equalsIgnoreCase(target)) {
-			  processSaveFilter(baseRequest, response);
-			} else if ("/renameFilter".equalsIgnoreCase(target)) {
-			  processRenameFilter(baseRequest, response);
-			} else if ("/removeFilter".equalsIgnoreCase(target)) {
+        processRemoveDashboard(baseRequest, response);
+      } else if ("/getDash".equalsIgnoreCase(target)) {
+        processGetDashboards(baseRequest, response);
+      } else if ("/addToDash".equalsIgnoreCase(target)) {
+        processChangeDash(baseRequest, response, true);
+      } else if ("/removeFromDash".equalsIgnoreCase(target)) {
+        processChangeDash(baseRequest, response, false);
+      } else if ("/saveFilter".equalsIgnoreCase(target)) {
+        processSaveFilter(baseRequest, response);
+      } else if ("/renameFilter".equalsIgnoreCase(target)) {
+        processRenameFilter(baseRequest, response);
+      } else if ("/removeFilter".equalsIgnoreCase(target)) {
         processRemoveFilter(baseRequest, response);
       } else if ("/getFilters".equalsIgnoreCase(target)) {
         processGetFilters(baseRequest, response);
@@ -1336,7 +1354,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       } else if ("/setFeatures".equalsIgnoreCase(target)) {
         processSetFeatures(baseRequest, response);
       } else if ("/removeCookie".equalsIgnoreCase(target)) {
-      	processRemoveCookie(baseRequest, response);
+        processRemoveCookie(baseRequest, response);
       } else if ("/getCompOptions".equalsIgnoreCase(target)) {
         processGetComps(baseRequest, response);
       } else if ("/getSplitsAndDist".equals(target)) {
@@ -1349,6 +1367,6 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         chechCacheUpToDate(baseRequest, response);
         baseRequest.setHandled(true);
       }
-		}
+    }
   }
 }

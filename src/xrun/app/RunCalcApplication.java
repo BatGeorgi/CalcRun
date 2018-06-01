@@ -32,20 +32,20 @@ import xrun.utils.JsonSanitizer;
 
 public class RunCalcApplication {
   
-  private File gpxBase;
-  private DBStorage sqLite;
-  private GoogleDriveStorage drive;
-  private CookieHandler cookieHandler;
+  private File                     gpxBase;
+  private DBStorage                storage;
+  private GoogleDriveStorage       drive;
+  private CookieHandler            cookieHandler;
   private ReliveCCGarbageCollector reliveGC;
-  private XRuntimeCache cache;
+  private XRuntimeCache            cache;
   
   public RunCalcApplication(XRuntimeCache cache, File base, File clientSecret) {
     this.cache = cache;
-    sqLite = new DBStorage(base);
+    storage = new DBStorage(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
-    cookieHandler = new CookieHandler(sqLite);
-    reliveGC = new ReliveCCGarbageCollector(this, sqLite);
+    cookieHandler = new CookieHandler(storage);
+    reliveGC = new ReliveCCGarbageCollector(this, storage);
     if (clientSecret != null) {
       drive = new GoogleDriveStorage(clientSecret);
     }
@@ -71,7 +71,7 @@ public class RunCalcApplication {
   public Cookie generateCookie() {
     Cookie cookie = cookieHandler.generateCookie();
     if (cookie != null && drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return cookie;
   }
@@ -88,7 +88,7 @@ public class RunCalcApplication {
     String[] all = gpxBase.list();
     boolean entriesAdded = false;
     for (String fileName : all) {
-      if (!fileName.endsWith(".gpx") || sqLite.hasActivity(fileName)) {
+      if (!fileName.endsWith(".gpx") || storage.hasActivity(fileName)) {
         continue;
       }
       File targ = new File(gpxBase, fileName);
@@ -101,7 +101,7 @@ public class RunCalcApplication {
         current.put("type", Constants.RUNNING);
         current.put("ccLink", "none");
         current.put("photosLink", "none");
-        sqLite.addActivity(current);
+        storage.addActivity(current);
         if (drive != null) {
           drive.backupTrack(targ);
         }
@@ -112,15 +112,15 @@ public class RunCalcApplication {
       }
     }
     if (entriesAdded && drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
-      drive.backupDB(sqLite.getCoordsDBFile(), "coords");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getCoordsDBFile(), "coords");
     }
   }
   
   public JSONObject retrieveCoords(String activity, boolean percentage) throws SQLException {
-    JSONObject coords = sqLite.getCoordsData(activity);
+    JSONObject coords = storage.getCoordsData(activity);
     if (coords == null) {
-      coords = sqLite.getCoordsData(activity + ".gpx");
+      coords = storage.getCoordsData(activity + ".gpx");
     }
     if (coords == null) {
       return null;
@@ -148,12 +148,12 @@ public class RunCalcApplication {
   }
   
   private File addActivity0(String name, InputStream is) throws IOException {
-  	if (sqLite.hasActivity(name)) {
+  	if (storage.hasActivity(name)) {
   		String sname = null;
   		int i;
   		for (i = 0; i < 1000; ++i) {
   			sname = name + Constants.FILE_SUFF + i;
-  			if (!sqLite.hasActivity(sname)) {
+  			if (!storage.hasActivity(sname)) {
   				name = sname;
   				break;
   			}
@@ -206,7 +206,7 @@ public class RunCalcApplication {
       current.put("type", activityType);
       current.put("ccLink", reliveCC);
       current.put("photosLink", photos);
-      if (!sqLite.dashboardExists(dashboard)) {
+      if (!storage.dashboardExists(dashboard)) {
         dashboard = Constants.MAIN_DASHBOARD;
       }
       JSONArray arr = new JSONArray();
@@ -215,9 +215,9 @@ public class RunCalcApplication {
         arr.put(Constants.MAIN_DASHBOARD);
       }
       current.put("dashboards", arr);
-      sqLite.addActivity(current);
+      storage.addActivity(current);
       if (secure) {
-      	sqLite.setSecureFlag(current.getString("genby"), true);
+      	storage.setSecureFlag(current.getString("genby"), true);
       }
       if (drive != null) {
         drive.backupTrack(file);
@@ -229,8 +229,8 @@ public class RunCalcApplication {
       return "Processing file error: " + e.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
-      drive.backupDB(sqLite.getCoordsDBFile(), "coords");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getCoordsDBFile(), "coords");
     }
   	return null;
   }
@@ -245,7 +245,7 @@ public class RunCalcApplication {
   
   private List<JSONObject> filter(boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
-    return sqLite.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance);
+    return storage.fetchActivities(run, trail, uphill, hike, walk, other, startDate, endDate, minDistance, maxDistance);
   }
   
   public JSONObject filter(String nameFilter, boolean run, boolean trail, boolean uphill, boolean hike, boolean walk, boolean other,
@@ -293,8 +293,8 @@ public class RunCalcApplication {
     result.put("activities", activities);
     result.put("charts", ChartUtils.getResultCharts(activities));
     if (getWMT) {
-      result.put("mtotals", sqLite.getMonthlyTotals());
-      result.put("wtotals", sqLite.getWeeklyTotals());
+      result.put("mtotals", storage.getMonthlyTotals());
+      result.put("wtotals", storage.getWeeklyTotals());
     } else {
       result.put("WMT", "none");
     }
@@ -327,7 +327,7 @@ public class RunCalcApplication {
   }
 
   public JSONObject getActivity(String fileName) {
-    return sqLite.getActivity(fileName);
+    return storage.getActivity(fileName);
   }
   
   private boolean matchName(String namePattern, String name) {
@@ -403,7 +403,7 @@ public class RunCalcApplication {
   }
   
   private JSONObject getBest(String columnName, String suff) {
-    JSONObject best = sqLite.getBestActivities(columnName);
+    JSONObject best = storage.getBestActivities(columnName);
     JSONObject result = new JSONObject();
     if (best == null) {
       return result;
@@ -423,7 +423,7 @@ public class RunCalcApplication {
   }
   
   private JSONObject getBest(double distMin, double distMax) {
-    JSONObject best = sqLite.getBestActivities(distMin, distMax);
+    JSONObject best = storage.getBestActivities(distMin, distMax);
     if (best == null) {
       return new JSONObject();
     }
@@ -455,7 +455,7 @@ public class RunCalcApplication {
   }
   
   public JSONObject getBestSplits() {
-    JSONArray arr = sqLite.getActivitySplits();
+    JSONArray arr = storage.getActivitySplits();
     Map<Integer, Long> best = new TreeMap<Integer, Long>();
     Map<Integer, String[]> bestAttrs = new TreeMap<Integer, String[]>();
     for (int i = 0; i < arr.length(); ++i) {
@@ -498,7 +498,7 @@ public class RunCalcApplication {
   public String editActivity(String fileName, String newName, String newType,
 			String newGarmin, String newCC, String newPhotos, boolean secure,
 			JSONObject mods) {
-		JSONObject activity = sqLite.getActivity(fileName);
+		JSONObject activity = storage.getActivity(fileName);
 		if (activity == null) {
 			return null;
 		}
@@ -512,39 +512,39 @@ public class RunCalcApplication {
 					activity.put("ccLink", newCC.length() > 0 ? newCC : "none");
 					activity.put("photosLink", newPhotos.length() > 0 ? newPhotos
 							: "none");
-					sqLite.deleteActivity(fileName);
-					sqLite.addActivity(activity);
+					storage.deleteActivity(fileName);
+					storage.addActivity(activity);
 				} else {
-					sqLite.updateActivity(fileName, newName, newType, newGarmin, newCC,
+					storage.updateActivity(fileName, newName, newType, newGarmin, newCC,
 							newPhotos, secure);
 				}
 			} else if (revertActivityChanges(activity)) {
-				sqLite.deleteActivity(fileName);
-				sqLite.addActivity(activity);
+				storage.deleteActivity(fileName);
+				storage.addActivity(activity);
 			}
 		} catch (Exception e) {
 			return "Error editing activity " + fileName + ": " + e.getMessage();
 		}
 		if (drive != null) {
-			drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+			drive.backupDB(storage.getActivitiesDBFile(), "activities");
 		}
 		return null;
 	}
   
   public String setFeatures(String fileName, String descr, List<String> links) {
     try {
-      sqLite.setFeatures(fileName, descr != null ? descr : "", links);
+      storage.setFeatures(fileName, descr != null ? descr : "", links);
     } catch (SQLException e) {
       return "DB Error - " + e.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }
   
   public boolean isSecured(String fileName) {
-  	return sqLite.isSecured(fileName);
+  	return storage.isSecured(fileName);
   }
   
   public void deleteActivity(String fileName) throws Exception {
@@ -552,65 +552,65 @@ public class RunCalcApplication {
     if (file.isFile() && !file.delete()) {
       file.deleteOnExit();
     }
-    sqLite.deleteActivity(fileName);
+    storage.deleteActivity(fileName);
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
-      drive.backupDB(sqLite.getCoordsDBFile(), "coords");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getCoordsDBFile(), "coords");
     }
   }
   
   public String addDashboard(String name) {
     try {
-      sqLite.addDashboard(name);
+      storage.addDashboard(name);
     } catch (SQLException e) {
       return "Error creating dashboard " + name + " - db error";
     } catch (RuntimeException re) {
       return re.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }
   
   public String renameDashboard(String name, String newName) {
     try {
-      sqLite.renameDashboard(name, newName);
+      storage.renameDashboard(name, newName);
     } catch (SQLException e) {
       return "Error renaming dashboard " + name + " - db error";
     } catch (RuntimeException re) {
       return re.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }
   
   public String removeDashboard(String name) {
     try {
-      sqLite.removeDashboard(name);
+      storage.removeDashboard(name);
     } catch (SQLException e) {
       return "Error removing dashboard " + name + " - db error";
     } catch (RuntimeException re) {
       return re.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }
   
   public JSONObject getDashboards() {
-    return sqLite.getDashboards();
+    return storage.getDashboards();
   }
   
   public JSONObject getCompOptions(String activity, boolean ext) {
-    return sqLite.getCompOptions(activity, ext);
+    return storage.getCompOptions(activity, ext);
   }
   
   public JSONObject getSplitsAndDist(String activity) {
-    return sqLite.getSplitsAndDist(activity);
+    return storage.getSplitsAndDist(activity);
   }
   
   public String addToDashboard(String activity, String dashboard) {
@@ -618,14 +618,14 @@ public class RunCalcApplication {
       return "Invalid parameters";
     }
     try {
-      sqLite.addToDashboard(activity, dashboard);
+      storage.addToDashboard(activity, dashboard);
     } catch (SQLException e) {
       return "Error adding activity " + activity + " to " + dashboard + " - db error";
     } catch (RuntimeException re) {
       return re.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }
@@ -635,21 +635,21 @@ public class RunCalcApplication {
       return "Invalid parameters";
     }
     try {
-      sqLite.removeFromDashboard(activity, dashboard);
+      storage.removeFromDashboard(activity, dashboard);
     } catch (SQLException e) {
       return "Error removing activity " + activity + " from " + dashboard + " - db error";
     } catch (RuntimeException re) {
       return re.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }
   
   public void dispose() {
-    if (sqLite != null) {
-      sqLite.close();
+    if (storage != null) {
+      storage.close();
     }
     if (cookieHandler != null) {
       cookieHandler.dispose();
@@ -720,11 +720,11 @@ public class RunCalcApplication {
   }
   
   public JSONArray getPresets() {
-    return sqLite.getPresets(null);
+    return storage.getPresets(null);
   }
   
   public JSONObject fetchPreset(String presetName) {
-  	JSONObject preset = sqLite.getPresetData(presetName);
+  	JSONObject preset = storage.getPresetData(presetName);
   	if (preset == null) {
   		return null;
   	}
@@ -734,7 +734,7 @@ public class RunCalcApplication {
   public String addPreset(String name, String types, String pattern, String startDate, String endDate, int minDist, int maxDist, int top,
       String dashboard) {
   	try {
-  		return sqLite.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard) ? null :
+  		return storage.addPreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard) ? null :
   		  "Existing preset overwritten";
   	} catch (SQLException e) {
   		return "Error adding preset " + name + " - db error";
@@ -742,35 +742,35 @@ public class RunCalcApplication {
   		return re.getMessage();
   	} finally {
   	  if (drive != null) {
-        drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+        drive.backupDB(storage.getActivitiesDBFile(), "activities");
       }
   	}
   }
   
   public String renamePreset(String name, String newName) {
   	try {
-  		sqLite.renamePreset(name, newName);
+  		storage.renamePreset(name, newName);
   	} catch (SQLException e) {
   		return "Error renaming preset " + name + " - db error";
   	} catch (RuntimeException re) {
   		return re.getMessage();
   	}
   	if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
   	return null;
   }
   
   public String removePreset(String name) {
   	try {
-  		sqLite.removePreset(name);
+  		storage.removePreset(name);
   	} catch (SQLException e) {
   		return "Error removing preset " + name + " - db error";
   	} catch (RuntimeException re) {
   		return re.getMessage();
   	}
   	if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
   	return null;
   }
@@ -786,11 +786,11 @@ public class RunCalcApplication {
     try {
       switch (option) {
         case 1:
-          sqLite.reorderPresets(ordered);
+          storage.reorderPresets(ordered);
           break;
         case 2:
           ordered.add(0, Constants.MAIN_DASHBOARD);
-          sqLite.reorderDashboards(ordered);
+          storage.reorderDashboards(ordered);
       }
     } catch (SQLException e) {
       return "Error reordering - db error";
@@ -798,7 +798,7 @@ public class RunCalcApplication {
       return re.getMessage();
     }
     if (drive != null) {
-      drive.backupDB(sqLite.getActivitiesDBFile(), "activities");
+      drive.backupDB(storage.getActivitiesDBFile(), "activities");
     }
     return null;
   }

@@ -8,13 +8,13 @@ import java.util.TimerTask;
 
 import xrun.storage.DBStorage;
 
-public class ReliveCCGarbageCollector extends TimerTask {
+class ReliveCCGarbageCollector extends TimerTask {
 
-  private RunCalcApplication     rcUtils;
-  private DBStorage        sqLite;
-  private Timer            timer          = new Timer();
+  private RunCalcApplication rcUtils;
+  private DBStorage          sqLite;
+  private Timer              timer          = new Timer();
 
-  private static final int CLEANUP_PERIOD = 24 * 3600 * 1000; // one day
+  private static final int   CLEANUP_PERIOD = 24 * 3600 * 1000; // one day
 
   ReliveCCGarbageCollector(RunCalcApplication rcUtils, DBStorage sqLite) {
     this.rcUtils = rcUtils;

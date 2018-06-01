@@ -5,7 +5,7 @@ import java.io.Closeable;
 import org.json.JSONArray;
 
 public class CommonUtils {
-  
+
   public static int find(JSONArray array, Object element) {
     if (element == null) {
       return -1;
@@ -17,7 +17,7 @@ public class CommonUtils {
     }
     return -1;
   }
-  
+
   public static void silentClose(Closeable cl) {
     try {
       if (cl != null) {
