@@ -1,4 +1,4 @@
-package xrun;
+package xrun.storage;
 
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -10,9 +10,7 @@ import java.util.UUID;
 
 import javax.servlet.http.Cookie;
 
-import xrun.storage.DBStorage;
-
-class CookieHandler extends TimerTask {
+public class CookieHandler extends TimerTask {
   
   private static final String COOKIE_NAME = "xruncalc";
   private static final int MONTH_SEC = 3600 * 24 * 31;
@@ -21,22 +19,22 @@ class CookieHandler extends TimerTask {
   private DBStorage sqLite;
   private Timer timer = new Timer();
   
-  CookieHandler(DBStorage sqLite) {
+  public CookieHandler(DBStorage sqLite) {
     this.sqLite = sqLite;
     timer.scheduleAtFixedRate(this, CLEANUP_PERIOD, CLEANUP_PERIOD);
   }
   
-  void dispose() {
+  public void dispose() {
     if (timer != null) {
       timer.cancel();
     }
   }
   
-  boolean isAuthorized(Cookie cookie) {
+  public boolean isAuthorized(Cookie cookie) {
     return sqLite.isValidCookie(cookie.getValue());
   }
   
-  void removeCookie(Cookie cookie) {
+  public void removeCookie(Cookie cookie) {
   	if (COOKIE_NAME.equals(cookie.getName())) {
   	  try {
   	    sqLite.deleteCookie(cookie.getValue());
@@ -46,7 +44,7 @@ class CookieHandler extends TimerTask {
   	}
   }
   
-  Cookie generateCookie() {
+  public Cookie generateCookie() {
     String uid = null;
     Calendar cal = new GregorianCalendar(TimeZone.getDefault());
     cal.add(Calendar.DATE, 31);

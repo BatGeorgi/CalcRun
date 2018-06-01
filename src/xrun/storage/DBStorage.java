@@ -22,10 +22,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import xrun.Constants;
-import xrun.RunCalcUtils;
-import xrun.utils.CalcUtils;
+import xrun.utils.TimeUtils;
 import xrun.utils.CalendarUtils;
 import xrun.utils.JsonSanitizer;
+import xrun.utils.CommonUtils;
 
 public class DBStorage {
   
@@ -648,7 +648,7 @@ public class DBStorage {
 	  cal.setTimeInMillis(activity.getLong("timeRawMs"));
 	  long corr = TimeZone.getDefault().inDaylightTime(cal.getTime()) ? Constants.CORRECTION_BG_SUMMER : Constants.CORRECTION_BG_WINTER;
 	  cal.setTimeInMillis(activity.getLong("timeRawMs") + corr);
-	  activity.put("startAt", CalcUtils.formatDate(cal, true));
+	  activity.put("startAt", TimeUtils.formatDate(cal, true));
 	  fillInFeatures(activity);
 	  return activity;
 	}
@@ -893,7 +893,7 @@ public class DBStorage {
 	    throw new IllegalArgumentException("Activity not found");
 	  }
 	  JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(rs.getString(1)));
-	  if (RunCalcUtils.find(dashboards, dashboard) != -1) {
+	  if (CommonUtils.find(dashboards, dashboard) != -1) {
 	    throw new IllegalArgumentException("Activity already in dashboard");
 	  }
 	  dashboards.put(dashboard);
@@ -911,7 +911,7 @@ public class DBStorage {
       throw new IllegalArgumentException("Activity not found");
     }
     JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(rs.getString(1)));
-    int ind = RunCalcUtils.find(dashboards, dashboard);
+    int ind = CommonUtils.find(dashboards, dashboard);
     if (ind == -1) {
       throw new IllegalArgumentException("Activity not in dashboard");
     }

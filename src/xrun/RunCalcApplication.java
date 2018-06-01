@@ -1,6 +1,5 @@
 package xrun;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,28 +20,30 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import xrun.parser.TrackParser;
+import xrun.storage.CookieHandler;
 import xrun.storage.DBStorage;
 import xrun.storage.GoogleDriveStorage;
-import xrun.utils.CalcUtils;
+import xrun.utils.TimeUtils;
 import xrun.utils.ChartUtils;
+import xrun.utils.CommonUtils;
 import xrun.utils.JsonSanitizer;
 
-public class RunCalcUtils {
+public class RunCalcApplication {
   
   private File gpxBase;
   private DBStorage sqLite;
   private GoogleDriveStorage drive;
   private CookieHandler cookieHandler;
-  private ReliveGarbageCollector reliveGC;
+  private ReliveCCGarbageCollector reliveGC;
   private RequestHandler handler;
   
-  RunCalcUtils(RequestHandler handler, File base, File clientSecret) {
+  RunCalcApplication(RequestHandler handler, File base, File clientSecret) {
     this.handler = handler;
     sqLite = new DBStorage(base);
     gpxBase = new File(base, "gpx");
     gpxBase.mkdirs();
     cookieHandler = new CookieHandler(sqLite);
-    reliveGC = new ReliveGarbageCollector(this, sqLite);
+    reliveGC = new ReliveCCGarbageCollector(this, sqLite);
     if (clientSecret != null) {
       drive = new GoogleDriveStorage(clientSecret);
     }
@@ -56,7 +57,7 @@ public class RunCalcUtils {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcUtils(null, base, null).rescan();
+    new RunCalcApplication(null, base, null).rescan();
   }
   
   void resetHandlerCache() {
@@ -130,13 +131,13 @@ public class RunCalcUtils {
     JSONArray perc = new JSONArray();
     double dist = 0.0;
     for (int i = 1; i < lats.length(); ++i) {
-      dist += CalcUtils.distance(lats.getDouble(i - 1), lats.getDouble(i),
+      dist += TimeUtils.distance(lats.getDouble(i - 1), lats.getDouble(i),
           lons.getDouble(i - 1), lons.getDouble(i));
     }
 		perc.put(0);
 		double cdist = 0.0;
 		for (int i = 1; i < lats.length(); ++i) {
-			cdist += CalcUtils.distance(lats.getDouble(i - 1), lats.getDouble(i),
+			cdist += TimeUtils.distance(lats.getDouble(i - 1), lats.getDouble(i),
 					lons.getDouble(i - 1), lons.getDouble(i));
 			perc.put((cdist / dist) * 100.0);
 		}
@@ -276,7 +277,7 @@ public class RunCalcUtils {
     }
     if (totals != null) {
       totals.put("avgSpeed", String.format("%.3f", totals.getDouble("totalDistance") / (totals.getLong("totalTime") / 3600.0)));
-      totals.put("totalTime", CalcUtils.formatTime(totals.getLong("totalTime"), true, true));
+      totals.put("totalTime", TimeUtils.formatTime(totals.getLong("totalTime"), true, true));
       totals.put("avgDist", String.format("%.3f", totals.getDouble("totalDistance") / (double) count));
     }
     for (int i = 1; i < matched.size(); ++i) {
@@ -322,23 +323,12 @@ public class RunCalcUtils {
     }
     return result;
   }
-  
-  
-  
+
   JSONObject getActivity(String fileName) {
     return sqLite.getActivity(fileName);
   }
   
-  static void silentClose(Closeable cl) {
-    try {
-      if (cl != null) {
-        cl.close();
-      }
-    } catch (Exception ignore) {
-    }
-  }
-  
-  private static boolean matchName(String namePattern, String name) {
+  private boolean matchName(String namePattern, String name) {
     if (namePattern == null) {
       return true;
     }
@@ -355,20 +345,8 @@ public class RunCalcUtils {
     return false;
   }
   
-  private static boolean isFromDashboard(JSONObject activity, String dashboard) {
-    return find(new JSONArray(JsonSanitizer.sanitize(activity.getString("dashboards"))), dashboard) != -1;
-  }
-  
-  public static int find(JSONArray array, Object element) {
-    if (element == null) {
-      return -1;
-    }
-    for (int i = 0; i < array.length(); ++i) {
-      if (element.equals(array.get(i))) {
-        return i;
-      }
-    }
-    return -1;
+  private boolean isFromDashboard(JSONObject activity, String dashboard) {
+    return CommonUtils.find(new JSONArray(JsonSanitizer.sanitize(activity.getString("dashboards"))), dashboard) != -1;
   }
   
   JSONObject compare(JSONObject run1, JSONObject run2) {
@@ -412,9 +390,9 @@ public class RunCalcUtils {
       diff.put("time2", sp2.getString("time"));
       diff.put("point", String.format("%.3f", total1));
       long currentDiff = sp1.getLong("timeRaw") - sp2.getLong("timeRaw");
-      diff.put("currentDiff", (currentDiff > 0 ? "+" : (currentDiff < 0 ? "-" : "")) + CalcUtils.formatTime(Math.abs(currentDiff), false));
+      diff.put("currentDiff", (currentDiff > 0 ? "+" : (currentDiff < 0 ? "-" : "")) + TimeUtils.formatTime(Math.abs(currentDiff), false));
       long totalDiff = sp1.getLong("timeTotalRaw") - sp2.getLong("timeTotalRaw");
-      diff.put("totalDiff", (totalDiff > 0 ? "+" : (totalDiff < 0 ? "-" : "")) + CalcUtils.formatTime(Math.abs(totalDiff), false));
+      diff.put("totalDiff", (totalDiff > 0 ? "+" : (totalDiff < 0 ? "-" : "")) + TimeUtils.formatTime(Math.abs(totalDiff), false));
       diffsByTime.put(diff);
     }
     result.put("general", general);
@@ -506,9 +484,9 @@ public class RunCalcUtils {
       ach.put("date", ba[1]);
       ach.put("genby", ba[2].endsWith(".gpx") ? ba[2].substring(0, ba[2].length() - 4) : ba[2]);
       long seconds = entry.getValue();
-      ach.put("ach", CalcUtils.formatTime(seconds, true));
+      ach.put("ach", TimeUtils.formatTime(seconds, true));
       ach.put("speed", String.format("%.3f", entry.getKey() / (seconds / 3600.0)));
-      ach.put("pace", CalcUtils.formatPace((seconds / 60.0) / entry.getKey()));
+      ach.put("pace", TimeUtils.formatPace((seconds / 60.0) / entry.getKey()));
       arr.put(ach);
     }
     result.put("totals", arr);
@@ -684,7 +662,7 @@ public class RunCalcUtils {
       "eleTotalPos", "eleTotalNeg"
   };
   
-  private static boolean modifyActivity(JSONObject activity, JSONObject mods) {
+  private boolean modifyActivity(JSONObject activity, JSONObject mods) {
     if (activity == null || !mods.keys().hasNext()) {
       return false;
     }
@@ -702,12 +680,12 @@ public class RunCalcUtils {
       double time = mods.has("time") ? mods.getLong("time") : activity.getDouble("timeTotalRaw");
       activity.put("dist", String.format("%.3f", dist));
       activity.put("distRaw", dist);
-      activity.put("timeTotal", CalcUtils.formatTime((long) time, true));
+      activity.put("timeTotal", TimeUtils.formatTime((long) time, true));
       activity.put("timeTotalRaw", time);
       double speed = dist / (time / 3600.0);
       activity.put("avgSpeed", String.format("%.3f", speed));
       activity.put("avgSpeedRaw", speed);
-      activity.put("avgPace", CalcUtils.speedToPace(speed));
+      activity.put("avgPace", TimeUtils.speedToPace(speed));
       result = true;
     }
     if (mods.has("gain")) {
@@ -724,7 +702,7 @@ public class RunCalcUtils {
     return result;
   }
   
-  private static boolean revertActivityChanges(JSONObject activity) {
+  private boolean revertActivityChanges(JSONObject activity) {
     JSONObject origData = activity.optJSONObject("origData");
     if (origData == null || !origData.keys().hasNext()) {
       return false;

@@ -31,8 +31,9 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.json.JSONObject;
 
 import xrun.storage.DBStorage;
-import xrun.utils.CalcUtils;
+import xrun.utils.TimeUtils;
 import xrun.utils.CalendarUtils;
+import xrun.utils.CommonUtils;
 
 class RequestHandler extends AbstractHandler {
   
@@ -67,7 +68,7 @@ class RequestHandler extends AbstractHandler {
     return true;
   }
 
-  private RunCalcUtils rcUtils;
+  private RunCalcApplication rcUtils;
   private File activityTemplateFile;
   private File comparisonTemplateFile;
   private long actTempLastMod = Long.MIN_VALUE;
@@ -78,7 +79,7 @@ class RequestHandler extends AbstractHandler {
 
   public RequestHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile, List<String> allowedRefs)
   		throws IOException {
-    rcUtils = new RunCalcUtils(this, tracksBase, clientSecret);
+    rcUtils = new RunCalcApplication(this, tracksBase, clientSecret);
     this.activityTemplateFile = activityTemplateFile;
     this.comparisonTemplateFile = comparisonTemplateFile;
     this.allowedRefs = allowedRefs;
@@ -145,7 +146,7 @@ class RequestHandler extends AbstractHandler {
       } catch (Exception ignore) {
         // silent catch
       } finally {
-        RunCalcUtils.silentClose(is);
+        CommonUtils.silentClose(is);
       } 
     }
     return result;
@@ -607,7 +608,7 @@ class RequestHandler extends AbstractHandler {
         }
       }
       if (actTime != null && actTime.trim().length() > 0) {
-        newTime = new Long(CalcUtils.getRealTime(actTime.trim()));
+        newTime = new Long(TimeUtils.getRealTime(actTime.trim()));
         if (newTime.intValue() <= 0) {
           throw new IllegalArgumentException("Bad data");
         }
