@@ -10,11 +10,11 @@ public class TimeUtils {
   public static String formatTime(long seconds) {
     return formatTime(seconds, true, false);
   }
-  
+
   public static String formatTime(long seconds, boolean includeHours) {
     return formatTime(seconds, includeHours, false);
   }
-    
+
   public static String formatTime(long seconds, boolean includeHours, boolean includeDays) {
     int hours = (int) (seconds / 3600);
     int minutes = (int) ((seconds % 3600) / 60);
@@ -42,11 +42,11 @@ public class TimeUtils {
     }
     sb.append(seconds);
     if (includeDays) {
-      
+
     }
     return sb.toString();
   }
-  
+
   public static long getRealTime(String formattedTime) {
     StringTokenizer st = new StringTokenizer(formattedTime, ":", false);
     long total = 0;
@@ -62,7 +62,7 @@ public class TimeUtils {
     }
     return total;
   }
-  
+
   public static String formatPace(double pace) {
     int minutes = (int) pace;
     int seconds = (int) ((pace - minutes) * 60.0);
@@ -75,20 +75,22 @@ public class TimeUtils {
     sb.append(seconds);
     return sb.toString();
   }
-  
+
   public static int[] formatPaceRaw(double pace) {
     int minutes = (int) pace;
     int seconds = (int) ((pace - minutes) * 60.0);
-    return new int[] {minutes, seconds};
+    return new int[] {
+        minutes, seconds
+    };
   }
-  
+
   private static void appUnit(StringBuffer sb, int unit) {
     if (unit < 10) {
       sb.append('0');
     }
     sb.append(unit);
   }
-  
+
   public static String formatDate(Calendar cal, boolean startTime) {
     StringBuffer sb = new StringBuffer();
     appUnit(sb, cal.get(Calendar.DAY_OF_MONTH));
@@ -106,7 +108,7 @@ public class TimeUtils {
     }
     return sb.toString();
   }
-  
+
   public static String speedToPace(double speed/*km/h*/) {
     double pace = 60.0 / speed;
     int mins = (int) pace;
@@ -118,7 +120,7 @@ public class TimeUtils {
     String ss = (s < 10 ? "0" + s : String.valueOf(s));
     return String.format("%d:%s", mins, ss);
   }
-  
+
   public static double distance(double lat1, double lat2, double lon1,
       double lon2) {
     final int R = 6371; // Radius of the earth

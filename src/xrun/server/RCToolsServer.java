@@ -37,23 +37,28 @@ public class RCToolsServer {
     }
     List<String> allowedRefs = null;
     if (args.length > 3) {
-    	allowedRefs = new LinkedList<String>();
-    	StringTokenizer st = new StringTokenizer(args[3], ",", false);
-    	while(st.hasMoreTokens()) {
-    		allowedRefs.add(st.nextToken());
-    	}
+      allowedRefs = new LinkedList<String>();
+      StringTokenizer st = new StringTokenizer(args[3], ",", false);
+      while (st.hasMoreTokens()) {
+        allowedRefs.add(st.nextToken());
+      }
     }
     System.out.println("Current time is " + new GregorianCalendar(TimeZone.getDefault()).getTime());
     ResourceHandler resourceHandler = new ResourceHandler();
     resourceHandler.setDirAllowed(false);
     resourceHandler.setDirectoriesListed(false);
-    resourceHandler.setWelcomeFiles(new String[] {"runcalc"});
+    resourceHandler.setWelcomeFiles(new String[] {
+        "runcalc"
+    });
     resourceHandler.setResourceBase("www");
     final Server server = new Server(port);
     HandlerList handlers = new HandlerList();
-    final RequestHandler cdHandler = new RequestHandler(tracksBase, clientSecret, new File(resourceHandler.getBaseResource().getFile(), "activity.html"),
-    		new File(resourceHandler.getBaseResource().getFile(), "comparison.html"), allowedRefs);
-    handlers.setHandlers(new Handler[] { new MultipartConfigInjectionHandler(), resourceHandler, cdHandler });
+    final RequestHandler cdHandler = new RequestHandler(tracksBase, clientSecret,
+        new File(resourceHandler.getBaseResource().getFile(), "activity.html"),
+        new File(resourceHandler.getBaseResource().getFile(), "comparison.html"), allowedRefs);
+    handlers.setHandlers(new Handler[] {
+        new MultipartConfigInjectionHandler(), resourceHandler, cdHandler
+    });
     server.setHandler(handlers);
     server.start();
     final Scanner scanner = new Scanner(System.in);
@@ -80,4 +85,3 @@ public class RCToolsServer {
   }
 
 }
-

@@ -15,10 +15,10 @@ import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.MultiPartInputStreamParser;
 
 class MultipartConfigInjectionHandler extends HandlerWrapper {
-  
-  private static final String MULTIPART_FORMDATA_TYPE = "multipart/form-data";
 
-  private static final MultipartConfigElement MULTI_PART_CONFIG = new MultipartConfigElement(
+  private static final String                 MULTIPART_FORMDATA_TYPE = "multipart/form-data";
+
+  private static final MultipartConfigElement MULTI_PART_CONFIG       = new MultipartConfigElement(
       System.getProperty("java.io.tmpdir"));
 
   public static boolean isMultipartRequest(ServletRequest request) {
