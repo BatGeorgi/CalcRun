@@ -16,11 +16,11 @@ public class CookieHandler extends TimerTask {
   private static final int    MONTH_SEC      = 3600 * 24 * 31;
   private static final int    CLEANUP_PERIOD = 3600 * 1000;   // one hour
 
-  private DBStorage           sqLite;
+  private DBStorage           storage;
   private Timer               timer          = new Timer();
 
   public CookieHandler(DBStorage sqLite) {
-    this.sqLite = sqLite;
+    this.storage = sqLite;
     timer.scheduleAtFixedRate(this, CLEANUP_PERIOD, CLEANUP_PERIOD);
   }
 
@@ -31,13 +31,13 @@ public class CookieHandler extends TimerTask {
   }
 
   public boolean isAuthorized(Cookie cookie) {
-    return sqLite.isValidCookie(cookie.getValue());
+    return storage.isValidCookie(cookie.getValue());
   }
 
   public void removeCookie(Cookie cookie) {
     if (COOKIE_NAME.equals(cookie.getName())) {
       try {
-        sqLite.deleteCookie(cookie.getValue());
+        storage.deleteCookie(cookie.getValue());
       } catch (SQLException e) {
         System.out.println("DB error deleting cookie");
       }
@@ -50,7 +50,7 @@ public class CookieHandler extends TimerTask {
     cal.add(Calendar.DATE, 31);
     for (int i = 0; i < 1000; ++i) {
       uid = UUID.randomUUID().toString();
-      if (sqLite.saveCookie(uid, cal)) {
+      if (storage.saveCookie(uid, cal)) {
         break;
       }
       uid = null;
@@ -65,7 +65,7 @@ public class CookieHandler extends TimerTask {
   }
 
   public void run() {
-    sqLite.checkForExpiredCookies();
+    storage.checkForExpiredCookies();
   }
 
 }

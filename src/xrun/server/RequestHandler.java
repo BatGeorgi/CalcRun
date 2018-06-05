@@ -72,7 +72,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     return true;
   }
 
-  private RunCalcApplication rcUtils;
+  private RunCalcApplication rcApp;
   private File               activityTemplateFile;
   private File               comparisonTemplateFile;
   private long               actTempLastMod     = Long.MIN_VALUE;
@@ -84,7 +84,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
   public RequestHandler(File tracksBase, File clientSecret, File activityTemplateFile, File comparisonTemplateFile,
       List<String> allowedRefs)
       throws IOException {
-    rcUtils = new RunCalcApplication(this, tracksBase, clientSecret);
+    rcApp = new RunCalcApplication(this, tracksBase, clientSecret);
     this.activityTemplateFile = activityTemplateFile;
     this.comparisonTemplateFile = comparisonTemplateFile;
     this.allowedRefs = allowedRefs;
@@ -158,8 +158,8 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
   }
 
   void dispose() {
-    if (rcUtils != null) {
-      rcUtils.dispose();
+    if (rcApp != null) {
+      rcApp.dispose();
     }
   }
 
@@ -191,7 +191,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       while (iter.hasNext()) {
         FileItemStream item = iter.next();
         if (!item.isFormField()) {
-          return rcUtils.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
+          return rcApp.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
               dashboard, secure);
         }
       }
@@ -271,7 +271,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     PrintWriter pw = response.getWriter();
     try {
       response.setContentType("application/json");
-      pw.println(rcUtils.getBest());
+      pw.println(rcApp.getBest());
       pw.flush();
       response.setStatus(HttpServletResponse.SC_OK);
     } finally {
@@ -285,7 +285,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     PrintWriter pw = response.getWriter();
     try {
       response.setContentType("application/json");
-      pw.println(rcUtils.getBestSplits());
+      pw.println(rcApp.getBestSplits());
       pw.flush();
       response.setStatus(HttpServletResponse.SC_OK);
     } finally {
@@ -566,7 +566,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     if (nameFilter != null && nameFilter.trim().length() > 0) {
       filterStr.append(", matching the name regex");
     }
-    JSONObject data = rcUtils.filter(nameFilter, run, trail, uphill, hike, walk, other,
+    JSONObject data = rcApp.filter(nameFilter, run, trail, uphill, hike, walk, other,
         startDate, endDate, dmin, dmax, dash, periodLen, getWMT, isLoggedIn(baseRequest));
     List<String> types = new LinkedList<String>();
     if (run) {
@@ -660,7 +660,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       if (newLoss != null) {
         mods.put("loss", newLoss);
       }
-      String result = rcUtils.editActivity(fileName, name, type, garminLink, ccLink, photosLink, secureFlag, mods);
+      String result = rcApp.editActivity(fileName, name, type, garminLink, ccLink, photosLink, secureFlag, mods);
       if (result == null) {
         response.setStatus(HttpServletResponse.SC_OK);
       } else {
@@ -683,7 +683,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     reset();
     String fileName = baseRequest.getHeader("File");
     if (fileName != null && fileName.length() > 0) {
-      String result = rcUtils.editActivity(fileName, null, null, null, null, null, false, null);
+      String result = rcApp.editActivity(fileName, null, null, null, null, null, false, null);
       if (result == null) {
         response.setStatus(HttpServletResponse.SC_OK);
       } else {
@@ -707,7 +707,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     }
     if (fileName != null && fileName.length() > 0) {
       try {
-        rcUtils.deleteActivity(fileName);
+        rcApp.deleteActivity(fileName);
         response.setStatus(HttpServletResponse.SC_OK);
       } catch (Exception e) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -720,13 +720,13 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
   }
 
   private void processCompare(Request baseRequest, HttpServletResponse response) throws IOException, ServletException {
-    JSONObject item1 = rcUtils.getActivity(baseRequest.getHeader("file1"));
-    JSONObject item2 = rcUtils.getActivity(baseRequest.getHeader("file2"));
+    JSONObject item1 = rcApp.getActivity(baseRequest.getHeader("file1"));
+    JSONObject item2 = rcApp.getActivity(baseRequest.getHeader("file2"));
     if (item1 == null || item2 == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
     } else {
       response.setContentType("application/json");
-      response.getWriter().println(rcUtils.compare(item1, item2));
+      response.getWriter().println(rcApp.compare(item1, item2));
       response.getWriter().flush();
       response.setStatus(HttpServletResponse.SC_OK);
       baseRequest.setHandled(true);
@@ -741,7 +741,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       return;
     }
     reset();
-    rcUtils.rescan();
+    rcApp.rescan();
     response.setStatus(HttpServletResponse.SC_OK);
     baseRequest.setHandled(true);
     reset();
@@ -750,7 +750,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
   private void processLogin(Request baseRequest, HttpServletResponse response) {
     if (!isLoggedIn(baseRequest)) {
       if ("BatGeorgi".equals(baseRequest.getHeader("User")) && isAuthorized(baseRequest.getHeader("Password"))) {
-        Cookie cookie = rcUtils.generateCookie();
+        Cookie cookie = rcApp.generateCookie();
         if (cookie == null) {
           System.out.println("Error - cannot generate cookie");
           response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -780,7 +780,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       return false;
     }
     for (Cookie cookie : cookies) {
-      if (rcUtils.isValidCookie(cookie)) {
+      if (rcApp.isValidCookie(cookie)) {
         return true;
       }
     }
@@ -798,7 +798,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
 
   private void processGetActivity(String target, Request baseRequest, HttpServletResponse response)
       throws IOException, ServletException {
-    if (rcUtils.getActivity(target) == null && rcUtils.getActivity(target + ".gpx") == null) {
+    if (rcApp.getActivity(target) == null && rcApp.getActivity(target + ".gpx") == null) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       baseRequest.setHandled(true);
     } else {
@@ -813,7 +813,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
           int to = template.indexOf("TBD", ind + 3);
           if (to != -1) {
             pw.print(template.substring(ind + 3, to));
-            if (rcUtils.getActivity(target) == null) {
+            if (rcApp.getActivity(target) == null) {
               target += ".gpx";
             }
             pw.print(target);
@@ -838,10 +838,10 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       baseRequest.setHandled(true);
     }
-    if (rcUtils.getActivity(name1) == null) {
+    if (rcApp.getActivity(name1) == null) {
       name1 += ".gpx";
     }
-    if (rcUtils.getActivity(name2) == null) {
+    if (rcApp.getActivity(name2) == null) {
       name2 += ".gpx";
     }
     response.setContentType("text/html");
@@ -861,12 +861,12 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       throws IOException, ServletException {
     String name = target.substring(4);
     boolean isProtected = false;
-    JSONObject json = rcUtils.getActivity(name);
+    JSONObject json = rcApp.getActivity(name);
     if (json == null) {
-      json = rcUtils.getActivity(name + ".gpx");
-      isProtected = rcUtils.isSecured(name + ".gpx");
+      json = rcApp.getActivity(name + ".gpx");
+      isProtected = rcApp.isSecured(name + ".gpx");
     } else {
-      isProtected = rcUtils.isSecured(name);
+      isProtected = rcApp.isSecured(name);
     }
     if (isProtected && !isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -892,11 +892,11 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       throws IOException, ServletException {
     String name = baseRequest.getHeader("activity");
     boolean isProtected = false;
-    JSONObject json = rcUtils.getActivity(name);
+    JSONObject json = rcApp.getActivity(name);
     if (json != null) {
-      isProtected = rcUtils.isSecured(name);
+      isProtected = rcApp.isSecured(name);
     } else {
-      isProtected = rcUtils.isSecured(name + ".gpx");
+      isProtected = rcApp.isSecured(name + ".gpx");
     }
     if (isProtected && !isLoggedIn(baseRequest)) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -906,7 +906,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/json");
     JSONObject data = null;
     try {
-      data = rcUtils.retrieveCoords(name, "true".equals(baseRequest.getHeader("perc")));
+      data = rcApp.retrieveCoords(name, "true".equals(baseRequest.getHeader("perc")));
     } catch (Exception e) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       baseRequest.setHandled(true);
@@ -933,7 +933,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
-      String reason = rcUtils.addDashboard(baseRequest.getHeader("name"));
+      String reason = rcApp.addDashboard(baseRequest.getHeader("name"));
       pw.println(reason == null ? "Dashboard created!" : reason);
     } finally {
       pw.flush();
@@ -954,7 +954,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
-      String reason = rcUtils.renameDashboard(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
+      String reason = rcApp.renameDashboard(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
       pw.println(reason == null ? "Dashboard renamed!" : reason);
     } finally {
       pw.flush();
@@ -975,7 +975,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/txt");
     PrintWriter pw = response.getWriter();
     try {
-      String reason = rcUtils.removeDashboard(baseRequest.getHeader("name"));
+      String reason = rcApp.removeDashboard(baseRequest.getHeader("name"));
       pw.println(reason == null ? "Dashboard removed!" : reason);
     } finally {
       pw.flush();
@@ -990,7 +990,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();
     try {
-      pw.println(rcUtils.getDashboards().toString());
+      pw.println(rcApp.getDashboards().toString());
     } finally {
       pw.flush();
     }
@@ -1011,7 +1011,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     String successMsg = "Activity successfully " + (add ? "added" : "removed") + '!';
     PrintWriter pw = response.getWriter();
     try {
-      String reason = (add ? rcUtils.addToDashboard(activity, target) : rcUtils.removeFromDashboard(activity, target));
+      String reason = (add ? rcApp.addToDashboard(activity, target) : rcApp.removeFromDashboard(activity, target));
       pw.println(reason == null ? successMsg : reason);
     } finally {
       pw.flush();
@@ -1082,7 +1082,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       // silent catch
     }
     try {
-      String status = rcUtils.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records,
+      String status = rcApp.addPreset(name, types.toString(), pattern, startDate, endDate, minDist, maxDist, records,
           dashboard);
       pw.println(status == null ? "Preset added" : status);
     } finally {
@@ -1103,7 +1103,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     reset();
     PrintWriter pw = response.getWriter();
     try {
-      String status = rcUtils.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
+      String status = rcApp.renamePreset(baseRequest.getHeader("name"), baseRequest.getHeader("newName"));
       pw.println(status == null ? "Preset renamed" : status);
     } finally {
       pw.flush();
@@ -1123,7 +1123,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     reset();
     PrintWriter pw = response.getWriter();
     try {
-      String status = rcUtils.removePreset(baseRequest.getHeader("name"));
+      String status = rcApp.removePreset(baseRequest.getHeader("name"));
       pw.println(status == null ? "Preset removed" : status);
     } finally {
       pw.flush();
@@ -1139,7 +1139,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     PrintWriter pw = response.getWriter();
     JSONObject result = new JSONObject();
     try {
-      result.put("presets", rcUtils.getPresets());
+      result.put("presets", rcApp.getPresets());
       pw.println(result.toString());
     } finally {
       pw.flush();
@@ -1158,7 +1158,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     reset();
     PrintWriter pw = response.getWriter();
     try {
-      String status = rcUtils.reorder(baseRequest.getHeader("elements"), option);
+      String status = rcApp.reorder(baseRequest.getHeader("elements"), option);
       pw.println(status == null ? "Order saved" : status);
     } finally {
       pw.flush();
@@ -1186,7 +1186,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
           links.add(st.nextToken());
         }
       }
-      String status = rcUtils.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("descr"), links);
+      String status = rcApp.setFeatures(baseRequest.getHeader("activity"), baseRequest.getHeader("descr"), links);
       pw.println(status == null ? "Activity modified" : status);
     } finally {
       pw.flush();
@@ -1209,7 +1209,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       Cookie[] cookies = baseRequest.getCookies();
       if (cookies != null) {
         for (Cookie cookie : cookies) {
-          rcUtils.removeCookie(cookie);
+          rcApp.removeCookie(cookie);
         }
       }
       pw.println("Logged out!");
@@ -1233,7 +1233,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();
     try {
-      JSONObject json = rcUtils.getCompOptions(activity, ext);
+      JSONObject json = rcApp.getCompOptions(activity, ext);
       if (json == null) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       } else {
@@ -1252,7 +1252,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     response.setContentType("application/json");
     PrintWriter pw = response.getWriter();
     try {
-      JSONObject json = rcUtils.getSplitsAndDist(activity);
+      JSONObject json = rcApp.getSplitsAndDist(activity);
       if (json == null) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       } else {
