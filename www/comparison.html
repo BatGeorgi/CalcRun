@@ -61,7 +61,7 @@
             tableHtml += '</tbody></table></span>';
             splits = item['splits']
             splitHtml = '<span class="heading-data"><h2>Splits</h2></span>' +
-                '<span class="highlight"><table id="splitTable"><thead><th>Point(km)</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
+                '<span class="highlight"><table id="splitTable"><thead><th>KM</th><th>Pace</th><th>Avg speed</th><th>Diff</th><th>Total time</th><th>Acc speed</th><th>Rel elev</th></thead><tbody>';
             $.each(splits, function(i, sp) {
                 splitHtml += '<tr><td><strong>' + round(sp['total']) + '</strong></td><td><div id="spPace' + i + '">' + sp['pace'] + '</div></td><td>' + sp['speed'] + '</td><td><div id="spDiff' + i + '">' + formatEleDiff(sp['ele']) +
                     '</div></td><td><div id="spTotal' + i + '">' + sp['timeTotal'] +
@@ -104,9 +104,9 @@
                 '</td></tr><tr><td>Elevation gain</td><td>' +
                 '<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
                 item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
-                'Running|>9km/h| time</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| distance</td><td>' + (isMod ? '<em>' : '') +
-                item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Running|>9km/h| elevation gain</td><td>' +
-                '<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Running|>9km/h| elevation loss</td><td>' +
+                'Highly intensive period</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Highly intensive period distance</td><td>' + (isMod ? '<em>' : '') +
+                item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Highly intensive period elevation gain</td><td>' +
+                '<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Highly intensive period elevation loss</td><td>' +
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
                 '</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
                 '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
