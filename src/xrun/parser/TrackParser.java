@@ -25,9 +25,10 @@ import xrun.utils.TimeUtils;
 
 public class TrackParser {
 
-  private static final double   DEFAULT_MIN_SPEED = 9;
-  private static final double   DEFAULT_INTERVAL  = 100;
-  private static final double   DEFAULT_SPLIT     = 1;
+  private static final double   DEFAULT_MIN_SPEED      = 9;
+  private static final double   DEFAULT_INTERVAL       = 100;
+  private static final double   DEFAULT_SPLIT_DISTANCE = 1;
+  private static final double   DEFAULT_SPLIT_TIME     = 3600;
 
   private static final double   COEF              = 5.0 / 18.0;                                 // km/h to m/s
 
@@ -39,15 +40,17 @@ public class TrackParser {
   private double                minRunningSpeed;                                                // m/s
   private double                interval;                                                       // meters
   private double                splitM;                                                         // meters
+  private double                splitT;                                                         // seconds
 
   private double[]              histDist          = new double[BOUNDS.length];
   private double[]              histElePos        = new double[BOUNDS.length];
   private double[]              histEleNeg        = new double[BOUNDS.length];
   private double[]              histTime          = new double[BOUNDS.length];
-  private List<Double>          splitTimes        = new ArrayList<Double>();
-  private List<Double>          splitEle          = new ArrayList<Double>();
-  private List<Double>          splitAccElePos    = new ArrayList<Double>();
-  private List<Double>          splitAccEleNeg    = new ArrayList<Double>();
+  private List<Double>          splitTimes             = new ArrayList<Double>();
+  private List<Double>          splitEle               = new ArrayList<Double>();
+  private List<Double>          splitAccElePos         = new ArrayList<Double>();
+  private List<Double>          splitAccEleNeg         = new ArrayList<Double>();
+  private JSONArray             splitDists             = new JSONArray();
   private double                splitRem;
   private boolean               isGarminTrack     = false;
 
@@ -56,11 +59,14 @@ public class TrackParser {
   private JSONArray             times             = new JSONArray();
   private JSONArray             markers           = new JSONArray();
 
-  private TrackParser(File file, double minRunningSpeed, double interval, double splitM) {
+  private String                lastDistSplitTime = "NA";
+
+  private TrackParser(File file, double minRunningSpeed, double interval, double splitM, double splitT) {
     this.file = file;
     this.minRunningSpeed = (minRunningSpeed * 5.0) / 18.0; // convert to m/s
     this.interval = interval;
     this.splitM = splitM;
+    this.splitT = splitT;
   }
 
   private Node getDirectChild(Node parent, String name) {
@@ -161,6 +167,9 @@ public class TrackParser {
       double eleRunningNeg = 0.0;
       double eleTotalPos = 0.0;
       double eleTotalNeg = 0.0;
+      
+      double timeSplitCurrent = 0.0;
+      double distSplitCurrent = 0.0;
 
       long stt = 0;
       for (int i = 0; i < list.getLength(); ++i) {
@@ -203,9 +212,12 @@ public class TrackParser {
         if (i > 0) {
           double tempDist = TimeUtils.distance(prev[0], lat, prev[1], lon);
           currentDist += tempDist;
+          distSplitCurrent += tempDist;
           currentDistSplits += tempDist;
           double timeDiff = (cal.getTimeInMillis() - lastTime) / 1000.0;
           currentTime += timeDiff;
+          timeTotal += timeDiff;
+          timeSplitCurrent += timeDiff;
           currentTimeSplits += timeDiff;
           currentEle += ele - prev[2];
           currentEleSplits += ele - prev[2];
@@ -213,6 +225,16 @@ public class TrackParser {
             timeRest += timeDiff;
           }
           boolean lastOne = i == list.getLength() - 1;
+          if (timeSplitCurrent >= splitT) {
+            double mult = splitT / timeSplitCurrent;
+            splitDists.put(distSplitCurrent * mult);
+            distSplitCurrent -= distSplitCurrent * mult;
+            timeSplitCurrent -= splitT;
+          }
+          if (lastOne && distSplitCurrent > 0) {
+            splitDists.put(distSplitCurrent);
+            lastDistSplitTime = TimeUtils.formatTime((long) timeSplitCurrent, false);
+          }
           if (currentDist >= interval || lastOne) {
             double speed = currentDist / currentTime;
             hist(speed, currentDist, currentTime, currentEle);
@@ -226,7 +248,6 @@ public class TrackParser {
               }
             }
             distTotal += currentDist;
-            timeTotal += currentTime;
             if (currentEle > 0) {
               eleTotalPos += currentEle;
             } else {
@@ -303,15 +324,15 @@ public class TrackParser {
 
   public static JSONObject parse(File file) throws Exception {
     JSONObject data = new JSONObject();
-    parse(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT, data);
+    parse(file, DEFAULT_MIN_SPEED, DEFAULT_INTERVAL, DEFAULT_SPLIT_DISTANCE, DEFAULT_SPLIT_TIME, data);
     return data;
   }
 
-  private static void parse(File file, double minSpeed, double intR, double splitS, JSONObject data) throws Exception {
+  private static void parse(File file, double minSpeed, double intR, double splitS, double splitT, JSONObject data) throws Exception {
     if (!file.isFile()) {
       throw new IllegalArgumentException("Input file not valid");
     }
-    TrackParser cd = new TrackParser(file, minSpeed, intR, splitS * 1000.0);
+    TrackParser cd = new TrackParser(file, minSpeed, intR, splitS * 1000.0, splitT);
     cd.process(data);
     data.put("lats", cd.lats);
     data.put("lons", cd.lons);
@@ -367,6 +388,8 @@ public class TrackParser {
       arrSplits.put(sp);
     }
     data.put("splits", arrSplits);
+    data.put("distByInterval", cd.splitDists);
+    data.put("lastIntervalTime", cd.lastDistSplitTime);
   }
 
 }
