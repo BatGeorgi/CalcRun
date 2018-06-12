@@ -523,7 +523,21 @@ function initContent(data, skipCache) {
 								'</td><td>' + sp['accumSpeed'] + '</td></tr>';
 							});
 							splitHtml += '</tbody></table></span>';
-							$('#ui' + i).append('<ul><li>' + tableHtml + '</li><li>' + splitHtml + '</li></ul>');
+							
+							distInt = data['distByInterval'];
+							labels = data['distByIntervalLabels'];
+							distIntTable = '<hr><li><h3>Distance intervals</h3><span class="highlight"><table><thead><th>Time</th><th>Distance</th><th>Total</th></thead><tbody>';
+							totalDist = 0;
+							len = distInt.length;
+							$.each(distInt, function (u, ti) {
+								totalDist += ti;
+								if (u == len - 1 && len > 1 && labels[u] == labels[u - 1]) {
+									labels[u] += '+';
+								}
+								distIntTable += '<tr><td><strong>' + labels[u] + '</strong></td><td>' + ti.toFixed(3) + '</td><td>' + totalDist.toFixed(3) + '</td></tr>';
+							});
+							distIntTable += '</tbody></table></span>';
+							$('#ui' + i).append('<ul><li>' + tableHtml + '</li><li>' + splitHtml + '</li><li>' + distIntTable + '</li><ul>');
 						},
 						400: function (xhr) {
 							$('#ui' + i).append('Error retrieving data :(');

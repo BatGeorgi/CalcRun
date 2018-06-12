@@ -68,6 +68,21 @@
                     '</div></td><td><div id="spAS' + i + '">' + sp['accumSpeed'] + '</div></td><td><div id="spAcc' + i + '">' + formatEleDiff(sp['accEle']) + '</div></td></tr>';
             });
             splitHtml += '</tbody></table></span>';
+			
+			distInt = item['distByInterval'];
+			labels = item['distByIntervalLabels'];
+			distIntTable = '<span class="heading-data"><h2>Distance intervals</h2></span><span class="highlight"><table><thead><th>Time</th><th>Distance</th><th>Total</th></thead><tbody>';
+			totalDist = 0;
+			len = distInt.length;
+			$.each(distInt, function (u, ti) {
+				totalDist += ti;
+				if (u == len - 1 && len > 1 && labels[u] == labels[u - 1]) {
+					labels[u] += '+';
+				}
+				distIntTable += '<tr><td><strong>' + labels[u] + '</strong></td><td>' + ti.toFixed(3) + '</td><td>' + totalDist.toFixed(3) + '</td></tr>';
+			});
+			distIntTable += '</tbody></table></span>';
+			
             var origData = item['origData'];
             var isMod = item['isModified'] == 'y';
 			runT = '';
@@ -110,7 +125,7 @@
                 '<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
                 '</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
                 '</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table>');
-            $('#' + divName).append('<hr><span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml);
+            $('#' + divName).append('<hr><span class="heading-data"><h2>Speed distribution</h2></span>' + tableHtml + '<hr>' + splitHtml + '<hr>' + distIntTable);
         }
 
         $(document).ready(function() {

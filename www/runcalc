@@ -19,7 +19,7 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun_110618.js"></script>
+	<script type="text/javascript" src="xrun_120618.js"></script>
 	<script type="text/javascript" src="initDialogs_110618.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
