@@ -43,6 +43,7 @@ public class DBStorage {
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "garminLink", "ccLink", "photosLink",
+      "distByInterval", "distByIntervalLabels",
       "dashboards", "isExt",
       "speedDist", "splits",
       "origData"
@@ -53,6 +54,7 @@ public class DBStorage {
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
       "text", "text", "text",
+      "text", "text",
       "text", "integer",
       "text", "text",
       "text"
@@ -761,7 +763,7 @@ public class DBStorage {
     ResultSet rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
     JSONObject json = null;
     try {
-      while ((json = readActivity(rs, false)) != null) {
+      while ((json = readActivity(rs, true)) != null) {
         result.add(json);
       }
     } catch (Exception ignore) {
@@ -793,6 +795,14 @@ public class DBStorage {
     executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
     removeFeatures(fileName);
     removeCoordsData(fileName);
+  }
+  
+  public synchronized void dropAllActivities() throws SQLException {
+    if (conn == null) {
+      conn = DriverManager.getConnection("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
+    }
+    conn.createStatement().executeUpdate("DROP TABLE IF EXISTS " + RUNS_TABLE_NAME);
+    conn = null;
   }
 
   public synchronized boolean isSecured(String fileName) {

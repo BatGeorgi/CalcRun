@@ -50,6 +50,12 @@ public class RunCalcApplication {
       drive = new GoogleDriveStorage(clientSecret);
     }
   }
+  
+  public RunCalcApplication(File base) { // minimalistic constructor
+    storage = new DBStorage(base);
+    gpxBase = new File(base, "gpx");
+    gpxBase.mkdirs();
+  }
 
   public static void main(String[] args) {
     if (args == null || args.length < 1) {
@@ -569,6 +575,10 @@ public class RunCalcApplication {
       drive.backupDB(storage.getActivitiesDBFile(), "activities");
       drive.backupDB(storage.getCoordsDBFile(), "coords");
     }
+  }
+  
+  public void deleteAllActivities() throws Exception {
+    storage.dropAllActivities();
   }
   
   public String addDashboard(String name) {
