@@ -263,8 +263,10 @@ public class DBStorage {
     return result;
   }
 
-  private static boolean isExternal(String dashboards) {
-    JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dashboards));
+  private static boolean isExternal(JSONArray arr) {
+    if (arr == null) {
+      return false;
+    }
     for (int i = 0; i < arr.length(); ++i) {
       if (Constants.EXTERNAL_DASHBOARD.equals(arr.getString(i))) {
         return true;
@@ -565,7 +567,7 @@ public class DBStorage {
   }
 
   public synchronized void addActivity(JSONObject entry) throws SQLException {
-    boolean isExt = isExternal(entry.getJSONArray("dashboards").toString());
+    boolean isExt = isExternal(entry.optJSONArray("dashboards"));
     entry.put("isExt", isExt ? 1 : 0);
     StringBuffer sb = new StringBuffer();
     sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");

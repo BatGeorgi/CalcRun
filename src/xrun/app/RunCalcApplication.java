@@ -96,8 +96,12 @@ public class RunCalcApplication {
         continue;
       }
       System.out.println("Process file " + targ);
+      JSONArray dashboardsMainArr = new JSONArray();
+      dashboardsMainArr.put(Constants.MAIN_DASHBOARD);
+      String dashboardsMainS = dashboardsMainArr.toString();
       try {
         JSONObject current = TrackParser.parse(targ);
+        current.put("dashboards", dashboardsMainS);
         current.put("type", Constants.RUNNING);
         current.put("ccLink", "none");
         current.put("photosLink", "none");
