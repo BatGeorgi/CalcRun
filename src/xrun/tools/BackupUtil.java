@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import xrun.app.RunCalcApplication;
@@ -45,9 +46,9 @@ public class BackupUtil {
       throw new IllegalArgumentException("Not a folder - " + base);
     }
     backupFile = new File(mainDir, "data.bak");
-    runCalcApplication = new RunCalcApplication(null, mainDir, null);
+    runCalcApplication = new RunCalcApplication(mainDir);
   }
-  
+
   private void backup() throws Exception {
     OutputStream os = null;
     List<JSONObject> activities = runCalcApplication.getAllActivities();
@@ -70,8 +71,10 @@ public class BackupUtil {
       is = new FileInputStream(backupFile);
       ObjectInputStream ois = new ObjectInputStream(is);
       int len = ois.readInt();
+      runCalcApplication.deleteAllActivities();
       for (int i = 0; i < len; ++i) {
         JSONObject json = new JSONObject(JsonSanitizer.sanitize((String) ois.readObject()));
+        // TODO add stubs here(maybe new columns or removed ones)
         runCalcApplication.importActivity(json);
       }
     } finally {
