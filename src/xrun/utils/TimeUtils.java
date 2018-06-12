@@ -132,4 +132,17 @@ public class TimeUtils {
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c * 1000.0; // convert to meters
   }
+  
+  public static String formatNoSeconds(int seconds) {
+    int minutes = seconds / 60;
+    if (minutes < 60) {
+      return minutes + "m";
+    } else {
+      String label = String.valueOf((int) (minutes / 60.0)) + 'h';
+      if (minutes % 60 > 0) {
+        label += (minutes % 60) + "m";
+      }
+      return label;
+    }
+  }
 }
