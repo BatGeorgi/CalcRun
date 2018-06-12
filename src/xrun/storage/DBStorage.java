@@ -630,11 +630,15 @@ public class DBStorage {
     JSONObject activity = new JSONObject();
     int len = KEYS.length;
     for (int i = 0; i < len - 3; ++i) {
-      activity.put(KEYS[i], rs.getObject(i + 1));
+      if (i != len - 6 && i != len - 7) { // bad db architecture :(
+        activity.put(KEYS[i], rs.getObject(i + 1));
+      }
     }
     if (includeSplitsAndDistr) {
       activity.put(KEYS[len - 3], new JSONArray(JsonSanitizer.sanitize(rs.getString(len - 2))));
       activity.put(KEYS[len - 2], new JSONArray(JsonSanitizer.sanitize(rs.getString(len - 1))));
+      activity.put(KEYS[len - 7], new JSONArray(JsonSanitizer.sanitize(rs.getString(len - 6))));
+      activity.put(KEYS[len - 6], new JSONArray(JsonSanitizer.sanitize(rs.getString(len - 5))));
     }
     String origData = rs.getString(len);
     activity.put(KEYS[len - 1],
@@ -1175,7 +1179,7 @@ public class DBStorage {
   public synchronized JSONObject getSplitsAndDist(String activity) {
     JSONObject json = null;
     try {
-      ResultSet rs = executePreparedQuery("SELECT splits, speedDist FROM " + RUNS_TABLE_NAME + " WHERE genby=?",
+      ResultSet rs = executePreparedQuery("SELECT splits, speedDist, distByInterval, distByIntervalLabels FROM " + RUNS_TABLE_NAME + " WHERE genby=?",
           activity);
       if (rs != null && rs.next()) {
         json = new JSONObject();
@@ -1191,6 +1195,8 @@ public class DBStorage {
         }
         json.put("splits", splits);
         json.put("speedDist", new JSONArray(JsonSanitizer.sanitize(rs.getString("speedDist"))));
+        json.put("distByInterval", new JSONArray(JsonSanitizer.sanitize(rs.getString("distByInterval"))));
+        json.put("distByIntervalLabels", new JSONArray(JsonSanitizer.sanitize(rs.getString("distByIntervalLabels"))));
       }
     } catch (SQLException e) {
       System.out.println("Error getting splits " + e);
