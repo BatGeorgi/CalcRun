@@ -121,6 +121,10 @@ public class RunCalcApplication {
     }
   }
   
+  public synchronized List<JSONObject> getAllActivities() {
+    return storage.getAllActivities();
+  }
+  
   public JSONObject retrieveCoords(String activity, boolean percentage) throws SQLException {
     JSONObject coords = storage.getCoordsData(activity);
     if (coords == null) {
@@ -189,6 +193,10 @@ public class RunCalcApplication {
   		}
   	}
   	return file;
+  }
+  
+  public void importActivity(JSONObject json) throws SQLException {
+    storage.addActivity(json);
   }
   
   public String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,

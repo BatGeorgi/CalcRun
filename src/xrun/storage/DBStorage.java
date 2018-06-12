@@ -755,6 +755,20 @@ public class DBStorage {
     }
     return result;
   }
+  
+  public synchronized List<JSONObject> getAllActivities() {
+    List<JSONObject> result = new ArrayList<JSONObject>();
+    ResultSet rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
+    JSONObject json = null;
+    try {
+      while ((json = readActivity(rs, false)) != null) {
+        result.add(json);
+      }
+    } catch (Exception ignore) {
+      // silent catch
+    }
+    return result;
+  }
 
   public synchronized void updateActivity(String fileName, String newName, String newType, String newGarmin,
       String newCC, String newPhotos, boolean secure) throws SQLException {
