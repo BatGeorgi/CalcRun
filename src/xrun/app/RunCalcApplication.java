@@ -358,11 +358,25 @@ public class RunCalcApplication {
     }
     String[] splits = namePattern.split("%7C");
     for (String str : splits) {
+      str = str.trim();
+      if (str.length() > 0 && str.charAt(0) == '!') {
+        if (name.contains(str.substring(1))) {
+          return false;
+        }
+      }
+    }
+    boolean hasPositive = false;
+    for (String str : splits) {
+      str = str.trim();
+      if (str.length() > 0 && str.charAt(0) == '!') {
+        continue;
+      }
+      hasPositive = true;
       if (name.contains(str)) {
         return true;
       }
     }
-    return false;
+    return !hasPositive;
   }
   
   private boolean isFromDashboard(JSONObject activity, String dashboard) {
