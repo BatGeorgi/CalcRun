@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Running Calc Tools</title>
-    <link href="style_250518.css" type="text/css" rel="stylesheet" />
+    <link href="style_150618.css" type="text/css" rel="stylesheet" />
 	<link href="style_cube.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
@@ -189,6 +189,10 @@
             $("#spinnerMax").spinner({
                 min: 0
             });
+			var availableTags = ['Борисова', 'Редута', 'Стадион', 'Витоша', 'Кладница', 'Черни', 'Връх', 'Железница', 'Симеоново'];
+			$( "#searchName" ).autocomplete({
+				source: availableTags
+			});
 			$('#hideFilters').click(function() {
 				if ($('#filters').css('display') == 'none') {
 					$(this).text("Hide Filters");
@@ -357,7 +361,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 4</strong></H1>
+        <H1><strong>Running Calc Tools 4.0.1</strong></H1>
 		<hr>
     </div>
 	
@@ -392,7 +396,7 @@
         </fieldset>
         <p>
             <fieldset>
-                <legend class="legend-cap">Activity name</legend>
+                <legend class="legend-cap">Filter</legend>
                 <input type="text" name="searchName" id="searchName" />
             </fieldset>
             <p>
