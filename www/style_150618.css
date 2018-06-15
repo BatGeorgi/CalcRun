@@ -439,3 +439,9 @@ tr.border_bottom td {
 .defPreset::after {
   content: "(default)";
 }
+#searchName {
+	width: 60%;
+	height: 20px;
+	font-weight: bold;
+	font-size: 20px;
+}
