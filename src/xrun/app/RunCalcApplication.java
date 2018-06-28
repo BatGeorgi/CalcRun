@@ -285,12 +285,21 @@ public class RunCalcApplication {
     int count = 0;
     while(it.hasNext()) {
       JSONObject cr = it.next();
+      boolean remTotals = true;
+      if (cr.getString("parent").length() > 0) {
+        removeFromTotals(totals, cr);
+        remTotals = false;
+      }
       if (!matchName(nameFilter, cr.getString("name")) || !isFromDashboard(cr, dashboard)) {
         it.remove();
-        removeFromTotals(totals, cr);
+        if (remTotals) {
+          removeFromTotals(totals, cr);
+        }
       } else if (!isLoggedIn && cr.optBoolean("secured")) {
         it.remove();
-        removeFromTotals(totals, cr);
+        if (remTotals) {
+          removeFromTotals(totals, cr);
+        }
       } else {
       	++count;
       }

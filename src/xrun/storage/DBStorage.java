@@ -43,6 +43,7 @@ public class DBStorage {
       "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
       "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
       "garminLink", "ccLink", "photosLink",
+      "parent",
       "distByInterval", "distByIntervalLabels",
       "dashboards", "isExt",
       "speedDist", "splits",
@@ -54,6 +55,7 @@ public class DBStorage {
       "text", "real", "text", "text", "real",
       "integer", "integer", "integer", "integer",
       "text", "text", "text",
+      "text",
       "text", "text",
       "text", "integer",
       "text", "text",
@@ -172,7 +174,7 @@ public class DBStorage {
       int currentYear = current.get(Calendar.YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
         rs = executePreparedQuery(
-            "SELECT timeRawMs, type, distRaw, eleTotalPos, isExt FROM " + RUNS_TABLE_NAME + " WHERE year=?",
+            "SELECT timeRawMs, type, distRaw, eleTotalPos, isExt, parent FROM " + RUNS_TABLE_NAME + " WHERE year=?",
             years.get(i));
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek = 100;
@@ -202,7 +204,7 @@ public class DBStorage {
         }
         JSONArray wArr = new JSONArray();
         while (rs.next()) {
-          if (rs.getInt("isExt") == 1) {
+          if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
             continue;
           }
           Calendar cal = new GregorianCalendar();
@@ -312,14 +314,14 @@ public class DBStorage {
         for (int j = 0; j < filters.length; ++j) {
           String typeFilter = (filters[j] != null ? ("(" + filters[j] + ") AND ") : "");
           rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
-              "year=" + years.get(i) + " AND isExt=0 GROUP BY month", true);
+              "year=" + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
           while (rs.next()) {
             months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
             months[rs.getInt(1)].remove("emp");
           }
           rs = executeQuery("SELECT month, COUNT(genby) FROM "
               + RUNS_TABLE_NAME + " WHERE " + typeFilter + " year="
-              + years.get(i) + " AND isExt=0 GROUP BY month", true);
+              + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
           while (rs.next()) {
             months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
             months[rs.getInt(1)].put("totalPositiveEl", 0);
@@ -327,7 +329,7 @@ public class DBStorage {
           }
         }
         rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
-            years.get(i) + " AND isExt=0 GROUP BY month", true);
+            years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
         while (rs.next()) {
           int totalPositiveEl = rs.getInt(2);
           if (totalPositiveEl > 0) {
@@ -569,7 +571,17 @@ public class DBStorage {
   }
 
   public synchronized void addActivity(JSONObject entry) throws SQLException {
-    boolean isExt = isExternal(entry.optJSONArray("dashboards"));
+    if (!entry.has("parent")) {
+      entry.put("parent", "");
+    }
+    JSONArray dashboards = null;
+    String dashStr = entry.optString("dashboards");
+    if (dashStr != null) {
+      dashboards = new JSONArray(JsonSanitizer.sanitize(dashStr));
+    } else {
+      dashboards = entry.optJSONArray("dashboards");
+    }
+    boolean isExt = isExternal(dashboards);
     entry.put("isExt", isExt ? 1 : 0);
     StringBuffer sb = new StringBuffer();
     sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
@@ -882,13 +894,13 @@ public class DBStorage {
 
   public synchronized JSONObject getBestActivities(double distMin, double distMax) {
     try {
-      ResultSet rs = executeQuery("SELECT genby, date, timeTotal, isExt FROM " + RUNS_TABLE_NAME +
+      ResultSet rs = executeQuery("SELECT genby, date, timeTotal, isExt, parent FROM " + RUNS_TABLE_NAME +
           " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw", true);
       if (rs == null) {
         return null;
       }
       while (rs.next()) {
-        if (rs.getInt("isExt") == 1) {
+        if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
           continue;
         }
         JSONObject result = new JSONObject();
@@ -906,11 +918,11 @@ public class DBStorage {
 
   public synchronized JSONArray getActivitySplits() {
     JSONArray result = new JSONArray();
-    ResultSet rs = executeQuery("SELECT name, date, splits, genby, isExt FROM " + RUNS_TABLE_NAME +
+    ResultSet rs = executeQuery("SELECT name, date, splits, genby, isExt, parent FROM " + RUNS_TABLE_NAME +
         " WHERE (type='Running' OR type='Trail')", true);
     try {
       while (rs.next()) {
-        if (rs.getInt("isExt") == 1) {
+        if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
           continue;
         }
         JSONObject crnt = new JSONObject();
