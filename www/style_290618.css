@@ -445,3 +445,10 @@ tr.border_bottom td {
 	font-weight: bold;
 	font-size: 20px;
 }
+.segment::before {
+	content: "[segment] ";
+	color: green;
+}
+.segmentRow {
+	font-family: "Bookman"
+}

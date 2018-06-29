@@ -480,11 +480,14 @@ function initContent(data, skipCache) {
 	}
 	$.each(all, function (i, item) {
 		var isMod = item['isModified'] == 'y';
+		var isSeg = item['parent'].length > 0;
 		dateStr = item['date'];
 		if (compactDate) {
 			dateStr = item['day'] + '.' + (item['month'] + 1) + '.' + (item['year'] - 2000);
 		}
-		runsHtml += '<tr><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div title="View details" class="runitem" id="item' + i + '">' + (isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
+		segClass = (isSeg ? ' class="segmentRow"': '');
+		runsHtml += '<tr' + segClass + '><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div title="View details" class="runitem' + (isSeg ? ' segment' : '') + '" id="item' + i + '">' +
+			(isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
 			'</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
 			item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + (isAllTrail ? item['distRunning'] : item['avgSpeed']) + '</td>' +
 			'<td>' + (compactElev ? ('<span class="green">' + item['eleTotalPos'] + '</span>') : formatEle(item['eleTotalPos'], item['eleTotalNeg'])) + '</td>' +
@@ -583,7 +586,11 @@ function initContent(data, skipCache) {
 			}
 			linksHtml += '<hr>';
 		}
-		$('#data' + i).append(extLinks + '<hr>' + dashboardTags + descrHtml + linksHtml + '<ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
+		parentSeg = '';
+		if (isSeg) {
+			parentSeg = '<input class="hovs hovsMain par" title="Full activity" type="button" value="Open full activity" onclick="window.open(\'' + item['parent'] + '\', \'_blank\');return false;" /><hr>';
+		}
+		$('#data' + i).append(extLinks + '<hr>' + parentSeg + dashboardTags + descrHtml + linksHtml + '<ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
 			item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
 			'</td></tr><tr><td>Elevation gain</td><td>' +
 			'<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
@@ -594,6 +601,7 @@ function initContent(data, skipCache) {
 			'<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
 			'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table></ul>');
+		$('.par').button();
 	});
 	var happc = '<div id="typesWrap"><div id="typesDistr" title="View results distribution">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div></div>';
 	$('#ht').append(happc);
