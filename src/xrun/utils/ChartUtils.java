@@ -66,6 +66,9 @@ public class ChartUtils {
     Map<Integer, Double> yearDist = new TreeMap<Integer, Double>();
     for (int i = 0; i < activities.length(); ++i) {
       JSONObject activity = activities.getJSONObject(i);
+      if (activity.getString("parent").length() > 0) {
+        continue;
+      }
       double currentDist = activity.getDouble("distRaw");
       fillInType(typesCnt, typesDist, activity.getString("type"), currentDist);
       fillInDist(distCnt, distDist, currentDist);

@@ -553,14 +553,14 @@ public class RunCalcApplication {
 					activity.put("ccLink", newCC.length() > 0 ? newCC : "none");
 					activity.put("photosLink", newPhotos.length() > 0 ? newPhotos
 							: "none");
-					storage.deleteActivity(fileName);
+					storage.deleteActivity(fileName, false);
 					storage.addActivity(activity);
 				} else {
 					storage.updateActivity(fileName, newName, newType, newGarmin, newCC,
 							newPhotos, secure);
 				}
 			} else if (revertActivityChanges(activity)) {
-				storage.deleteActivity(fileName);
+				storage.deleteActivity(fileName, false);
 				storage.addActivity(activity);
 			}
 		} catch (Exception e) {
@@ -593,7 +593,7 @@ public class RunCalcApplication {
     if (file.isFile() && !file.delete()) {
       file.deleteOnExit();
     }
-    storage.deleteActivity(fileName);
+    storage.deleteActivity(fileName, true);
     if (drive != null) {
       drive.backupDB(storage.getActivitiesDBFile(), "activities");
       drive.backupDB(storage.getCoordsDBFile(), "coords");

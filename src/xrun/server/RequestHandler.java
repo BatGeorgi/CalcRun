@@ -907,6 +907,9 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     JSONObject data = null;
     try {
       data = rcApp.retrieveCoords(name, "true".equals(baseRequest.getHeader("perc")));
+      if (data == null) {
+        throw new IllegalArgumentException("No data");
+      }
     } catch (Exception e) {
       response.setStatus(HttpServletResponse.SC_NO_CONTENT);
       baseRequest.setHandled(true);

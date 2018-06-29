@@ -806,11 +806,13 @@ public class DBStorage {
     setSecureFlag(fileName, secure);
   }
 
-  public synchronized void deleteActivity(String fileName) throws SQLException {
+  public synchronized void deleteActivity(String fileName, boolean deleteFeatsAndCoords) throws SQLException {
     executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
     executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
-    removeFeatures(fileName);
-    removeCoordsData(fileName);
+    if (deleteFeatsAndCoords) {
+      removeFeatures(fileName);
+      removeCoordsData(fileName);
+    }
   }
   
   public synchronized void dropAllActivities() throws SQLException {
