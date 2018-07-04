@@ -309,13 +309,18 @@ public class RunCalcApplication {
       totals.put("totalTime", TimeUtils.formatTime(totals.getLong("totalTime"), true, true));
       totals.put("avgDist", String.format("%.3f", totals.getDouble("totalDistance") / (double) count));
     }
+    int segmentCount = 0;
     for (int i = 1; i < matched.size(); ++i) {
       JSONObject jobj = matched.get(i);
+      if (jobj.getString("parent").length() > 0) {
+        ++segmentCount;
+      }
       activities.put(jobj);
       if (!Constants.TRAIL.equals(jobj.getString("type"))) {
         isAllTrail = false;
       }
     }
+    result.put("segmentCount", segmentCount);
     result.put("isAllTrail", isAllTrail);
     result.put("activities", activities);
     result.put("charts", ChartUtils.getResultCharts(activities));
