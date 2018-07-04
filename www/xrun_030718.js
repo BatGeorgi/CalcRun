@@ -603,7 +603,13 @@ function initContent(data, skipCache) {
 			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table></ul>');
 		$('.par').button();
 	});
-	var happc = '<div id="typesWrap"><div id="typesDistr" title="View results distribution">' + all.length + (all.length != 1 ? ' results' : ' result') + '</div></div>';
+	segmentCount = data['segmentCount'];
+	activityCount = all.length - segmentCount;
+	resultStr = activityCount + ' ' + (activityCount != 1 ? 'activities' : 'activity');
+	if (segmentCount > 0) {
+		resultStr += ' ' + segmentCount + ' ' + (segmentCount > 1 ? 'segments' : 'segment');
+	}
+	var happc = '<div id="typesWrap"><div id="typesDistr" title="View results distribution">' + resultStr + '</div></div>';
 	$('#ht').append(happc);
 	charts = data['charts'];
 	$('#typesDistr').click(function () {
