@@ -894,14 +894,13 @@ public class DBStorage {
     return null;
   }
 
-  public synchronized JSONObject getBestActivities(double distMin, double distMax) {
+  public synchronized JSONObject getBestActivities(double distMin, double distMax, double distActual) {
+    JSONObject best = null;
     try {
-      ResultSet rs = executeQuery("SELECT genby, date, timeTotal, isExt, parent FROM " + RUNS_TABLE_NAME +
-          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + ") ORDER BY timeTotalRaw", true);
-      if (rs == null) {
-        return null;
-      }
-      while (rs.next()) {
+      ResultSet rs = executeQuery("SELECT genby, date, timeTotal, timeTotalRaw, isExt, parent FROM " + RUNS_TABLE_NAME +
+          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + " AND type!='" + Constants.OTHER + "') ORDER BY timeTotalRaw", true);
+      double bestTime = Double.MAX_VALUE;
+      while (rs != null && rs.next()) {
         if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
           continue;
         }
@@ -909,13 +908,43 @@ public class DBStorage {
         result.put("date", rs.getString("date"));
         result.put("genby", rs.getString("genby"));
         result.put("timeTotal", rs.getString("timeTotal"));
-        return result;
+        best = result;
+        bestTime = rs.getDouble("timeTotalRaw");
+        break;
+      }
+      rs = executeQuery("SELECT genby, date, splits, isExt, parent FROM " + RUNS_TABLE_NAME +
+          " WHERE (distRaw >= " + distActual + " AND type!='" + Constants.OTHER + "')", true);
+      int distFloor = (int) distActual;
+      while (rs != null && rs.next()) {
+        if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
+          continue;
+        }
+        if (best != null && best.getString("genby").equals(rs.getString("genby"))) {
+          continue;
+        }
+        JSONArray splits = new JSONArray(JsonSanitizer.sanitize(rs.getString("splits")));
+        for (int i = Math.max(distFloor - 2, 0); i < Math.min(splits.length(), distFloor + 2); ++i) {
+          JSONObject split = splits.getJSONObject(i);
+          double dist = split.getDouble("totalRaw");
+          if (dist >= distFloor) {
+            double timeTotalEst = split.getDouble("timeTotalRaw") * (distActual / dist);
+            if (timeTotalEst < bestTime) {
+              bestTime = timeTotalEst;
+              JSONObject result = new JSONObject();
+              result.put("date", rs.getString("date"));
+              result.put("genby", rs.getString("genby"));
+              result.put("timeTotal", "Estimated effort " + TimeUtils.formatTime((long) timeTotalEst));
+              best = result;
+            }
+            break;
+          }
+        }
       }
     } catch (Exception e) {
       System.out.println("Error reading activities");
       e.printStackTrace();
     }
-    return null;
+    return best;
   }
 
   public synchronized JSONArray getActivitySplits() {
