@@ -468,8 +468,8 @@ public class RunCalcApplication {
     return result;
   }
   
-  private JSONObject getBest(double distMin, double distMax) {
-    JSONObject best = storage.getBestActivities(distMin, distMax);
+  private JSONObject getBest(double distMin, double distMax, double distActual) {
+    JSONObject best = storage.getBestActivities(distMin, distMax, distActual);
     if (best == null) {
       return new JSONObject();
     }
@@ -490,13 +490,13 @@ public class RunCalcApplication {
     result.put("fastest", getBest("avgSpeedRaw", "km/h"));
     result.put("maxAsc", getBest("eleTotalPos", "m"));
     result.put("maxRun", getBest("distRunningRaw", "km"));
-    result.put("1K", getBest(0.99, 1.1));
-    result.put("2K5", getBest(2.47, 2.55));
-    result.put("5K", getBest(4.95, 5.2));
-    result.put("10K", getBest(9.88, 10.3));
-    result.put("21K", getBest(20.64, 21.8));
-    result.put("30K", getBest(29.4, 31));
-    result.put("42K", getBest(42, 43.5));
+    result.put("1K", getBest(0.99, 1.1, 1.0));
+    result.put("2K5", getBest(2.47, 2.55, 2.5));
+    result.put("5K", getBest(4.95, 5.2, 5.0));
+    result.put("10K", getBest(9.88, 10.3, 10.0));
+    result.put("21K", getBest(20.95, 21.8, 21.1));
+    result.put("30K", getBest(29.4, 31, 30.0));
+    result.put("42K", getBest(42, 43.5, 42.195));
     return result;
   }
   
