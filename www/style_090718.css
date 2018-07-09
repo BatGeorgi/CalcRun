@@ -8,7 +8,10 @@
 	color: #1c9e45;
 }
 body {
-	background-image: url("Rain.png");
+	background-image: url("pattern_01.gif");
+	background-repeat: round;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 h2 {
     display: block;
@@ -412,7 +415,7 @@ tr.border_bottom td {
     100% { transform: rotate(360deg); }
 }
 #typesDistr {
-	color:#1c9e45;
+	color: #1c9e45;
 	text-decoration: underline;
 	margin: auto;
 	width: 25%;

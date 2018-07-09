@@ -35,7 +35,8 @@
 	font-size: 120%
 }
 body {
-	background-image: url("Rain.png");
+	background-image: url("pattern_01.gif");
+	background-repeat: round;
 }
 h2 {
     display: block;
