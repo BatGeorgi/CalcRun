@@ -607,7 +607,7 @@ function initContent(data, skipCache) {
 	activityCount = all.length - segmentCount;
 	resultStr = activityCount + ' ' + (activityCount != 1 ? 'activities' : 'activity');
 	if (segmentCount > 0) {
-		resultStr += ' ' + segmentCount + ' ' + (segmentCount > 1 ? 'segments' : 'segment');
+		resultStr += ', ' + segmentCount + ' ' + (segmentCount > 1 ? 'segments' : 'segment');
 	}
 	var happc = '<div id="typesWrap"><div id="typesDistr" title="View results distribution">' + resultStr + '</div></div>';
 	$('#ht').append(happc);
