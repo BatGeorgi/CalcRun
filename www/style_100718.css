@@ -168,11 +168,11 @@ tr.border_bottom td {
 	text-align: center;
 }
 #titleBest {
-	color:#2a6cd6;
+	color:#7095d1;
 	text-shadow: 1px 1px black;
 }
 #titleTotals {
-	color:#2a6cd6;
+	color:#7095d1;
 	text-shadow: 1px 1px black;
 }
 #ht {
@@ -182,6 +182,9 @@ tr.border_bottom td {
 .pagerOpt {
 	color:grey;
 	font-size: 1.5em;
+}
+.pagerOpt a:not(.current){
+	color:#7095d1;
 }
 .current {
     color: red;
@@ -359,6 +362,15 @@ tr.border_bottom td {
 #aboutButton:hover {
 	cursor: pointer;
 	transform: scale(1.3);
+}
+#createDashboardButton {
+	background-color: Transparent;
+}
+#removeDashboardButton {
+	background-color: Transparent;
+	border: none;
+	overflow: hidden;
+    outline:none;
 }
 #createDashboardButton:hover {
 	cursor: pointer;

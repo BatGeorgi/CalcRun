@@ -94,3 +94,12 @@ th {
 	font-weight:bold;
 	font-size: 140%;
 }
+.quote {
+	color: red;
+}
+.quote:hover {
+	color: red;
+}
+.quote:visited {
+	color: red;
+}
