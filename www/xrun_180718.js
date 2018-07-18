@@ -289,9 +289,6 @@ function triggerPreset(item, getWMT) {
     } else {
         $('#spinnerMax').val('');
     }
-    fetchAfterDashClick = false;
-    $('li[name="' + decodeURIComponent(item['dashboard']) + '"]').click();
-    fetchAfterDashClick = true;
     $('#runs').hide();
     $('#ht').html('<div class="sk-cube-grid"><div class="sk-cube sk-cube1"></div><div class="sk-cube sk-cube2"></div><div class="sk-cube sk-cube3"></div><div class="sk-cube sk-cube4"></div><div class="sk-cube sk-cube5"></div><div class="sk-cube sk-cube6"></div><div class="sk-cube sk-cube7"></div><div class="sk-cube sk-cube8"></div><div class="sk-cube sk-cube9"></div></div>');
     $('#runs').trigger('pagerUpdate', 1);
@@ -1237,17 +1234,7 @@ function initDashboards(fetchAfterInit, async) {
 						$('a').removeClass('current');
 						$('#defPage').addClass('current');
 						if (fetchAfterDashClick) {
-							$('#checkbox-1').prop('checked', true).change();
-							$('#checkbox-2').prop('checked', true).change();
-							$('#checkbox-3').prop('checked', true).change();
-							$('#checkbox-4').prop('checked', true).change();
-							$('#checkbox-5').prop('checked', false).change();
-							$('#checkbox-6').prop('checked', false).change();
-							$('#radio-6').prop('checked', true).change();
-							$('#spinnerMin').val('');
-							$('#spinnerMax').val('');
-							$('#searchName').val('');
-							fetch(false);
+							$(".presetButton").first().click();
 						}
 					});
 				});
