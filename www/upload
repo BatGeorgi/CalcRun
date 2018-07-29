@@ -19,6 +19,21 @@
 	<script>
 	
 		$(document).ready(function() {
+			var parent = '';
+			query = window.location.search;
+			if (query.startsWith('?')) {
+				query = query.substring(1);
+			}
+			vars = query.split("&");
+			for (var i = 0; i < vars.length; i++) {
+				pair = vars[i].split("=");
+				key = decodeURIComponent(pair[0]);
+				value = decodeURIComponent(pair[1]);
+				if ('segment' == key) {
+					parent = value;
+					break;
+				}
+			}
 			$.ajax({
                 url: 'getDash',
                 method: 'POST',
@@ -42,6 +57,9 @@
 							var sep = "#$^";
 							suff = "." + encodeURIComponent($('#name').val()) +  sep + $('#type').find(':selected').val() + sep + encodeURIComponent($('#relivecc').val()) +
 							sep + encodeURIComponent($('#photos').val()) + sep + $('#select option:selected').val() + sep + ($('#secured:checked').length > 0 ? 't' : 'f');
+							if (parent.length > 0) {
+								suff += sep + parent;
+							}
 							initVal = $('#upload').attr('action');
 							$('#upload').attr('action', encodeURIComponent(initVal + suff));
 						});

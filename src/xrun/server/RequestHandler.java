@@ -181,7 +181,8 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
   }
 
   private String handleFileUpload(Request baseRequest, HttpServletRequest request, HttpServletResponse response,
-      String activityName, String activityType, String reliveCC, String photos, String dashboard, boolean secure) {
+      String activityName, String activityType, String reliveCC, String photos,
+      String dashboard, boolean secure, String parent) {
     if (activityName != null && activityName.length() == 0) {
       activityName = null;
     }
@@ -192,7 +193,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
         FileItemStream item = iter.next();
         if (!item.isFormField()) {
           return rcApp.addActivity(item.getName(), item.openStream(), activityName, activityType, reliveCC, photos,
-              dashboard, secure);
+              dashboard, secure, parent);
         }
       }
     } catch (Exception e) {
@@ -208,6 +209,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     String reliveCC = null;
     String photos = null;
     String dashboard = null;
+    String parent = null;
     int ind = target.indexOf('.');
     target = target.substring(ind + 1);
     ind = target.indexOf(SEP);
@@ -228,7 +230,16 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     to = target.indexOf(SEP, ind + SEP.length());
     dashboard = target.substring(ind + SEP.length(), to);
     ind = to;
-    boolean secure = "t".equals(target.substring(ind + SEP.length()));
+    
+    to = target.indexOf(SEP, ind + SEP.length());
+    String sec = to != -1 ? target.substring(ind + SEP.length(), to) : target.substring(ind + SEP.length());
+    boolean secure = "t".equals(sec);
+    ind = to;
+    
+    if (ind != -1) {
+    	parent = target.substring(ind + SEP.length());
+    }
+
     if (type.length() == 0) {
       type = Constants.RUNNING;
     }
@@ -244,7 +255,7 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
       response.setContentType("text/html");
       if (isLoggedIn(baseRequest)) {
         String result = handleFileUpload(baseRequest, request, response, name, type, reliveCC, photos, dashboard,
-            secure);
+            secure, parent);
         if (result == null) { // all normal
           pw.println("<h2>Upload finished!</h2>");
           pw.println("<a href=\"runcalc\"><h2>Go to main page</h2></a>");

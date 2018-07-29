@@ -206,7 +206,7 @@ public class RunCalcApplication {
   }
   
   public String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,
-      String dashboard, boolean secure) {
+      String dashboard, boolean secure, String parent) {
   	File file = null;
   	try {
   	  file = addActivity0(name, is);
@@ -224,6 +224,9 @@ public class RunCalcApplication {
       current.put("type", activityType);
       current.put("ccLink", reliveCC);
       current.put("photosLink", photos);
+      if (parent != null && parent.length() > 0) {
+    	  current.put("parent", parent);
+      }
       if (!storage.dashboardExists(dashboard)) {
         dashboard = Constants.MAIN_DASHBOARD;
       }

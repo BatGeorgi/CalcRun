@@ -586,6 +586,8 @@ function initContent(data, skipCache) {
 		parentSeg = '';
 		if (isSeg) {
 			parentSeg = '<input class="hovs hovsMain par" title="Full activity" type="button" value="Open full activity" onclick="window.open(\'' + item['parent'] + '\', \'_blank\');return false;" /><hr>';
+		} else {
+			parentSeg = '<input class="hovs hovsMain par" title="Add segment" type="button" value="Add segment" onclick="window.location.href=' + "'upload?segment=" + item['genby'] + "'" + ';return false;" /><hr>';
 		}
 		$('#data' + i).append(extLinks + '<hr>' + parentSeg + dashboardTags + descrHtml + linksHtml + '<ul><li></li>' + '<table><tbody><tr><td>Date</td><td>' + item['startAt'] + '</td></tr><tr><td>Distance</td><td>' +
 			item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
@@ -613,7 +615,7 @@ function initContent(data, skipCache) {
 		$('#typesDialog').html('<strong>Count by</strong><p><fieldset><input type="radio" name="selectChart" value="byType" checked="">Type' +
 			'<input type="radio" name="selectChart" value="byDist">Distance' +
 			'<input type="radio" name="selectChart" value="bySpeed">Speed' +
-			'<input type="radio" name="selectChart" value="byEle">Denivelation+' +
+			'<input type="radio" name="selectChart" value="byEle">Elevation' +
 			'<input type="radio" name="selectChart" value="byRun">Running distance' +
 			'<input type="radio" name="selectChart" value="byDuration">Duration' +
 			'<input type="radio" name="selectChart" value="byMonth">Month' +
@@ -1074,7 +1076,7 @@ function genRadioM(type, name, checked) {
 function initMonthlyTotals(data) {
 	$('#mTotals').dialog('option', 'title', 'Total distance by month');
 	radioHtml = '<strong>Choose type</strong><p><fieldset>' + genRadioM('RT', 'Run&Trail', true) + genRadioM('R', 'Run') + genRadioM('T', 'Trail') + genRadioM('U', 'Uphill') +
-		genRadioM('H', 'Hike') + genRadioM('D', 'Denivelation+') + genRadioM('A', 'All') + '</fieldset>';
+		genRadioM('H', 'Hike') + genRadioM('D', 'Elevation') + genRadioM('A', 'All') + '</fieldset>';
 	containerHtml = '';
 	$.each(data, function (i, item) {
 		containerHtml += genContainerHTML(item['year']);
@@ -1136,7 +1138,7 @@ var currentYearInd = 0;
 function initWeeklyTotals(data) {
 	$('#wTotals').dialog('option', 'title', 'Total distance by week');
 	radioHtml = '<strong>Choose type</strong><p><fieldset>' + genRadioT('rt', 'Run&Trail', true) + genRadioT('r', 'Run') + genRadioT('t', 'Trail') + genRadioT('u', 'Uphill') +
-		genRadioT('h', 'Hike') + genRadioT('d', 'Denivelation+') + genRadioT('a', 'All') + '</fieldset>';
+		genRadioT('h', 'Hike') + genRadioT('d', 'Elevation') + genRadioT('a', 'All') + '</fieldset>';
 	menuHtml = '<strong>Choose year</strong>';
 	yearSelectHtml = '<fieldset>';
 	containerHtml = '';
@@ -1283,6 +1285,6 @@ function checkWidth() {
 		$('#runs').css({
 			'width': '95%'
 		});
-		$('#runs tr:eq(0) th:eq(8)').html("Elev+&nbsp;&nbsp;");
+		$('#runs tr:eq(0) th:eq(8)').html("Elev&nbsp;&nbsp;");
 	}
 }
