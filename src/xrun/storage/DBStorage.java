@@ -168,7 +168,6 @@ public class DBStorage {
       while (rs.next()) {
         years.add(rs.getInt(1));
       }
-      rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
       Collections.sort(years);
       Calendar current = new GregorianCalendar(TimeZone.getDefault());
       int currentYear = current.get(Calendar.YEAR);
@@ -177,7 +176,7 @@ public class DBStorage {
             "SELECT timeRawMs, type, distRaw, eleTotalPos, isExt, parent FROM " + RUNS_TABLE_NAME + " WHERE year=?",
             years.get(i));
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
-        int maxWeek = 100;
+        int maxWeek;
         if (years.get(i) == currentYear) {
           maxWeek = CalendarUtils.identifyWeek(current.get(Calendar.DAY_OF_MONTH), current.get(Calendar.MONTH) + 1,
               current.get(Calendar.YEAR), new String[1])[0];
