@@ -1185,6 +1185,19 @@ function initWeeklyTotals(data) {
 var dashCount = 0;
 var fetchAfterDashClick = true;
 
+function applyIncludeAllFilter() {
+	$('#checkbox-1').prop('checked', true).change();
+	$('#checkbox-2').prop('checked', true).change();
+	$('#checkbox-3').prop('checked', true).change();
+	$('#checkbox-4').prop('checked', true).change();
+	$('#checkbox-5').prop('checked', true).change();
+	$('#checkbox-6').prop('checked', false).change();
+	$('#radio-6').prop('checked', true).change();
+	$('#spinnerMin').val('');
+	$('#spinnerMax').val('');
+	$('#searchName').val('');
+}
+
 function initDashboards(fetchAfterInit, async) {
 	$.ajax({
 		url: 'getDash',
@@ -1236,7 +1249,12 @@ function initDashboards(fetchAfterInit, async) {
 						$('a').removeClass('current');
 						$('#defPage').addClass('current');
 						if (fetchAfterDashClick) {
-							$(".presetButton").first().click();
+							if (item == 'Main') {
+								$(".presetButton").first().click();
+							} else {
+								applyIncludeAllFilter();
+								fetch(false);
+							}
 						}
 					});
 				});
