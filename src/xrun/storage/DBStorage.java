@@ -25,10 +25,13 @@ import org.json.JSONObject;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 
 import xrun.utils.TimeUtils;
 import xrun.common.Constants;
+import xrun.items.Activity;
 import xrun.items.ActivityCoords;
 import xrun.items.Features;
 import xrun.utils.CalendarUtils;
@@ -86,6 +89,7 @@ public class DBStorage {
   private Connection            conn                              = null;
 
   private ConnectionSource            connectionActivities              = null;
+  private Dao<Activity, String>       runsDao                           = null;
   private Dao<Features, String>       featuresDao                       = null;
   private ConnectionSource            connectionCoords                  = null;
   private Dao<ActivityCoords, String> coordsDao                         = null;
@@ -345,7 +349,6 @@ public class DBStorage {
     }
     conn = DriverManager.getConnection("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
     connectionActivities = new JdbcConnectionSource("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
-    featuresDao = DaoManager.createDao(connectionActivities, Features.class);
     createTablesIfNotExists();
   }
 
@@ -381,7 +384,9 @@ public class DBStorage {
     }
   }
 
-  private void createTablesIfNotExists() {
+  private void createTablesIfNotExists() throws SQLException {
+    runsDao = DaoManager.createDao(connectionActivities, Activity.class);
+    featuresDao = DaoManager.createDao(connectionActivities, Features.class);
     executeCreate(createStatementRunsTable);
     executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
     executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
@@ -661,7 +666,34 @@ public class DBStorage {
 
   public synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike,
       boolean walk, boolean other,
-      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) {
+      Calendar startDate, Calendar endDate, int minDistance, int maxDistance) throws SQLException {
+    Where<Activity, String> typesFilter = runsDao.queryBuilder().where();
+    Where<Activity, String> distFilter = runsDao.queryBuilder().where();
+    QueryBuilder<Activity, String> builder = runsDao.queryBuilder();
+    
+    distFilter.and(distFilter.ge("distRaw", minDistance), distFilter.le("distRaw", maxDistance));
+    /*if (run || trail || uphill || hike || walk || other) {
+      if (run) {
+        typesFilter.or().eq("type", Constants.RUNNING);
+      }
+      if (trail) {
+        typesFilter.or().eq("type", Constants.TRAIL);
+      }
+      if (uphill) {
+        typesFilter.or().eq("type", Constants.UPHILL);
+      }
+      if (hike) {
+        typesFilter.or().eq("type", Constants.HIKING);
+      }
+      if (walk) {
+        typesFilter.or().eq("type", Constants.WALKING);
+      }
+      if (other) {
+        typesFilter.or().eq("type", Constants.OTHER);
+      }
+    }*/
+    builder.setWhere(distFilter);
+    System.out.println(builder.query().size());
     List<JSONObject> result = new ArrayList<JSONObject>();
     StringBuffer selectClause = new StringBuffer();
     StringBuffer whereClause = new StringBuffer();
