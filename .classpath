@@ -19,5 +19,7 @@
 	<classpathentry kind="lib" path="drive_deps/javax.servlet-api-3.1.0.jar"/>
 	<classpathentry kind="lib" path="drive_deps/jetty-6.1.26.jar"/>
 	<classpathentry kind="lib" path="drive_deps/jetty-util-6.1.26.jar"/>
+	<classpathentry kind="lib" path="ormlite-core-5.1.jar"/>
+	<classpathentry kind="lib" path="ormlite-jdbc-5.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

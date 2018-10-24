@@ -1,6 +1,7 @@
 package xrun.storage;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,8 +22,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.support.ConnectionSource;
+
 import xrun.utils.TimeUtils;
 import xrun.common.Constants;
+import xrun.items.ActivityCoords;
+import xrun.items.Features;
 import xrun.utils.CalendarUtils;
 import xrun.utils.JsonSanitizer;
 import xrun.utils.CommonUtils;
@@ -33,8 +41,6 @@ public class DBStorage {
   private static final String   COOKIES_TABLE_NAME                = "cookies";
   private static final String   DASHBOARDS_TABLE_NAME             = "dashboards";
   private static final String   PRESETS_TABLE_NAME                = "presets";
-  private static final String   COORDS_TABLE_NAME                 = "coords";
-  private static final String   FEATURES_TABLE_NAME               = "features";
   private static final String   SECURED_TABLE_NAME                = "secured";
 
   private static final String[] KEYS                              = new String[] {
@@ -71,9 +77,6 @@ public class DBStorage {
   private static final String   CREATE_STATEMENT_PRESETS_TABLE    = "CREATE TABLE IF NOT EXISTS " + PRESETS_TABLE_NAME +
       "(name text NOT NULL, types text NOT NULL, pattern text NOT NULL, startDate text NOT NULL, endDate text NOT NULL, "
       + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL, dashboard text NOT NULL)";
-  private static final String   CREATE_STATEMENT_FEATURES_TABLE   = "CREATE TABLE IF NOT EXISTS " + FEATURES_TABLE_NAME
-      +
-      "(id text NOT NULL, descr text not null, links text NOT NULL)";
   private static final String   CREATE_STATEMENT_SECURED_TABLE    = "CREATE TABLE IF NOT EXISTS " + SECURED_TABLE_NAME +
       "(id text NOT NULL)";
 
@@ -81,7 +84,11 @@ public class DBStorage {
   private File                  dbCoords;
   private String                createStatementRunsTable;
   private Connection            conn                              = null;
-  private Connection            connDB2                           = null;
+
+  private ConnectionSource            connectionActivities              = null;
+  private Dao<Features, String>       featuresDao                       = null;
+  private ConnectionSource            connectionCoords                  = null;
+  private Dao<ActivityCoords, String> coordsDao                         = null;
 
   public DBStorage(File base) {
     dbActivities = new File(base, "activities.db");
@@ -110,53 +117,33 @@ public class DBStorage {
   }
 
   private void ensureCoordsInit() throws SQLException {
-    if (connDB2 != null) {
+    if (connectionCoords != null) {
       return;
     }
-    connDB2 = DriverManager.getConnection("jdbc:sqlite:" + dbCoords.getAbsolutePath().replace('\\', '/'));
-    connDB2.createStatement().executeUpdate("CREATE TABLE IF NOT EXISTS " + COORDS_TABLE_NAME +
-        " (id text PRIMARY KEY NOT NULL, data text NOT NULL)");
+    connectionCoords = new JdbcConnectionSource("jdbc:sqlite:" + dbCoords.getAbsolutePath().replace('\\', '/'));
+    coordsDao = DaoManager.createDao(connectionCoords, ActivityCoords.class);
   }
 
   private void addCoordsData(String id, JSONArray lats, JSONArray lons, JSONArray times, JSONArray markers)
       throws SQLException {
     synchronized (dbCoords) {
       ensureCoordsInit();
-      JSONObject json = new JSONObject();
-      json.put("lats", lats);
-      json.put("lons", lons);
-      json.put("times", times);
-      json.put("markers", markers);
-      String str = json.toString();
-      ResultSet rs = connDB2.createStatement()
-          .executeQuery("SELECT * FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
-      if (!rs.next()) {
-        connDB2.createStatement()
-            .executeUpdate("INSERT INTO " + COORDS_TABLE_NAME + " VALUES ('" + id + "', '" + str + "')");
-      } else {
-        connDB2.createStatement()
-            .executeUpdate("UPDATE " + COORDS_TABLE_NAME + " SET data='" + str + "' WHERE id='" + id + "'");
-      }
+      coordsDao.createOrUpdate(new ActivityCoords(id, lats, lons, times, markers));
     }
   }
 
   public JSONObject getCoordsData(String id) throws SQLException {
-    JSONObject json = null;
     synchronized (dbCoords) {
       ensureCoordsInit();
-      ResultSet rs = connDB2.createStatement()
-          .executeQuery("SELECT data FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
-      if (rs.next()) {
-        json = new JSONObject(JsonSanitizer.sanitize((String) rs.getString(1)));
-      }
+      ActivityCoords coords = coordsDao.queryForId(id);
+      return coords != null ? new JSONObject(JsonSanitizer.sanitize(coords.getData())) : null;
     }
-    return json;
   }
 
   private void removeCoordsData(String id) throws SQLException {
     synchronized (dbCoords) {
       ensureCoordsInit();
-      connDB2.createStatement().executeUpdate("DELETE FROM " + COORDS_TABLE_NAME + " WHERE id='" + id + "'");
+      coordsDao.deleteById(id);
     }
   }
 
@@ -357,6 +344,8 @@ public class DBStorage {
       return;
     }
     conn = DriverManager.getConnection("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
+    connectionActivities = new JdbcConnectionSource("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
+    featuresDao = DaoManager.createDao(connectionActivities, Features.class);
     createTablesIfNotExists();
   }
 
@@ -397,18 +386,16 @@ public class DBStorage {
     executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
     executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
     executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
-    executeCreate(CREATE_STATEMENT_FEATURES_TABLE);
     executeCreate(CREATE_STATEMENT_SECURED_TABLE);
   }
 
   synchronized private void fillInFeatures(JSONObject activity) {
     activity.put("descr", "");
     try {
-      ResultSet rs = executePreparedQuery("SELECT * FROM " + FEATURES_TABLE_NAME + " WHERE id=?",
-          activity.getString("genby"));
-      if (rs != null && rs.next()) {
-        activity.put("descr", rs.getString("descr"));
-        activity.put("links", rs.getString("links"));
+      Features features = featuresDao.queryForId(activity.getString("genby"));
+      if (features != null) {
+        activity.put("descr", features.getDescr());
+        activity.put("links", features.getLinks());
       }
     } catch (SQLException e) {
       System.out.println("Error working with features db - retrieving results");
@@ -419,22 +406,11 @@ public class DBStorage {
   }
 
   public synchronized void setFeatures(String id, String descr, List<String> links) throws SQLException {
-    JSONArray arr = new JSONArray();
-    for (String link : links) {
-      arr.put(link);
-    }
-    ResultSet rs = executePreparedQuery("SELECT * FROM " + FEATURES_TABLE_NAME + " WHERE id=?", id);
-    if (rs == null || !rs.next()) {
-      executePreparedQuery("INSERT INTO " + FEATURES_TABLE_NAME + " VALUES(?, ?, ?)",
-          id, descr, arr.toString());
-    } else {
-      executePreparedQuery("UPDATE " + FEATURES_TABLE_NAME + " SET descr=?, links=? WHERE id=?",
-          descr, arr.toString(), id);
-    }
+    featuresDao.createOrUpdate(new Features(id, descr, links));
   }
 
   synchronized private void removeFeatures(String id) throws SQLException {
-    executePreparedQuery("DELETE FROM " + FEATURES_TABLE_NAME + " WHERE id=?", id);
+    featuresDao.deleteById(id);
   }
 
   public synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate,
@@ -1344,14 +1320,21 @@ public class DBStorage {
       // silent catch
     }
     try {
-      if (connDB2 != null) {
-        connDB2.close();
+      if (connectionActivities != null) {
+        connectionActivities.close();
       }
-    } catch (SQLException ignore) {
+    } catch (IOException ignore) {
+      // silent catch
+    }
+    try {
+      if (connectionCoords != null) {
+        connectionCoords.close();
+      }
+    } catch (IOException ignore) {
       // silent catch
     }
     conn = null;
-    connDB2 = null;
+    connectionCoords = null;
   }
 
   public synchronized void cleanupReliveCCBefore(Calendar cal) {
