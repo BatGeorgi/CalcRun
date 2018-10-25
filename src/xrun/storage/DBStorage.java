@@ -615,6 +615,15 @@ public class DBStorage {
     return result;
   }
 
+  private JSONObject readActivity2 (Activity activity, boolean includeSplitsAndDistr) {
+    JSONObject result = activity.exportToJSON(includeSplitsAndDistr);
+    if (isSecured(result.getString("genby"))) {
+      result.put("secured", true);
+    }
+    fillInFeatures(result);
+    return result;
+  }
+
   private JSONObject readActivity(ResultSet rs, boolean includeSplitsAndDistr) throws JSONException, SQLException {
     if (!rs.next()) {
       return null;
@@ -664,6 +673,7 @@ public class DBStorage {
     return activity;
   }
 
+
   public synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike,
       boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) throws SQLException {
@@ -693,7 +703,6 @@ public class DBStorage {
       }
     }*/
     builder.setWhere(distFilter);
-    System.out.println(builder.query().size());
     List<JSONObject> result = new ArrayList<JSONObject>();
     StringBuffer selectClause = new StringBuffer();
     StringBuffer whereClause = new StringBuffer();
@@ -769,12 +778,16 @@ public class DBStorage {
       // no data
     }
     result.add(totals);
-    rs = executeQuery(selectClause.toString(), true);
+    List<Activity> resultNew = builder.query();
+    //rs = executeQuery(selectClause.toString(), true);
     JSONObject json = null;
     try {
-      while ((json = readActivity(rs, false)) != null) {
-        result.add(json);
+      for (Activity activity : resultNew) {
+        result.add(readActivity2(activity, false));
       }
+      /*while ((json = readActivity(rs, false)) != null) {
+        result.add(json);
+      }*/
     } catch (Exception ignore) {
       // silent catch
     }
