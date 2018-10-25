@@ -679,30 +679,32 @@ public class DBStorage {
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) throws SQLException {
     Where<Activity, String> typesFilter = runsDao.queryBuilder().where();
     Where<Activity, String> distFilter = runsDao.queryBuilder().where();
+    Where<Activity, String> where = runsDao.queryBuilder().where();
     QueryBuilder<Activity, String> builder = runsDao.queryBuilder();
-    
-    distFilter.and(distFilter.ge("distRaw", minDistance), distFilter.le("distRaw", maxDistance));
-    /*if (run || trail || uphill || hike || walk || other) {
+    if (run || trail || uphill || hike || walk || other) {
       if (run) {
-        typesFilter.or().eq("type", Constants.RUNNING);
+        where.eq("type", Constants.RUNNING).or();
       }
       if (trail) {
-        typesFilter.or().eq("type", Constants.TRAIL);
+        where.eq("type", Constants.TRAIL).or();
       }
       if (uphill) {
-        typesFilter.or().eq("type", Constants.UPHILL);
+        where.eq("type", Constants.UPHILL).or();
       }
       if (hike) {
-        typesFilter.or().eq("type", Constants.HIKING);
+        where.eq("type", Constants.HIKING).or();
       }
       if (walk) {
-        typesFilter.or().eq("type", Constants.WALKING);
+        where.eq("type", Constants.WALKING).or();
       }
       if (other) {
-        typesFilter.or().eq("type", Constants.OTHER);
+        where.eq("type", Constants.OTHER).or();
       }
-    }*/
-    builder.setWhere(distFilter);
+      where.eq("type", "not"); // to finish the statement
+    }
+    where.and(where.ge("distRaw", minDistance).and().le("distRaw", maxDistance), where);
+    System.out.println("STMT " + where.getStatement());
+    builder.setWhere(where);
     List<JSONObject> result = new ArrayList<JSONObject>();
     StringBuffer selectClause = new StringBuffer();
     StringBuffer whereClause = new StringBuffer();
