@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -34,8 +33,11 @@ import xrun.utils.TimeUtils;
 import xrun.common.Constants;
 import xrun.items.Activity;
 import xrun.items.ActivityCoords;
+import xrun.items.Cookie;
+import xrun.items.Dashboard;
 import xrun.items.Features;
 import xrun.items.Preset;
+import xrun.items.SecureId;
 import xrun.orm.test.Account;
 import xrun.utils.CalendarUtils;
 import xrun.utils.JsonSanitizer;
@@ -44,10 +46,7 @@ import xrun.utils.CommonUtils;
 public class DBStorage {
 
   private static final String   RUNS_TABLE_NAME                   = "runs";
-  private static final String   COOKIES_TABLE_NAME                = "cookies";
-  private static final String   DASHBOARDS_TABLE_NAME             = "dashboards";
   private static final String   PRESETS_TABLE_NAME                = "presets";
-  private static final String   SECURED_TABLE_NAME                = "secured";
 
   private static final String[] KEYS                              = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -75,26 +74,17 @@ public class DBStorage {
   };
   private static final String   DB_FILE_PREF                      = "activities";
 
-  private static final String   CREATE_STATEMENT_COOKIES_TABLE    = "CREATE TABLE IF NOT EXISTS " + COOKIES_TABLE_NAME +
-      "(uid PRIMARY KEY NOT NULL, expires NOT NULL)";
-  private static final String   CREATE_STATEMENT_DASHBOARDS_TABLE = "CREATE TABLE IF NOT EXISTS "
-      + DASHBOARDS_TABLE_NAME +
-      "(name PRIMARY KEY NOT NULL)";
-  private static final String   CREATE_STATEMENT_PRESETS_TABLE    = "CREATE TABLE IF NOT EXISTS " + PRESETS_TABLE_NAME +
-      "(name text NOT NULL, types text NOT NULL, pattern text NOT NULL, startDate text NOT NULL, endDate text NOT NULL, "
-      + "minDist integer NOT NULL, maxDist integer NOT NULL, top integer NOT NULL, dashboard text NOT NULL)";
-  private static final String   CREATE_STATEMENT_SECURED_TABLE    = "CREATE TABLE IF NOT EXISTS " + SECURED_TABLE_NAME +
-      "(id text NOT NULL)";
-
   private File                  dbActivities;
   private File                  dbCoords;
-  private String                createStatementRunsTable;
   private Connection            conn                              = null;
 
   private ConnectionSource            connectionActivities              = null;
   private Dao<Activity, String>       runsDao                           = null;
   private Dao<Features, String>       featuresDao                       = null;
   private Dao<Preset, String>         presetsDao                        = null;
+  private Dao<SecureId, String>       secureDao                         = null;
+  private Dao<Cookie, String>         cookieDao                         = null;
+  private Dao<Dashboard, String>      dashboardDao                      = null;
   private ConnectionSource            connectionCoords                  = null;
   private Dao<ActivityCoords, String> coordsDao                         = null;
 
@@ -113,15 +103,6 @@ public class DBStorage {
         }
       }
     }
-    StringBuffer cr = new StringBuffer();
-    cr.append("CREATE TABLE IF NOT EXISTS " + RUNS_TABLE_NAME + " (");
-    cr.append(KEYS[0] + ' ' + TYPES[0] + " PRIMARY KEY NOT NULL, ");
-    int len = KEYS.length;
-    for (int i = 1; i < len - 1; ++i) {
-      cr.append(KEYS[i] + ' ' + TYPES[i] + " NOT NULL, ");
-    }
-    cr.append(KEYS[len - 1] + ' ' + TYPES[len - 1] + " NOT NULL)");
-    createStatementRunsTable = cr.toString();
   }
 
   private void ensureCoordsInit() throws SQLException {
@@ -129,6 +110,7 @@ public class DBStorage {
       return;
     }
     connectionCoords = new JdbcConnectionSource("jdbc:sqlite:" + dbCoords.getAbsolutePath().replace('\\', '/'));
+    TableUtils.createTableIfNotExists(connectionCoords, ActivityCoords.class);
     coordsDao = DaoManager.createDao(connectionCoords, ActivityCoords.class);
   }
 
@@ -379,27 +361,19 @@ public class DBStorage {
     return null;
   }
 
-  private void executeCreate(String statement) {
-    try {
-      conn.createStatement().executeUpdate(statement);
-    } catch (SQLException e) {
-      System.out.println("Error working with db - table creation");
-      e.printStackTrace();
-    }
-  }
-
   private void createTablesIfNotExists() throws SQLException {
     TableUtils.createTableIfNotExists(connectionActivities, Account.class);
     TableUtils.createTableIfNotExists(connectionActivities, Features.class);
     TableUtils.createTableIfNotExists(connectionActivities, Preset.class);
+    TableUtils.createTableIfNotExists(connectionActivities, SecureId.class);
+    TableUtils.createTableIfNotExists(connectionActivities, Cookie.class);
+    TableUtils.createTableIfNotExists(connectionActivities, Dashboard.class);
     runsDao = DaoManager.createDao(connectionActivities, Activity.class);
     featuresDao = DaoManager.createDao(connectionActivities, Features.class);
     presetsDao = DaoManager.createDao(connectionActivities, Preset.class);
-    executeCreate(createStatementRunsTable);
-    executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
-    executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
-    executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
-    executeCreate(CREATE_STATEMENT_SECURED_TABLE);
+    secureDao = DaoManager.createDao(connectionActivities, SecureId.class);
+    cookieDao = DaoManager.createDao(connectionActivities, Cookie.class);
+    dashboardDao = DaoManager.createDao(connectionActivities, Dashboard.class);
   }
 
   synchronized private void fillInFeatures(JSONObject activity) {
@@ -509,9 +483,9 @@ public class DBStorage {
   }
 
   public synchronized void reorderDashboards(List<String> dashboards) throws SQLException {
-    executeQueryExc("DELETE FROM " + DASHBOARDS_TABLE_NAME, false);
+    TableUtils.clearTable(connectionActivities, Dashboard.class);
     for (String dashboard : dashboards) {
-      executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", dashboard);
+      dashboardDao.create(new Dashboard(dashboard));
     }
   }
 
@@ -749,7 +723,7 @@ public class DBStorage {
 
   public synchronized void deleteActivity(String fileName, boolean deleteFeatsAndCoords) throws SQLException {
     executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
-    executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
+    secureDao.deleteById(fileName);
     if (deleteFeatsAndCoords) {
       removeFeatures(fileName);
       removeCoordsData(fileName);
@@ -766,8 +740,7 @@ public class DBStorage {
 
   public synchronized boolean isSecured(String fileName) {
     try {
-      ResultSet rs = executePreparedQuery("SELECT * FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
-      return rs != null && rs.next();
+      return secureDao.queryForId(fileName) != null;
     } catch (SQLException se) {
       System.out.println("Error checking secured flag");
     }
@@ -778,10 +751,10 @@ public class DBStorage {
     boolean isSecured = isSecured(fileName);
     if (flag) {
       if (!isSecured) {
-        executePreparedQuery("INSERT INTO " + SECURED_TABLE_NAME + " VALUES(?)", fileName);
+        secureDao.create(new SecureId(fileName));
       }
     } else if (isSecured) {
-      executePreparedQuery("DELETE FROM " + SECURED_TABLE_NAME + " WHERE id=?", fileName);
+      secureDao.deleteById(fileName);
     }
   }
 
@@ -912,15 +885,14 @@ public class DBStorage {
   }
 
   public synchronized void addToDashboard(String activity, String dashboard) throws SQLException {
-    ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", dashboard);
-    if (!rs.next()) {
+    if (!dashboardDao.idExists(dashboard)) {
       throw new IllegalArgumentException("Dashboard not found");
     }
-    rs = executePreparedQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby=?", activity);
-    if (!rs.next()) {
+    Activity da = runsDao.queryBuilder().selectColumns("dashboards").where().eq("genby", activity).queryForFirst();
+    if (da == null) {
       throw new IllegalArgumentException("Activity not found");
     }
-    JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(rs.getString(1)));
+    JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(da.getDashboards()));
     if (CommonUtils.find(dashboards, dashboard) != -1) {
       throw new IllegalArgumentException("Activity already in dashboard");
     }
@@ -930,15 +902,14 @@ public class DBStorage {
   }
 
   public synchronized void removeFromDashboard(String activity, String dashboard) throws SQLException {
-    ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", dashboard);
-    if (!rs.next()) {
+    if (!dashboardDao.idExists(dashboard)) {
       throw new IllegalArgumentException("Dashboard not found");
     }
-    rs = executePreparedQuery("SELECT dashboards FROM " + RUNS_TABLE_NAME + " WHERE genby=?", activity);
-    if (!rs.next()) {
+    Activity da = runsDao.queryBuilder().selectColumns("dashboards").where().eq("genby", activity).queryForFirst();
+    if (da == null) {
       throw new IllegalArgumentException("Activity not found");
     }
-    JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(rs.getString(1)));
+    JSONArray dashboards = new JSONArray(JsonSanitizer.sanitize(da.getDashboards()));
     int ind = CommonUtils.find(dashboards, dashboard);
     if (ind == -1) {
       throw new IllegalArgumentException("Activity not in dashboard");
@@ -958,7 +929,7 @@ public class DBStorage {
     if (Constants.MAIN_DASHBOARD.equals(name)) {
       throw new IllegalArgumentException("Cannot re-add main dashboard");
     }
-    executePreparedQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES(?)", name);
+    dashboardDao.create(new Dashboard(name));
   }
 
   public synchronized void renameDashboard(String name, String newName) throws SQLException {
@@ -968,17 +939,15 @@ public class DBStorage {
     if (Constants.MAIN_DASHBOARD.equals(name) || Constants.MAIN_DASHBOARD.equals(newName)) {
       throw new IllegalArgumentException("Cannot rename main dashboard");
     }
-    ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", newName);
-    if (rs.next()) {
+    if (dashboardDao.idExists(newName)) {
       throw new IllegalArgumentException("Dashboard " + newName + " already exists");
     }
-    rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", name);
-    if (!rs.next()) {
+    if (!dashboardDao.idExists(name)) {
       throw new IllegalArgumentException("Dashboard " + name + " doest not exist");
     }
 
-    executePreparedQuery("UPDATE " + DASHBOARDS_TABLE_NAME + " SET name=? WHERE name=?", newName, name);
-    rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
+    executePreparedQuery("UPDATE dashboards SET name=? WHERE name=?", newName, name); // TODO
+    ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
       JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dash));
@@ -1008,7 +977,7 @@ public class DBStorage {
     if (Constants.MAIN_DASHBOARD.equals(name)) {
       throw new IllegalArgumentException("Cannot remove main dashboard");
     }
-    executePreparedQuery("DELETE FROM " + DASHBOARDS_TABLE_NAME + " WHERE name=?", name);
+    dashboardDao.deleteById(name);
     ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
     while (rs.next()) {
       String dash = rs.getString(2);
@@ -1035,13 +1004,15 @@ public class DBStorage {
   public synchronized JSONObject getDashboards() {
     JSONArray arr = new JSONArray();
     try {
-      ResultSet rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
-      if (rs == null) {
-        executeQuery("INSERT INTO " + DASHBOARDS_TABLE_NAME + " VALUES('" + Constants.MAIN_DASHBOARD + "')", false);
-        rs = executeQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME, true);
+      List<Dashboard> dashboards = dashboardDao.queryForAll();
+      if (dashboards == null || dashboards.isEmpty()) {
+        Dashboard main = new Dashboard(Constants.MAIN_DASHBOARD);
+        dashboardDao.create(main);
+        dashboards = new ArrayList<>();
+        dashboards.add(main);
       }
-      while (rs.next()) {
-        arr.put(rs.getString(1));
+      for (Dashboard dashboard : dashboards) {
+        arr.put(dashboard.getName());
       }
     } catch (SQLException e) {
       System.out.println("Error fetching dashboards");
@@ -1057,9 +1028,7 @@ public class DBStorage {
       return false;
     }
     try {
-      ResultSet rs = executePreparedQuery("SELECT * FROM " + DASHBOARDS_TABLE_NAME +
-          " WHERE name=?", dashboard);
-      return rs != null && rs.next();
+      return dashboardDao.idExists(dashboard);
     } catch (Exception e) {
       System.out.println("Error saving cookie");
       e.printStackTrace();
@@ -1069,11 +1038,11 @@ public class DBStorage {
 
   public synchronized boolean saveCookie(String uid, Calendar expires) {
     try {
-      boolean hasCookie = executePreparedQuery("SELECT uid FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", uid)
-          .next();
+      boolean hasCookie = cookieDao.idExists(uid);
       if (!hasCookie) {
-        executePreparedQuery("INSERT INTO " + COOKIES_TABLE_NAME + " VALUES (?, ?)",
-            uid, expires.get(Calendar.YEAR) + "-" + expires.get(Calendar.MONTH) + "-" + expires.get(Calendar.DATE));
+        Cookie cookie = new Cookie(uid,
+            expires.get(Calendar.YEAR) + "-" + expires.get(Calendar.MONTH) + "-" + expires.get(Calendar.DATE));
+        cookieDao.create(cookie);
       }
       return !hasCookie;
     } catch (SQLException e) {
@@ -1111,11 +1080,11 @@ public class DBStorage {
 
   public synchronized boolean isValidCookie(String uid) {
     try {
-      ResultSet rs = executePreparedQuery("SELECT expires FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", uid);
-      if (!rs.next()) {
+      Cookie cookie = cookieDao.queryForId(uid);
+      if (cookie == null) {
         return false;
       }
-      if (isCookieValid(rs.getString(1))) {
+      if (isCookieValid(cookie.getExpires())) {
         return true;
       }
       deleteCookie(uid);
@@ -1127,16 +1096,15 @@ public class DBStorage {
   }
 
   public synchronized void deleteCookie(String uid) throws SQLException {
-    executePreparedQuery("DELETE FROM " + COOKIES_TABLE_NAME + " WHERE uid=?", uid);
+    cookieDao.deleteById(uid);
   }
 
   public synchronized void checkForExpiredCookies() {
-    ResultSet rs = executeQuery("SELECT * FROM " + COOKIES_TABLE_NAME, true);
     try {
-      while (rs.next()) {
-        String uid = rs.getString(1);
-        if (!isCookieValid(rs.getString(2))) {
-          deleteCookie(uid);
+      List<Cookie> cookies = cookieDao.queryForAll();
+      for (Cookie cookie : cookies) {
+        if (!isCookieValid(cookie.getExpires())) {
+          cookieDao.delete(cookie);
         }
       }
     } catch (Exception ignore) {
