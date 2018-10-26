@@ -674,13 +674,12 @@ public class DBStorage {
   }
 
 
+  @SuppressWarnings("unchecked")
   public synchronized List<JSONObject> fetchActivities(boolean run, boolean trail, boolean uphill, boolean hike,
       boolean walk, boolean other,
       Calendar startDate, Calendar endDate, int minDistance, int maxDistance) throws SQLException {
-    Where<Activity, String> typesFilter = runsDao.queryBuilder().where();
-    Where<Activity, String> distFilter = runsDao.queryBuilder().where();
-    Where<Activity, String> where = runsDao.queryBuilder().where();
     QueryBuilder<Activity, String> builder = runsDao.queryBuilder();
+    Where<Activity, String> where = builder.where();
     if (run || trail || uphill || hike || walk || other) {
       if (run) {
         where.eq("type", Constants.RUNNING).or();
@@ -701,97 +700,52 @@ public class DBStorage {
         where.eq("type", Constants.OTHER).or();
       }
       where.eq("type", "not"); // to finish the statement
-    }
-    where.and(where.ge("distRaw", minDistance).and().le("distRaw", maxDistance), where);
-    System.out.println("STMT " + where.getStatement());
-    builder.setWhere(where);
-    List<JSONObject> result = new ArrayList<JSONObject>();
-    StringBuffer selectClause = new StringBuffer();
-    StringBuffer whereClause = new StringBuffer();
-    selectClause.append("SELECT * FROM " + RUNS_TABLE_NAME);
-    whereClause.append("WHERE ");
-    whereClause.append("(distRaw >= " + minDistance + " AND distRaw <= " + maxDistance + ") ");
-    if (run || trail || uphill || hike || walk || other) {
-      whereClause.append(" AND ");
-      whereClause.append('(');
-      List<String> types = new ArrayList<String>();
-      if (run) {
-        types.add(Constants.RUNNING);
-      }
-      if (trail) {
-        types.add(Constants.TRAIL);
-      }
-      if (uphill) {
-        types.add(Constants.UPHILL);
-      }
-      if (hike) {
-        types.add(Constants.HIKING);
-      }
-      if (walk) {
-        types.add(Constants.WALKING);
-      }
-      if (other) {
-        types.add(Constants.OTHER);
-      }
-      for (int i = 0; i < types.size(); ++i) {
-        whereClause.append("type = '" + types.get(i) + '\'');
-        if (i < types.size() - 1) {
-          whereClause.append(" OR ");
-        }
-      }
-      whereClause.append(')');
     } else {
       return Collections.emptyList();
     }
+    where.and(where.ge("distRaw", minDistance).and().le("distRaw", maxDistance), where);
+    List<JSONObject> result = new ArrayList<JSONObject>();
     if (startDate != null) {
       int yr = startDate.get(Calendar.YEAR);
       int mt = startDate.get(Calendar.MONTH);
       int d = startDate.get(Calendar.DAY_OF_MONTH);
-      whereClause.append(" AND (");
-      whereClause.append("(YEAR > " + yr + ") OR ");
-      whereClause.append("(YEAR = " + yr + " AND MONTH > " + mt + ") OR ");
-      whereClause.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY >= " + d + ")");
-      whereClause.append(')');
+      where.and(where.or(where.gt("year", yr), where.eq("year", yr).and().gt("month", mt),
+          where.eq("year", yr).and().eq("month", mt).and().ge("day", d)), where);
     }
     if (endDate != null) {
       int yr = endDate.get(Calendar.YEAR);
       int mt = endDate.get(Calendar.MONTH);
       int d = endDate.get(Calendar.DAY_OF_MONTH);
-      whereClause.append(" AND (");
-      whereClause.append("(YEAR < " + yr + ") OR ");
-      whereClause.append("(YEAR = " + yr + " AND MONTH < " + mt + ") OR ");
-      whereClause.append("(YEAR = " + yr + " AND MONTH = " + mt + " AND DAY <= " + d + ")");
-      whereClause.append(')');
+      where.and(where.or(where.lt("year", yr), where.eq("year", yr).and().lt("month", mt),
+          where.eq("year", yr).and().eq("month", mt).and().le("day", d)), where);
     }
-    selectClause.append(' ' + whereClause.toString());
-    selectClause.append(" ORDER BY timeRawMs DESC");
-    StringBuffer aggQuery = new StringBuffer();
-    aggQuery.append("SELECT SUM(distRaw), SUM(timeTotalRaw), SUM(eleTotalPos), SUM(eleTotalNeg), SUM(distRunningRaw)");
-    aggQuery.append("FROM (" + selectClause + ')');
-    ResultSet rs = executeQuery(aggQuery.toString(), true);
+    builder.orderBy("timeRawMs", false);
+    List<Activity> activities = builder.query();
+    double distTotal = 0.0;
+    double timeTotal = 0;
+    long elePosTotal = 0;
+    long eleNegTotal = 0;
+    double distRunTotal = 0.0;
     JSONObject totals = new JSONObject();
-    try {
-      totals.put("totalDistance", rs.getDouble(1));
-      totals.put("totalTime", rs.getLong(2));
-      totals.put("elePos", rs.getLong(3));
-      totals.put("eleNeg", rs.getLong(4));
-      totals.put("totalRunDist", rs.getDouble(5));
-    } catch (SQLException ignore) {
-      // no data
+    for (Activity activity : activities) {
+      distTotal += activity.getDistRaw();
+      timeTotal += activity.getTimeTotalRaw();
+      elePosTotal += activity.getEleTotalPos();
+      eleNegTotal += activity.getEleTotalNeg();
+      distRunTotal += activity.getDistRunningRaw();
     }
-    result.add(totals);
-    List<Activity> resultNew = builder.query();
-    //rs = executeQuery(selectClause.toString(), true);
-    JSONObject json = null;
     try {
-      for (Activity activity : resultNew) {
-        result.add(readActivity2(activity, false));
-      }
-      /*while ((json = readActivity(rs, false)) != null) {
-        result.add(json);
-      }*/
+      totals.put("totalDistance", distTotal);
+      totals.put("totalTime", timeTotal);
+      totals.put("elePos", elePosTotal);
+      totals.put("eleNeg", eleNegTotal);
+      totals.put("totalRunDist", distRunTotal);
+      result.add(totals);
     } catch (Exception ignore) {
       // silent catch
+    }
+    for (Activity activity : activities) {
+      result.add(readActivity2(activity, false));
     }
     return result;
   }
