@@ -28,12 +28,15 @@ import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 
 import xrun.utils.TimeUtils;
 import xrun.common.Constants;
 import xrun.items.Activity;
 import xrun.items.ActivityCoords;
 import xrun.items.Features;
+import xrun.items.Preset;
+import xrun.orm.test.Account;
 import xrun.utils.CalendarUtils;
 import xrun.utils.JsonSanitizer;
 import xrun.utils.CommonUtils;
@@ -91,6 +94,7 @@ public class DBStorage {
   private ConnectionSource            connectionActivities              = null;
   private Dao<Activity, String>       runsDao                           = null;
   private Dao<Features, String>       featuresDao                       = null;
+  private Dao<Preset, String>         presetsDao                        = null;
   private ConnectionSource            connectionCoords                  = null;
   private Dao<ActivityCoords, String> coordsDao                         = null;
 
@@ -154,18 +158,18 @@ public class DBStorage {
   public synchronized JSONArray getWeeklyTotals() {
     JSONArray result = new JSONArray();
     try {
-      ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + RUNS_TABLE_NAME, true);
+      List<Activity> distinctYears = runsDao.queryBuilder().selectColumns("year").distinct().query();
       List<Integer> years = new ArrayList<Integer>();
-      while (rs.next()) {
-        years.add(rs.getInt(1));
+      for (Activity yr : distinctYears) {
+        years.add(yr.getYear());
       }
       Collections.sort(years);
       Calendar current = new GregorianCalendar(TimeZone.getDefault());
       int currentYear = current.get(Calendar.YEAR);
       for (int i = years.size() - 1; i >= 0; --i) {
-        rs = executePreparedQuery(
-            "SELECT timeRawMs, type, distRaw, eleTotalPos, isExt, parent FROM " + RUNS_TABLE_NAME + " WHERE year=?",
-            years.get(i));
+        List<Activity> selection = runsDao.queryBuilder()
+            .selectColumns("timeRawMs", "type", "distRaw", "eleTotalPos", "isExt", "parent")
+            .where().eq("year", years.get(i)).query();
         Map<Integer, JSONObject> weekly = new HashMap<Integer, JSONObject>();
         int maxWeek;
         if (years.get(i) == currentYear) {
@@ -193,12 +197,12 @@ public class DBStorage {
           weekly.put(w, data);
         }
         JSONArray wArr = new JSONArray();
-        while (rs.next()) {
-          if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
+        for (Activity selected : selection) {
+          if (selected.getIsExt() == 1 || selected.getParent().length() > 0) {
             continue;
           }
           Calendar cal = new GregorianCalendar();
-          cal.setTimeInMillis(rs.getLong("timeRawMs"));
+          cal.setTimeInMillis(selected.getTimeRawMs());
           String[] formatted = new String[1];
           int[] idf = CalendarUtils.identifyWeek(cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH) + 1,
               cal.get(Calendar.YEAR), formatted);
@@ -207,8 +211,8 @@ public class DBStorage {
           if ("Empty week".equals(data.getString("info"))) {
             data.put("info", "W" + week + " " + formatted[0]);
           }
-          String type = rs.getString("type");
-          double dist = rs.getDouble("distRaw");
+          String type = selected.getType();
+          double dist = selected.getDistRaw();
           if (Constants.RUNNING.equals(type)) {
             data.put("r", data.getDouble("r") + dist);
             data.put("rt", data.getDouble("rt") + dist);
@@ -228,7 +232,7 @@ public class DBStorage {
           }
           data.put("a", data.getDouble("a") + dist);
           data.put("counta", data.getInt("counta") + 1);
-          int totalPositiveEl = rs.getInt("eleTotalPos");
+          long totalPositiveEl = selected.getEleTotalPos();
           if (totalPositiveEl > 0) {
             data.put("totalPositiveEl", data.getInt("totalPositiveEl") + totalPositiveEl);
           }
@@ -272,10 +276,10 @@ public class DBStorage {
   public synchronized JSONArray getMonthlyTotals() {
     JSONArray result = new JSONArray();
     try {
-      ResultSet rs = executeQuery("SELECT DISTINCT year FROM " + RUNS_TABLE_NAME, true);
+      List<Activity> distinctYears = runsDao.queryBuilder().selectColumns("year").distinct().query();
       List<Integer> years = new ArrayList<Integer>();
-      while (rs.next()) {
-        years.add(rs.getInt(1));
+      for (Activity yr : distinctYears) {
+        years.add(yr.getYear());
       }
       Collections.sort(years);
       String[] filters = new String[] {
@@ -303,7 +307,7 @@ public class DBStorage {
         }
         for (int j = 0; j < filters.length; ++j) {
           String typeFilter = (filters[j] != null ? ("(" + filters[j] + ") AND ") : "");
-          rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
+          ResultSet rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
               "year=" + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
           while (rs.next()) {
             months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
@@ -318,7 +322,7 @@ public class DBStorage {
             months[rs.getInt(1)].remove("emp");
           }
         }
-        rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
+        ResultSet rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
             years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
         while (rs.next()) {
           int totalPositiveEl = rs.getInt(2);
@@ -385,8 +389,12 @@ public class DBStorage {
   }
 
   private void createTablesIfNotExists() throws SQLException {
+    TableUtils.createTableIfNotExists(connectionActivities, Account.class);
+    TableUtils.createTableIfNotExists(connectionActivities, Features.class);
+    TableUtils.createTableIfNotExists(connectionActivities, Preset.class);
     runsDao = DaoManager.createDao(connectionActivities, Activity.class);
     featuresDao = DaoManager.createDao(connectionActivities, Features.class);
+    presetsDao = DaoManager.createDao(connectionActivities, Preset.class);
     executeCreate(createStatementRunsTable);
     executeCreate(CREATE_STATEMENT_COOKIES_TABLE);
     executeCreate(CREATE_STATEMENT_DASHBOARDS_TABLE);
@@ -453,29 +461,8 @@ public class DBStorage {
 
   public synchronized JSONObject getPresetData(String name) {
     try {
-      ResultSet rs = executePreparedQuery("SELECT * FROM " + PRESETS_TABLE_NAME
-          + " WHERE name=?", name);
-      if (rs == null || !rs.next()) {
-        return null;
-      }
-      JSONObject preset = new JSONObject();
-      preset.put("name", rs.getString("name"));
-      preset.put("pattern", rs.getString("pattern"));
-      preset.put("startDate", rs.getString("startDate"));
-      preset.put("endDate", rs.getString("endDate"));
-      preset.put("minDist", rs.getInt("minDist"));
-      preset.put("maxDist", rs.getInt("maxDist"));
-      preset.put("top", rs.getInt("top"));
-      preset.put("dashboard", rs.getString("dashboard"));
-      String types = rs.getString("types");
-      StringTokenizer st = new StringTokenizer(types, ",", false);
-      while (st.hasMoreTokens()) {
-        String next = st.nextToken().trim();
-        if (next.length() > 0) {
-          preset.put(next, true);
-        }
-      }
-      return preset;
+      Preset found = presetsDao.queryForId(name);
+      return found != null ? found.exportToJson() : null;
     } catch (SQLException e) {
       e.printStackTrace();
       return null;
@@ -484,37 +471,15 @@ public class DBStorage {
 
   public synchronized JSONArray getPresets(Map<String, JSONObject> out) {
     JSONArray result = new JSONArray();
-    ResultSet rs = executeQuery("SELECT * FROM " + PRESETS_TABLE_NAME, true);
-    if (rs == null) {
-      return result;
-    }
     try {
-      while (rs.next()) {
-        JSONObject preset = new JSONObject();
-        preset.put("name", rs.getString("name"));
-        preset.put("pattern", rs.getString("pattern"));
-        preset.put("startDate", rs.getString("startDate"));
-        preset.put("endDate", rs.getString("endDate"));
-        preset.put("minDist", rs.getInt("minDist"));
-        preset.put("maxDist", rs.getInt("maxDist"));
-        preset.put("top", rs.getInt("top"));
-        preset.put("dashboard", rs.getString("dashboard"));
-        String types = rs.getString("types");
+      List<Preset> presets = presetsDao.queryForAll();
+      for (Preset preset : presets) {
+        JSONObject json = preset.exportToJson();
         if (out != null) {
-          preset.put("types", types);
+          json.put("types", preset.getTypes());
+          out.put(json.getString("name"), json);
         } else {
-          StringTokenizer st = new StringTokenizer(types, ",", false);
-          while (st.hasMoreTokens()) {
-            String next = st.nextToken().trim();
-            if (next.length() > 0) {
-              preset.put(next, true);
-            }
-          }
-        }
-        if (out != null) {
-          out.put(preset.getString("name"), preset);
-        } else {
-          result.put(preset);
+          result.put(json);
         }
       }
     } catch (Exception e) {
