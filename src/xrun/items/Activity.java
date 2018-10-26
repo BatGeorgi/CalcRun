@@ -18,109 +18,109 @@ import xrun.utils.TimeUtils;
 public class Activity {
 
   @DatabaseField(id = true)
-  String genby;
+  private String genby;
 
   @DatabaseField(canBeNull = false)
-  String name;
+  private String name;
 
   @DatabaseField(canBeNull = false)
-  String type;
+  private String type;
 
   @DatabaseField(canBeNull = false)
-  String date;
+  private String date;
 
   @DatabaseField(canBeNull = false)
-  int year;
+  private int year;
 
   @DatabaseField(canBeNull = false)
-  int month;
+  private int month;
 
   @DatabaseField(canBeNull = false)
-  int day;
+  private int day;
 
   @DatabaseField(canBeNull = false)
-  String dist;
+  private String dist;
 
   @DatabaseField(canBeNull = false)
-  double distRaw;
+  private double distRaw;
 
   @DatabaseField(canBeNull = false)
-  String starttime;
+  private String starttime;
 
   @DatabaseField(canBeNull = false)
-  String timeTotal;
+  private String timeTotal;
 
   @DatabaseField(canBeNull = false)
-  double timeTotalRaw;
+  private double timeTotalRaw;
 
   @DatabaseField(canBeNull = false)
-  long timeRawMs;
+  private long timeRawMs;
 
   @DatabaseField(canBeNull = false)
-  String timeRunning;
+  private String timeRunning;
 
   @DatabaseField(canBeNull = false)
-  String timeRest;
+  private String timeRest;
 
   @DatabaseField(canBeNull = false)
-  String avgSpeed;
+  private String avgSpeed;
 
   @DatabaseField(canBeNull = false)
-  double avgSpeedRaw;
+  private double avgSpeedRaw;
 
   @DatabaseField(canBeNull = false)
-  String avgPace;
+  private String avgPace;
 
   @DatabaseField(canBeNull = false)
-  String distRunning;
+  private String distRunning;
 
   @DatabaseField(canBeNull = false)
-  double distRunningRaw;
+  private double distRunningRaw;
 
   @DatabaseField(canBeNull = false)
-  int eleTotalPos;
+  private int eleTotalPos;
 
   @DatabaseField(canBeNull = false)
-  int eleTotalNeg;
+  private int eleTotalNeg;
 
   @DatabaseField(canBeNull = false)
-  int eleRunningPos;
+  private int eleRunningPos;
 
   @DatabaseField(canBeNull = false)
-  int eleRunningNeg;
+  private int eleRunningNeg;
 
   @DatabaseField(canBeNull = false)
-  String garminLink;
+  private String garminLink;
 
   @DatabaseField(canBeNull = false)
-  String ccLink;
+  private String ccLink;
 
   @DatabaseField(canBeNull = false)
-  String photosLink;
+  private String photosLink;
 
   @DatabaseField(canBeNull = false)
-  String parent;
+  private String parent;
 
   @DatabaseField(canBeNull = false)
-  String distByInterval;
+  private String distByInterval;
 
   @DatabaseField(canBeNull = false)
-  String distByIntervalLabels;
+  private String distByIntervalLabels;
 
   @DatabaseField(canBeNull = false)
-  String dashboards;
+  private String dashboards;
 
   @DatabaseField(canBeNull = false)
-  int isExt;
+  private int isExt;
 
   @DatabaseField(canBeNull = false)
-  String speedDist;
+  private String speedDist;
 
   @DatabaseField(canBeNull = false)
-  String splits;
+  private String splits;
 
   @DatabaseField(canBeNull = false)
-  String origData;
+  private String origData;
 
   public Activity() {
   }
@@ -185,6 +185,126 @@ public class Activity {
     cal.setTimeInMillis(timeRawMs + corr);
     result.put("startAt", TimeUtils.formatDate(cal, true));
     return result;
+  }
+
+  public String getGenby() {
+    return genby;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public int getYear() {
+    return year;
+  }
+
+  public int getMonth() {
+    return month;
+  }
+
+  public int getDay() {
+    return day;
+  }
+
+  public String getDist() {
+    return dist;
+  }
+
+  public String getStarttime() {
+    return starttime;
+  }
+
+  public String getTimeTotal() {
+    return timeTotal;
+  }
+
+  public long getTimeRawMs() {
+    return timeRawMs;
+  }
+
+  public String getTimeRunning() {
+    return timeRunning;
+  }
+
+  public String getTimeRest() {
+    return timeRest;
+  }
+
+  public String getAvgSpeed() {
+    return avgSpeed;
+  }
+
+  public double getAvgSpeedRaw() {
+    return avgSpeedRaw;
+  }
+
+  public String getAvgPace() {
+    return avgPace;
+  }
+
+  public String getDistRunning() {
+    return distRunning;
+  }
+
+  public int getEleRunningPos() {
+    return eleRunningPos;
+  }
+
+  public int getEleRunningNeg() {
+    return eleRunningNeg;
+  }
+
+  public String getGarminLink() {
+    return garminLink;
+  }
+
+  public String getCcLink() {
+    return ccLink;
+  }
+
+  public String getPhotosLink() {
+    return photosLink;
+  }
+
+  public String getParent() {
+    return parent;
+  }
+
+  public String getDistByInterval() {
+    return distByInterval;
+  }
+
+  public String getDistByIntervalLabels() {
+    return distByIntervalLabels;
+  }
+
+  public String getDashboards() {
+    return dashboards;
+  }
+
+  public int getIsExt() {
+    return isExt;
+  }
+
+  public String getSpeedDist() {
+    return speedDist;
+  }
+
+  public String getSplits() {
+    return splits;
+  }
+
+  public String getOrigData() {
+    return origData;
   }
 
   public double getDistRaw() {
