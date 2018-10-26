@@ -126,20 +126,8 @@ public class Activity {
   }
 
   public Activity(JSONObject json) {
-    
+    // TODO
   }
-  
-  /*private static final String[] KEYS                              = new String[] {
-  "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
-  "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
-  "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
-  "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
-  "garminLink", "ccLink", "photosLink",
-  "parent",
-  "distByInterval", "distByIntervalLabels",
-  "dashboards", "isExt",
-  "speedDist", "splits",
-  "origData" */
 
   public JSONObject exportToJSON(boolean includeSplitsAndDistr) {
     JSONObject result = new JSONObject();
@@ -198,33 +186,25 @@ public class Activity {
     result.put("startAt", TimeUtils.formatDate(cal, true));
     return result;
   }
-  
-  /*
-   * 
-    
-   */
 
-  /*private static final String[] KEYS                              = new String[] {
-  "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
-  "starttime", "timeTotal", "timeTotalRaw", "timeRawMs", "timeRunning", "timeRest",
-  "avgSpeed", "avgSpeedRaw", "avgPace", "distRunning", "distRunningRaw",
-  "eleTotalPos", "eleTotalNeg", "eleRunningPos", "eleRunningNeg",
-  "garminLink", "ccLink", "photosLink",
-  "parent",
-  "distByInterval", "distByIntervalLabels",
-  "dashboards", "isExt",
-  "speedDist", "splits",
-  "origData" 
-private static final String[] TYPES                             = new String[] {
-  "text", "text", "text", "text", "integer", "integer", "integer", "text", "real",
-  "text", "text", "real", "integer", "text", "text",
-  "text", "real", "text", "text", "real",
-  "integer", "integer", "integer", "integer",
-  "text", "text", "text",
-  "text",
-  "text", "text",
-  "text", "integer",
-  "text", "text",
-  "text"
-}*/
+  public double getDistRaw() {
+    return distRaw;
+  }
+
+  public double getTimeTotalRaw() {
+    return timeTotalRaw;
+  }
+
+  public long getEleTotalPos() {
+    return eleTotalPos;
+  }
+
+  public long getEleTotalNeg() {
+    return eleTotalNeg;
+  }
+
+  public double getDistRunningRaw() {
+    return distRunningRaw;
+  }
+
 }
