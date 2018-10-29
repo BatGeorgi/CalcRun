@@ -40,6 +40,19 @@ public class Preset {
   public Preset() {
   }
 
+  public Preset(String name, String types, String pattern, String startDate, String endDate,
+      int minDist, int maxDist, int top, String dashboard) {
+    this.name = name;
+    this.types = types;
+    this.pattern = pattern;
+    this.startDate = startDate;
+    this.endDate = endDate;
+    this.minDist = minDist;
+    this.maxDist = maxDist;
+    this.top = top;
+    this.dashboard = dashboard;
+  }
+
   public JSONObject exportToJson() {
     JSONObject json = new JSONObject();
     json.put("name", name);
