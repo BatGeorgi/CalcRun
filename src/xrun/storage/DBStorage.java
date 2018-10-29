@@ -403,22 +403,9 @@ public class DBStorage {
   public synchronized boolean addPreset(String name, String types, String pattern, String startDate, String endDate,
       int minDist, int maxDist,
       int top, String dashboard) throws SQLException {
-    ResultSet rs = executePreparedQuery("SELECT * FROM " + PRESETS_TABLE_NAME + " WHERE name=?", name);
-    if (rs != null && rs.next()) {
-      updatePreset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
-      return false;
-    }
-    executePreparedQuery("INSERT INTO " + PRESETS_TABLE_NAME + " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard);
-    return true;
-  }
-
-  private void updatePreset(String name, String types, String pattern, String startDate, String endDate, int minDist,
-      int maxDist,
-      int top, String dashboard) throws SQLException {
-    StringBuffer sb = new StringBuffer("UPDATE " + PRESETS_TABLE_NAME + " SET ");
-    sb.append("types=?, pattern=?, startDate=?, endDate=?, minDist=?, maxDist=?, top=?, dashboard=? WHERE name=?");
-    executePreparedQuery(sb.toString(), types, pattern, startDate, endDate, minDist, maxDist, top, dashboard, name);
+    boolean result = presetsDao.idExists(name);
+    presetsDao.createOrUpdate(new Preset(name, types, pattern, startDate, endDate, minDist, maxDist, top, dashboard));
+    return result;
   }
 
   public synchronized void renamePreset(String name, String newName) throws SQLException {
@@ -502,28 +489,7 @@ public class DBStorage {
     }
     boolean isExt = isExternal(dashboards);
     entry.put("isExt", isExt ? 1 : 0);
-    StringBuffer sb = new StringBuffer();
-    sb.append("INSERT INTO " + RUNS_TABLE_NAME + " VALUES (");
-    if (!entry.has("origData")) {
-      entry.put("origData", new JSONObject());
-    }
-    Object[] values = new Object[KEYS.length];
-    for (int i = 0; i < KEYS.length; ++i) {
-      String str = entry.get(KEYS[i]).toString();
-      if ("real".equals(TYPES[i])) {
-        values[i] = Double.valueOf(str);
-      } else if ("text".equals(TYPES[i])) {
-        values[i] = str;
-      } else { // integer
-        values[i] = Long.valueOf(str);
-      }
-      sb.append(" ?");
-      if (i < KEYS.length - 1) {
-        sb.append(", ");
-      }
-    }
-    sb.append(')');
-    executePreparedQuery(sb.toString(), values);
+    runsDao.create(new Activity(entry));
     if (entry.has("lons") && entry.has("lats") && entry.has("times") && entry.has("markers")) {
       addCoordsData(entry.getString("genby"), entry.getJSONArray("lats"), entry.getJSONArray("lons"),
           entry.getJSONArray("times"),
@@ -897,8 +863,11 @@ public class DBStorage {
       throw new IllegalArgumentException("Activity already in dashboard");
     }
     dashboards.put(dashboard);
-    executePreparedQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards=? WHERE genby=?",
-        dashboards.toString(), activity);
+    Activity target = runsDao.queryForId(activity);
+    if (target != null) {
+      target.setDashboards(dashboard);
+      runsDao.update(target);
+    }
   }
 
   public synchronized void removeFromDashboard(String activity, String dashboard) throws SQLException {

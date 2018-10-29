@@ -126,7 +126,41 @@ public class Activity {
   }
 
   public Activity(JSONObject json) {
-    // TODO
+    genby = json.get("genby").toString();
+    name = json.get("name").toString();
+    type = json.get("type").toString();
+    date = json.get("date").toString();
+    year = json.getInt("year");
+    month = json.getInt("month");
+    day = json.getInt("day");
+    dist = json.get("dist").toString();
+    distRaw = json.getDouble("distRaw");
+    starttime = json.get("starttime").toString();
+    timeTotal = json.get("timeTotal").toString();
+    timeTotalRaw = json.getDouble("timeTotalRaw");
+    timeRawMs = json.getLong("timeRawMs");
+    timeRunning = json.get("timeRunning").toString();
+    timeRest = json.get("timeRest").toString();
+    avgSpeed = json.get("avgSpeed").toString();
+    avgSpeedRaw = json.getDouble("avgSpeedRaw");
+    avgPace = json.get("avgPace").toString();
+    distRunning = json.get("distRunning").toString();
+    distRunningRaw = json.getDouble("distRunningRaw");
+    eleTotalPos = json.getInt("eleTotalPos");
+    eleTotalNeg = json.getInt("eleTotalNeg");
+    eleRunningPos = json.getInt("eleRunningPos");
+    eleRunningNeg = json.getInt("eleRunningNeg");
+    garminLink = json.get("garminLink").toString();
+    ccLink = json.get("ccLink").toString();
+    photosLink = json.get("photosLink").toString();
+    parent = json.get("parent").toString();
+    distByInterval = json.get("distByInterval").toString();
+    distByIntervalLabels = json.get("distByIntervalLabels").toString();
+    dashboards = json.get("dashboards").toString();
+    isExt = json.getInt("isExt");
+    speedDist = json.get("speedDist").toString();
+    splits = json.get("splits").toString();
+    origData = json.get("origData").toString();
   }
 
   public JSONObject exportToJSON(boolean includeSplitsAndDistr) {
@@ -325,6 +359,10 @@ public class Activity {
 
   public double getDistRunningRaw() {
     return distRunningRaw;
+  }
+
+  public void setDashboards(String dashboards) {
+    this.dashboards = dashboards;
   }
 
 }
