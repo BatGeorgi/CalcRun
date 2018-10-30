@@ -29,7 +29,6 @@ import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
-import xrun.utils.TimeUtils;
 import xrun.common.Constants;
 import xrun.items.Activity;
 import xrun.items.ActivityCoords;
@@ -40,8 +39,9 @@ import xrun.items.Preset;
 import xrun.items.SecureId;
 import xrun.orm.test.Account;
 import xrun.utils.CalendarUtils;
-import xrun.utils.JsonSanitizer;
 import xrun.utils.CommonUtils;
+import xrun.utils.JsonSanitizer;
+import xrun.utils.TimeUtils;
 
 public class DBStorage {
 
@@ -289,27 +289,29 @@ public class DBStorage {
         }
         for (int j = 0; j < filters.length; ++j) {
           String typeFilter = (filters[j] != null ? ("(" + filters[j] + ") AND ") : "");
-          ResultSet rs = executeQuery("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
-              "year=" + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
-          while (rs.next()) {
-            months[rs.getInt(1)].put(acms[j], String.format("%.3f", rs.getDouble(2)));
-            months[rs.getInt(1)].remove("emp");
+          List<String[]> rs = runsDao.queryRaw("SELECT month, SUM(distRaw) FROM " + RUNS_TABLE_NAME + " WHERE " + typeFilter +
+              "year=" + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month").getResults();
+          for (String[] entry : rs) {
+            int ind = Integer.parseInt(entry[0]);
+            months[ind].put(acms[j], String.format("%.3f", Double.valueOf(entry[1])));
+            months[ind].remove("emp");
           }
-          rs = executeQuery("SELECT month, COUNT(genby) FROM "
+          rs = runsDao.queryRaw("SELECT month, COUNT(genby) FROM "
               + RUNS_TABLE_NAME + " WHERE " + typeFilter + " year="
-              + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
-          while (rs.next()) {
-            months[rs.getInt(1)].put("count" + acms[j], rs.getInt(2));
-            months[rs.getInt(1)].put("totalPositiveEl", 0);
-            months[rs.getInt(1)].remove("emp");
+              + years.get(i) + " AND isExt=0 AND parent='' GROUP BY month").getResults();
+          for (String[] entry : rs) {
+            int ind = Integer.parseInt(entry[0]);
+            months[ind].put("count" + acms[j], Integer.valueOf(entry[1]));
+            months[ind].put("totalPositiveEl", 0);
+            months[ind].remove("emp");
           }
         }
-        ResultSet rs = executeQuery("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
-            years.get(i) + " AND isExt=0 AND parent='' GROUP BY month", true);
-        while (rs.next()) {
-          int totalPositiveEl = rs.getInt(2);
+        List<String[]> rs = runsDao.queryRaw("SELECT month, SUM(eleTotalPos) FROM " + RUNS_TABLE_NAME + " WHERE year=" +
+            years.get(i) + " AND isExt=0 AND parent='' GROUP BY month").getResults();
+        for (String[] entry : rs) {
+          int totalPositiveEl = Integer.parseInt(entry[1]);
           if (totalPositiveEl > 0) {
-            months[rs.getInt(1)].put("totalPositiveEl", totalPositiveEl);
+            months[Integer.parseInt(entry[0])].put("totalPositiveEl", totalPositiveEl);
           }
         }
         for (int j = 0; j < months.length; ++j) {
@@ -657,14 +659,14 @@ public class DBStorage {
   
   public synchronized List<JSONObject> getAllActivities() {
     List<JSONObject> result = new ArrayList<JSONObject>();
-    ResultSet rs = executeQuery("SELECT * FROM " + RUNS_TABLE_NAME, true);
-    JSONObject json = null;
+    List<Activity> activities;
     try {
-      while ((json = readActivity(rs, true)) != null) {
-        result.add(json);
+      activities = runsDao.queryForAll();
+      for (Activity activity : activities) {
+        result.add(activity.exportToJSON(true));
       }
-    } catch (Exception ignore) {
-      // silent catch
+    } catch (SQLException ignore) {
+      // ignore
     }
     return result;
   }
@@ -829,18 +831,18 @@ public class DBStorage {
 
   public synchronized JSONArray getActivitySplits() {
     JSONArray result = new JSONArray();
-    ResultSet rs = executeQuery("SELECT name, date, splits, genby, isExt, parent FROM " + RUNS_TABLE_NAME +
-        " WHERE (type='Running' OR type='Trail')", true);
     try {
-      while (rs.next()) {
-        if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
+      List<Activity> activities = runsDao.queryBuilder().selectColumns("name", "date", "splits", "genby", "isExt", "parent")
+          .where().eq("type", Constants.RUNNING).or().eq("type", Constants.TRAIL).query();
+      for (Activity activity : activities) {
+        if (activity.getIsExt() == 1 || activity.getParent().length() > 0) {
           continue;
         }
         JSONObject crnt = new JSONObject();
-        crnt.put("name", rs.getString(1));
-        crnt.put("date", rs.getString(2));
-        crnt.put("splits", new JSONArray(JsonSanitizer.sanitize(rs.getString(3))));
-        crnt.put("genby", rs.getString(4));
+        crnt.put("name", activity.getName());
+        crnt.put("date", activity.getDate());
+        crnt.put("splits", new JSONArray(JsonSanitizer.sanitize(activity.getSplits())));
+        crnt.put("genby", activity.getGenby());
         result.put(crnt);
       }
     } catch (SQLException e) {
