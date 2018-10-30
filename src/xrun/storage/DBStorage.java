@@ -779,32 +779,39 @@ public class DBStorage {
   public synchronized JSONObject getBestActivities(double distMin, double distMax, double distActual) {
     JSONObject best = null;
     try {
-      ResultSet rs = executeQuery("SELECT genby, date, timeTotal, timeTotalRaw, isExt, parent FROM " + RUNS_TABLE_NAME +
-          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + " AND type!='" + Constants.OTHER + "') ORDER BY timeTotalRaw", true);
+      List<Activity> activities = runsDao.queryBuilder().orderBy("timeTotalRaw", true)
+          .selectColumns("genby", "date", "timeTotal", "timeTotalRaw", "isExt", "parent")
+          .where().ge("distRaw", distMin).and().le("distRaw", distMax).and().ne("type", Constants.OTHER)
+          .query();
+      /*ResultSet rs = executeQuery("SELECT genby, date, timeTotal, timeTotalRaw, isExt, parent FROM " + RUNS_TABLE_NAME +
+          " WHERE (distRaw >= " + distMin + " AND distRaw <= " + distMax + " AND type!='" + Constants.OTHER + "')
+          ORDER BY timeTotalRaw", true);*/
       double bestTime = Double.MAX_VALUE;
-      while (rs != null && rs.next()) {
-        if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
+      for (Activity activity : activities) {
+        if (activity.getIsExt() == 1 || activity.getParent().length() > 0) {
           continue;
         }
         JSONObject result = new JSONObject();
-        result.put("date", rs.getString("date"));
-        result.put("genby", rs.getString("genby"));
-        result.put("timeTotal", rs.getString("timeTotal"));
+        result.put("date", activity.getDate());
+        result.put("genby", activity.getGenby());
+        result.put("timeTotal", activity.getTimeTotal());
         best = result;
-        bestTime = rs.getDouble("timeTotalRaw");
+        bestTime = activity.getTimeTotalRaw();
         break;
       }
-      rs = executeQuery("SELECT genby, date, splits, isExt, parent FROM " + RUNS_TABLE_NAME +
-          " WHERE (distRaw >= " + distActual + " AND type!='" + Constants.OTHER + "')", true);
+      activities = runsDao.queryBuilder().selectColumns("genby", "date", "splits", "isExt", "parent")
+          .where().ge("distRaw", distMin).and().le("distRaw", distMax).and().ne("type", Constants.OTHER).query();
+      /*rs = executeQuery("SELECT genby, date, splits, isExt, parent FROM " + RUNS_TABLE_NAME +
+          " WHERE (distRaw >= " + distActual + " AND type!='" + Constants.OTHER + "')", true);*/
       int distFloor = (int) distActual;
-      while (rs != null && rs.next()) {
-        if (rs.getInt("isExt") == 1 || rs.getString("parent").length() > 0) {
+      for (Activity activity : activities) {
+        if (activity.getIsExt() == 1 || activity.getParent().length() > 0) {
           continue;
         }
-        if (best != null && best.getString("genby").equals(rs.getString("genby"))) {
+        if (best != null && best.getString("genby").equals(activity.getGenby())) {
           continue;
         }
-        JSONArray splits = new JSONArray(JsonSanitizer.sanitize(rs.getString("splits")));
+        JSONArray splits = new JSONArray(JsonSanitizer.sanitize(activity.getSplits()));
         for (int i = Math.max(distFloor - 2, 0); i < Math.min(splits.length(), distFloor + 2); ++i) {
           JSONObject split = splits.getJSONObject(i);
           double dist = split.getDouble("totalRaw");
@@ -813,8 +820,8 @@ public class DBStorage {
             if (timeTotalEst < bestTime) {
               bestTime = timeTotalEst;
               JSONObject result = new JSONObject();
-              result.put("date", rs.getString("date"));
-              result.put("genby", rs.getString("genby"));
+              result.put("date", activity.getDate());
+              result.put("genby", activity.getGenby());
               result.put("timeTotal", "Estimated effort " + TimeUtils.formatTime((long) timeTotalEst));
               best = result;
             }
