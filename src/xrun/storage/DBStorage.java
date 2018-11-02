@@ -25,6 +25,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
@@ -419,7 +420,7 @@ public class DBStorage {
   }
 
   public synchronized void removePreset(String name) throws SQLException {
-    executePreparedQuery("DELETE FROM " + PRESETS_TABLE_NAME + " WHERE name=?", name);
+    presetsDao.deleteById(name);
   }
 
   public synchronized JSONObject getPresetData(String name) {
@@ -690,7 +691,7 @@ public class DBStorage {
   }
 
   public synchronized void deleteActivity(String fileName, boolean deleteFeatsAndCoords) throws SQLException {
-    executePreparedQuery("DELETE FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName);
+    runsDao.deleteById(fileName);
     secureDao.deleteById(fileName);
     if (deleteFeatsAndCoords) {
       removeFeatures(fileName);
@@ -736,7 +737,7 @@ public class DBStorage {
 
   public synchronized JSONObject getActivity(String fileName) {
     try {
-      return readActivity(executePreparedQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName), true);
+      return readActivity2(runsDao.queryForId(fileName), true);
     } catch (Exception e) {
       System.out.println("Error reading activity " + fileName);
       e.printStackTrace();
@@ -746,7 +747,7 @@ public class DBStorage {
 
   public synchronized boolean hasActivity(String fileName) {
     try {
-      return executePreparedQuery("SELECT * FROM " + RUNS_TABLE_NAME + " WHERE genby=?", fileName).next();
+      return runsDao.idExists(fileName);
     } catch (SQLException e) {
       return false;
     }
@@ -956,9 +957,10 @@ public class DBStorage {
       throw new IllegalArgumentException("Cannot remove main dashboard");
     }
     dashboardDao.deleteById(name);
-    ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
-    while (rs.next()) {
-      String dash = rs.getString(2);
+    //ResultSet rs = executeQueryExc("SELECT genby, dashboards FROM " + RUNS_TABLE_NAME, true);
+    List<Activity> activities = runsDao.queryBuilder().selectColumns("genby", "dashboards").query();
+    for (Activity activity : activities) {
+      String dash = activity.getDashboards();
       JSONArray arr = new JSONArray(JsonSanitizer.sanitize(dash));
       boolean mod = false;
       for (int i = 0; i < arr.length(); ++i) {
@@ -969,14 +971,16 @@ public class DBStorage {
         }
       }
       if (mod) {
-        String genby = rs.getString(1);
-        executePreparedQuery("UPDATE " + RUNS_TABLE_NAME + " SET dashboards=? WHERE genby=?",
-            arr.toString(), genby);
+        String genby = activity.getGenby();
+        UpdateBuilder<Activity, String> ub = runsDao.updateBuilder();
+        ub.where().eq("genby", genby);
+        ub.updateColumnValue("dashboards", arr.toString()).update();
       }
     }
-    executePreparedQuery(
+    /*executePreparedQuery(
         "UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + Constants.MAIN_DASHBOARD + "' WHERE dashboard=?",
-        name);
+        name);*/
+    runsDao.updateBuilder().updateColumnValue("dashboard", Constants.MAIN_DASHBOARD).where().eq("dashboard", name);
   }
 
   public synchronized JSONObject getDashboards() {
@@ -1144,16 +1148,16 @@ public class DBStorage {
     List<DataEntry> entries = new ArrayList<>();
     boolean isFromExt = false;
     try {
-      ResultSet rs = executePreparedQuery(
-          "SELECT dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME + " WHERE genby=?",
-          activity);
-      if (rs == null || !rs.next()) {
+      List<Activity> activities = runsDao.queryBuilder().selectColumns("dashboards", "type", "distRaw", "avgSpeedRaw")
+          .where().eq("genby", activity).query();
+      if (activities.isEmpty()) {
         return null;
       }
-      type = rs.getString("type");
-      dist = rs.getDouble("distRaw");
-      speed = rs.getDouble("avgSpeedRaw");
-      JSONArray arr = new JSONArray(JsonSanitizer.sanitize(rs.getString("dashboards")));
+      Activity result = activities.get(0);
+      type = result.getType();
+      dist = result.getDistRaw();
+      speed = result.getAvgSpeedRaw();
+      JSONArray arr = new JSONArray(JsonSanitizer.sanitize(result.getDashboards()));
       for (int i = 0; i < arr.length(); ++i) {
         String dash = arr.getString(i);
         if (!Constants.MAIN_DASHBOARD.equals(dash)) {
@@ -1168,19 +1172,19 @@ public class DBStorage {
         json.put("comps", new JSONArray());
         return json;
       }
-      rs = executeQueryExc("SELECT genby, dashboards, type, distRaw, avgSpeedRaw FROM " + RUNS_TABLE_NAME, true);
-      while (rs != null && rs.next()) {
-        if (activity.equals(rs.getString("genby"))) {
+      activities = runsDao.queryBuilder().selectColumns("genby", "dashboards", "type", "distRaw", "avgSpeedRaw").query();
+      for (Activity entry : activities) {
+        if (activity.equals(entry.getGenby())) {
           continue;
         }
-        if (!areTypesCompatible(type, rs.getString("type"))) {
+        if (!areTypesCompatible(type, entry.getType())) {
           continue;
         }
-        double sspeed = rs.getDouble("avgSpeedRaw");
+        double sspeed = entry.getAvgSpeedRaw();
         if (dist < 25 && (0.66 * speed > sspeed || 1.5 * speed < sspeed)) {
           continue;
         }
-        arr = new JSONArray(JsonSanitizer.sanitize(rs.getString("dashboards")));
+        arr = new JSONArray(JsonSanitizer.sanitize(entry.getDashboards()));
         boolean dashboardMatch = isFromExt;
         if (!dashboardMatch) {
           for (int i = 0; i < arr.length(); ++i) {
@@ -1198,19 +1202,20 @@ public class DBStorage {
             continue;
           }
         }
-        entries.add(new DataEntry(rs.getString("genby"), Math.abs(dist - rs.getDouble("distRaw"))));
+        entries.add(new DataEntry(entry.getGenby(), Math.abs(dist - entry.getDistRaw())));
       }
       Collections.sort(entries);
       int len = searchOnlyExt ? entries.size() : Math.min(10, entries.size());
       arr = new JSONArray();
       for (int i = 0; i < len; ++i) {
         String id = entries.get(i).getId();
-        rs = executePreparedQuery("SELECT name, type, date, dist FROM " + RUNS_TABLE_NAME + " WHERE genby=?", id);
-        if (rs != null && rs.next()) {
+        activities = runsDao.queryBuilder().selectColumns("name", "type", "date", "dist").where().eq("genby", id).query();
+        if (!activities.isEmpty()) {
+          Activity act = activities.get(0);
           JSONObject cr = new JSONObject();
           cr.put("id", id);
-          cr.put("text", rs.getString("name") + ' ' + rs.getString("type") + ", " + rs.getString("date")
-              + "| " + rs.getString("dist") + "km");
+          cr.put("text", act.getName() + ' ' + act.getType() + ", " + act.getDate()
+              + "| " + act.getDist() + "km");
           arr.put(cr);
         }
       }
@@ -1253,11 +1258,15 @@ public class DBStorage {
     int day = cal.get(Calendar.DAY_OF_MONTH);
     int month = cal.get(Calendar.MONTH);
     int year = cal.get(Calendar.YEAR);
-    StringBuffer whereClause = new StringBuffer();
-    whereClause.append("(YEAR < " + year + ") OR ");
-    whereClause.append("(YEAR = " + year + " AND MONTH < " + month + ") OR ");
-    whereClause.append("(YEAR = " + year + " AND MONTH = " + month + " AND DAY <= " + day + ")");
-    executeQuery("UPDATE " + RUNS_TABLE_NAME + " SET ccLink='none' WHERE " + whereClause.toString(), false);
+    UpdateBuilder<Activity, String> ub = runsDao.updateBuilder();
+    Where<Activity, String> where = ub.where();
+    try {
+      where.or(where.lt("year", year), where.eq("year", year).and().lt("month", month),
+          where.eq("year", year).and().eq("month", month).and().lt("day", day));
+      ub.updateColumnValue("ccLink", "none").update();
+    } catch (Exception e) {
+      // ignore
+    }
   }
 
 }
