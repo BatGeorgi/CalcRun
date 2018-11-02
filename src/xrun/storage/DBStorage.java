@@ -1255,12 +1255,13 @@ public class DBStorage {
   }
 
   public synchronized void cleanupReliveCCBefore(Calendar cal) {
-    int day = cal.get(Calendar.DAY_OF_MONTH);
-    int month = cal.get(Calendar.MONTH);
-    int year = cal.get(Calendar.YEAR);
-    UpdateBuilder<Activity, String> ub = runsDao.updateBuilder();
-    Where<Activity, String> where = ub.where();
     try {
+      ensureActivitiesInit();
+      int day = cal.get(Calendar.DAY_OF_MONTH);
+      int month = cal.get(Calendar.MONTH);
+      int year = cal.get(Calendar.YEAR);
+      UpdateBuilder<Activity, String> ub = runsDao.updateBuilder();
+      Where<Activity, String> where = ub.where();
       where.or(where.lt("year", year), where.eq("year", year).and().lt("month", month),
           where.eq("year", year).and().eq("month", month).and().lt("day", day));
       ub.updateColumnValue("ccLink", "none").update();
