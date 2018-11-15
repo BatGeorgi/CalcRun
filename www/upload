@@ -14,7 +14,7 @@
     <script src="js/parsers/parser-ipv6.js"></script>
     <script src="js/jquery.metadata.js"></script>
 	
-	<link rel="icon" href="tab_icon.png">
+	<link rel="icon" href="images/tab_icon.png">
 	
 	<script>
 	
