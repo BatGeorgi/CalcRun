@@ -4,13 +4,13 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Running Calc Tools</title>
-    <link href="style_180718.css" type="text/css" rel="stylesheet" />
+    <link href="style_151118.css" type="text/css" rel="stylesheet" />
 	<link href="style_cube.css" type="text/css" rel="stylesheet" />
 	<link href="css/tablesorter.pager.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
-    <link rel="icon" href="tab_icon.png">
+    <link rel="icon" href="images/tab_icon.png">
     <script src="jquery-3.2.1.js"></script>
     <script src="jquery-ui.min.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
@@ -19,8 +19,8 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun_030918.js"></script>
-	<script type="text/javascript" src="initDialogs_110618.js"></script>
+	<script type="text/javascript" src="xrun_151118.js"></script>
+	<script type="text/javascript" src="initDialogs_151118.js"></script>
 	<script type="text/javascript" src="fusioncharts.js"></script>
 	<script type="text/javascript" src="fusioncharts-jquery-plugin.min.js"></script>
 	
@@ -361,15 +361,15 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 4.17</strong></H1>
+        <H1><strong>Running Calc Tools 4.18</strong></H1>
 		<hr>
     </div>
 	
 	<div id="userData">
 	<div id="mainBar">
 	<div id="controls">
-		<img id="importButton" src="button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;" title="Add new activity"/>
-		<input id="rescanButton" type="image" src="button_blue_rescan.png" width="40" height="40" title="Clear cached data"/>
+		<img id="importButton" src="images/button-dark-plus-icon.png" width="40" height="40" onclick="window.location.href='upload';return false;" title="Add new activity"/>
+		<input id="rescanButton" type="image" src="images/button_blue_rescan.png" width="40" height="40" title="Clear cached data"/>
 		<input id="aboutButton" type="image" src="images/about.png" width="40" height="40" title="About"/>
 		<button id="loginButton" class="controlButton" title="Authorization">Login</button>
 		<button id="hideFilters" class="controlButton" title="Toggle search filters">Show Filters</button>
@@ -494,11 +494,11 @@
 					<nav class="right pagerOpt">
 						Page
 						<span class="prev">
-							<img src="prev.png" />
+							<img src="images/prev.png" />
 						</span>
 						<span class="pagecount"></span>
 						<span class="next">
-							<img src="next.png" />
+							<img src="images/next.png" />
 						</span>
 					</nav>
 					<div id="pagerOut" class="pagerOpt"></div>
