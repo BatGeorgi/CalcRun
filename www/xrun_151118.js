@@ -27,7 +27,7 @@ function compFast(file2) {
 					file2 = file2.substring(0, file2.length - 4);
 				}
 				compLink = 'compare?a1=' + f1 + '&a2=' + file2;
-				var extLinkComp = '<hr><input class="hovs hovsMain" title="View full comparison" type="image" src="map-icon.png" width="60" height="60" onclick="window.open(\'' + compLink + '\', \'_blank\');return false;" />';
+				var extLinkComp = '<hr><input class="hovs hovsMain" title="View full comparison" type="image" src="images/map-icon.png" width="60" height="60" onclick="window.open(\'' + compLink + '\', \'_blank\');return false;" />';
 				$('#compareResults').html(extLinkComp + '<hr><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
 					'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
 					'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
@@ -546,17 +546,17 @@ function initContent(data, skipCache) {
 			});
 		});
 		var origData = item['origData'];
-		var extLinks = '<input class="hovs hovsMain" title="View full info" type="image" src="map-icon.png" width="60" height="60" onclick="window.open(\'' + filename + '\', \'_blank\');return false;" />';
+		var extLinks = '<input class="hovs hovsMain" title="View full info" type="image" src="images/map-icon.png" width="60" height="60" onclick="window.open(\'' + filename + '\', \'_blank\');return false;" />';
 		if (item['garminLink'] != 'none') {
-			extLinks += '<input class="hovs hovsMain" title="View on Garmin Connect" type="image" src="garmin-icon.png" width="60" height="60" onclick="window.open(\'' + item['garminLink'] + '\', \'_blank\');return false;" />';
+			extLinks += '<input class="hovs hovsMain" title="View on Garmin Connect" type="image" src="images/garmin-icon.png" width="60" height="60" onclick="window.open(\'' + item['garminLink'] + '\', \'_blank\');return false;" />';
 		}
 		if (item['ccLink'] != 'none') {
 			ccl = decodeURIComponent(item['ccLink']);
-			extLinks += '<input class="hovs hovsMain" title="View on ReliveCC" type="image" src="relivecc-icon.png" width="60" height="60" onclick="window.open(\'' + ccl + '\', \'_blank\');return false;" />';
+			extLinks += '<input class="hovs hovsMain" title="View on ReliveCC" type="image" src="images/relivecc-icon.png" width="60" height="60" onclick="window.open(\'' + ccl + '\', \'_blank\');return false;" />';
 		}
 		if (item['photosLink'] != 'none') {
 			phl = decodeURIComponent(item['photosLink']);
-			extLinks += '<input class="hovs hovsMain" title="View photos" type="image" src="photos-icon.png" width="60" height="60" onclick="window.open(\'' + phl + '\', \'_blank\');return false;" />';
+			extLinks += '<input class="hovs hovsMain" title="View photos" type="image" src="images/photos-icon.png" width="60" height="60" onclick="window.open(\'' + phl + '\', \'_blank\');return false;" />';
 		}
 		tags = $.parseJSON(item['dashboards']);
 		dashboardTags = '<span class="dashboardList">';
