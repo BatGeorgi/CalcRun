@@ -565,13 +565,13 @@ class RequestHandler extends AbstractHandler implements XRuntimeCache {
     } catch (NumberFormatException nfe) {
       err = true;
     }
-    if (dmin > dmax || err) {
+    if (dmin > dmax || err || dmin < 0) {
       response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
       baseRequest.setHandled(true);
       return null;
     }
     if (dmin != 0 || dmax != Integer.MAX_VALUE) {
-      filterStr.append(" with distance [" + dmin + ", " + (dmax != Integer.MAX_VALUE ? dmax : "+&#x221e;") + "] km");
+      filterStr.append(" with distance [" + dmin + ", " + (dmax != Integer.MAX_VALUE ? dmax + "]" : "+&#x221e;)") + " km");
     }
     String nameFilter = baseRequest.getHeader("nameFilter");
     if (nameFilter != null && nameFilter.trim().length() > 0) {

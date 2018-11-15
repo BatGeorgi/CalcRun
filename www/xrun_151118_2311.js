@@ -33,10 +33,10 @@ function compFast(file2) {
 					'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
 					'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
 					'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr>' +
-					'<tr><td>Highly intensive period</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
-					'<tr><td>Highly intensive period distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
-					'<tr><td>Highly intensive period elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
-					'<tr><td>Highly intensive period elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
+					'<tr><td>HITP</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
+					'<tr><td>HITP distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
+					'<tr><td>HITP elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
+					'<tr><td>HITP elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
 				$('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>KM</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
 			},
 			400: function (xhr) {
@@ -436,7 +436,7 @@ function initContent(data, skipCache) {
 	}
 	$('#overall tbody').html('<tr><td>Distance</td><td>' + data['totalDistance'] + " km</td><tr><td>Time</td><td>" + data['totalTime'] + '</td><tr><td>Average speed</td><td>' + data['avgSpeed'] + ' km/h</td></tr>' +
 		'<tr><td>Average distance</td><td>' + data['avgDist'] + ' km</td></tr>' + averageData +
-		'<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>Highly intensive period distance</td><td>' + data['totalRunDist'] + ' km</td></tr>');
+		'<tr><td>Elevation gain</td><td>' + data['elePos'] + ' m</td></tr><tr><td>Elevation loss</td><td>' + data['eleNeg'] + ' m</td></tr><tr><td>HITP distance</td><td>' + data['totalRunDist'] + ' km</td></tr>');
 	if (data['WMT'] != 'none') {
 		initMonthlyTotals(data['mtotals']);
 		initWeeklyTotals(data['wtotals']);
@@ -471,7 +471,7 @@ function initContent(data, skipCache) {
 	var coth = 0;
 	isAllTrail = data['isAllTrail'];
 	if (isAllTrail) {
-		$('#runs tr:eq(0) th:eq(7)').html("RunDist&nbsp;&nbsp;");
+		$('#runs tr:eq(0) th:eq(7)').html("HITP&nbsp;&nbsp;");
 	} else {
 		$('table tr:eq(0) th:eq(7)').html("Speed&nbsp;&nbsp;");
 	}
@@ -594,9 +594,9 @@ function initContent(data, skipCache) {
 			'</td></tr><tr><td>Elevation gain</td><td>' +
 			'<span class="green">' + item['eleTotalPos'] + (isMod ? '<em> / ' + origData['eleTotalPos'] + '*</em>' : '') + '</span></td></tr><tr><td>Elevation loss</td><td>' + '<span class="red">' +
 			item['eleTotalNeg'] + (isMod ? '<em> / ' + origData['eleTotalNeg'] + '*</em>' : '') + '</span></td></tr><tr><td>' +
-			'Highly intensive period</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Highly intensive period distance</td><td>' + (isMod ? '<em>' : '') +
-			item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>Highly intensive period elevation gain</td><td>' +
-			'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Highly intensive period elevation loss</td><td>' +
+			'HITP</td><td>' + (isMod ? '<em>' : '') + item['timeRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>HITP distance</td><td>' + (isMod ? '<em>' : '') +
+			item['distRunning'] + (isMod ? '*</em>' : '') + '</td></tr><tr><td>HITP elevation gain</td><td>' +
+			'<span class="green">' + (isMod ? '<em>' : '') + item['eleRunningPos'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>HITP elevation loss</td><td>' +
 			'<span class="red">' + (isMod ? '<em>' : '') + item['eleRunningNeg'] + (isMod ? '*</em>' : '') + '</span></td></tr><tr><td>Rest time</td><td>' + (isMod ? '<em>' : '') + item['timeRest'] + (isMod ? '*</em>' : '') +
 			'</td></tr><tr><td>Average speed</td><td>' + item['avgSpeed'] + (isMod ? '<em> / ' + origData['avgSpeed'] + '*</em>' : '') +
 			'</td></tr><tr><td>Average pace</td><td>' + item['avgPace'] + (isMod ? '<em> / ' + origData['avgPace'] + '*</em>' : '') + '</td></tr></tbody></table></ul>');

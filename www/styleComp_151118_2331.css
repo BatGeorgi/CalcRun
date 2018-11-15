@@ -1,9 +1,7 @@
 #leftStats {
-	color: #cc3d20;
 	font-weight: bold;
 }
 #rightStats {
-	color: #1b8ec4;
 	font-weight: bold;
 }
 #meas {
@@ -57,6 +55,7 @@ h2 {
 }
 td {
 	padding: 6px 6px 6px 12px;
+	color: #6D929B;
 }
 th {
 	font: bold 11px "Trebuchet MS", Verdana, Arial, Helvetica,
