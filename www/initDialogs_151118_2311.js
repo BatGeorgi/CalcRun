@@ -410,10 +410,10 @@ function initActionDialogs() {
 								'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
 								'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
 								'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr>' +
-								'<tr><td>Highly intensive period</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
-								'<tr><td>Highly intensive period distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
-								'<tr><td>Highly intensive period elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
-								'<tr><td>Highly intensive period elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
+								'<tr><td>HITP</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
+								'<tr><td>HITP distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
+								'<tr><td>HITP elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
+								'<tr><td>HITP elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
 							$('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>KM</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
 						},
 						400: function (xhr) {
