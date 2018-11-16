@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="bootstrap.min.css">
     <script src="bootstrap.min.js"></script>
 
-    <link href="styleComp_151118_2331.css" type="text/css" rel="stylesheet" />
+    <link href="styleComp_161118.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.structure.min.css" type="text/css" rel="stylesheet" />
     <link href="jquery-ui.theme.min.css" type="text/css" rel="stylesheet" />
@@ -88,32 +88,16 @@
 			runT = '';
 			if (divName == 'leftStats') {
 				$('#totDist1').val(isMod ? origData['dist'] : item['dist']);
-				runT = 'Run A';
+				runT = 'Run A <span class="dot_red"></span>';
 			} else {
 				$('#totDist2').val(isMod ? origData['dist'] : item['dist']);
-				runT = 'Run B';
+				runT = 'Run B <span class="dot_blue"></span>';
 			}
 			var gb = item['genby'];
 			if (endsWith(gb, '.gpx')) {
 				gb = gb.substring(0, gb.length - 4);
 			}
-			descrHtml = '';
-			if (item['descr'].length > 0) {
-				descrHtml = '<blockquote>' + decodeURIComponent(item['descr']).replace(/\n/g, "<br />") + '</blockquote><hr>';
-			}
-			ilinks = $.parseJSON(item['links']);
-			linksHtml = '';
-			if (ilinks.length > 0) {
-				for (e = 0; e < ilinks.length; e += 2) {
-					targ = decodeURIComponent(ilinks[e + 1]);
-					if (targ.indexOf("youtube") != -1 || targ.indexOf("youtu.be") != -1) {
-						linksHtml += '<image src="images/youtube.png"/>';
-					}
-					linksHtml += '<a href="' + decodeURIComponent(ilinks[e + 1]) + '" target="_blank">' + decodeURIComponent(ilinks[e]) + '</a><p>';
-				}
-				linksHtml += '<hr>';
-			}
-            $('#' + divName).html(descrHtml + linksHtml + '<h2><div class="ahead"><a href="' + gb + '" target="_blank">' + runT + '</a><div></h2><table><tbody><tr><td>Name</td><td>' + decodeURIComponent(item['name']) + '</td></tr><tr><td>Type</td><td>' + item['type'] + '</td></tr><tr><td>Date</td><td>' + item['date'] + '</td></tr>' +
+            $('#' + divName).html('<h2><div class="ahead"><a href="' + gb + '" target="_blank">' + runT + '</a><div></h2><table><tbody><tr><td>Name</td><td>' + decodeURIComponent(item['name']) + '</td></tr><tr><td>Type</td><td>' + item['type'] + '</td></tr><tr><td>Date</td><td>' + item['date'] + '</td></tr>' +
                 '<tr><td>Distance</td><td>' +
                 item['dist'] + (isMod ? '<em> / ' + origData['dist'] + '*</em>' : '') + '</td></tr><tr><td>Total time</td><td>' + item['timeTotal'] + (isMod ? '<em> / ' + origData['timeTotal'] + '*</em>' : '') +
                 '</td></tr><tr><td>Elevation gain</td><td>' +

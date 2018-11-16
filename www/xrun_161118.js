@@ -31,12 +31,12 @@ function compFast(file2) {
 				$('#compareResults').html(extLinkComp + '<hr><table class="highlightOnly"><thead><th>Stat</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th></thead><tbody>' +
 					'<tr><td>Date</td><td>' + general['date1'] + '</td><td>' + general['date2'] + '</td></tr><tr><td>Distance</td><td>' + comp2(general['dist1'], general['dist2']) + '</td><td>' + comp2(general['dist2'], general['dist1']) + '</td></tr>' +
 					'<tr><td>Time</td><td>' + colorDiff1(general['time1'], general['time2']) + '</td><td>' + colorDiff1(general['time2'], general['time1']) + '</td></tr>' +
-					'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elev gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
-					'<tr><td>Elev loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr>' +
+					'<tr><td>Speed</td><td>' + comp2(general['speed1'], general['speed2']) + '</td><td>' + comp2(general['speed2'], general['speed1']) + '</td></tr><tr><td>Elevation gain</td><td>' + general['elePos1'] + '</td><td>' + general['elePos2'] + '</td></tr>' +
+					'<tr><td>Elevation loss</td><td>' + general['eleNeg1'] + '</td><td>' + general['eleNeg2'] + '</td></tr>' +
 					'<tr><td>HITP</td><td>' + colorDiff1(general['timeRunning1'], general['timeRunning2']) + '</td><td>' + colorDiff1(general['timeRunning2'], general['timeRunning1']) + '</td></tr>' +
 					'<tr><td>HITP distance</td><td>' + comp2(general['distRunning1'], general['distRunning2']) + '</td><td>' + comp2(general['distRunning2'], general['distRunning1']) + '</td></tr>' +
-					'<tr><td>HITP elev gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
-					'<tr><td>HITP elev loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
+					'<tr><td>HITP elevation gain</td><td>' + compGr(general['eleRunningPos1'], general['eleRunningPos2']) + '</td><td>' + compGr(general['eleRunningPos2'], general['eleRunningPos1']) + '</td></tr>' +
+					'<tr><td>HITP elevation loss</td><td>' + general['eleRunningNeg1'] + '</td><td>' + general['eleRunningNeg2'] + '</td></tr>' + '</tbody></table>');
 				$('#compareResults').append('<span class="highlight"><h2>Splits</h2><table><thead><th>KM</th><th>' + decodeURIComponent(general['name1']) + ' ' + general['date1'] + '</th><th>' + decodeURIComponent(general['name2']) + ' ' + general['date2'] + '</th><th>Segment diff</th><th>Total diff</th></thead><tbody>' + tt + '</tbody></table></span>');
 			},
 			400: function (xhr) {
@@ -939,12 +939,12 @@ function getBest() {
 				$('#bestOf tbody').html('<tr><td>Farthest</td><td>' + getStat(farthest, 'ach') + '</td><td>' + getStat(farthest, 'when') + '</td></tr>' +
 					'<tr><td>Fastest</td><td>' + getStat(fastest, 'ach') + '</td><td>' + getStat(fastest, 'when') + '</td></tr>' +
 					'<tr><td>Max ascent</td><td>' + getStat(maxAsc, 'ach') + '</td><td>' + getStat(maxAsc, 'when') + '</td></tr>' +
-					'<tr><td>Max running distance</td><td>' + getStat(maxRun, 'ach') + '</td><td>' + getStat(maxRun, 'when') + '</td></tr>' +
+					'<tr><td>Max HITP distance</td><td>' + getStat(maxRun, 'ach') + '</td><td>' + getStat(maxRun, 'when') + '</td></tr>' +
 					'<tr><td>1K</td><td>' + getStat(k1, 'ach') + '</td><td>' + getStat(k1, 'when') + '</td></tr>' +
 					'<tr><td>2.5K</td><td>' + getStat(k25, 'ach') + '</td><td>' + getStat(k25, 'when') + '</td></tr>' +
 					'<tr><td>5K</td><td>' + getStat(k5, 'ach') + '</td><td>' + getStat(k5, 'when') + '</td></tr>' +
 					'<tr><td>10K</td><td>' + getStat(k10, 'ach') + '</td><td>' + getStat(k10, 'when') + '</td></tr>' +
-					'<tr><td>Half-marathon</td><td>' + getStat(semi, 'ach') + '</td><td>' + getStat(semi, 'when') + '</td></tr>' +
+					'<tr><td>Half marathon</td><td>' + getStat(semi, 'ach') + '</td><td>' + getStat(semi, 'when') + '</td></tr>' +
 					'<tr><td>30K</td><td>' + getStat(k30, 'ach') + '</td><td>' + getStat(k30, 'when') + '</td></tr>' +
 					'<tr><td>Marathon</td><td>' + getStat(marathon, 'ach') + '</td><td>' + getStat(marathon, 'when') + '</td></tr>');
 				$('#bestOf').show();
