@@ -153,6 +153,19 @@ public class DBStorage {
     return json;
   }
 
+  public Map<String, JSONObject> getAllCoords() throws SQLException {
+    Map<String, JSONObject> result = new HashMap<String, JSONObject>();
+    synchronized (dbCoords) {
+      ensureCoordsInit();
+      ResultSet rs = connDB2.createStatement()
+          .executeQuery("SELECT * FROM " + COORDS_TABLE_NAME);
+      while (rs.next()) {
+        result.put(rs.getString(1), new JSONObject(JsonSanitizer.sanitize(rs.getString(2))));
+      }
+    }
+    return result;
+  }
+
   private void removeCoordsData(String id) throws SQLException {
     synchronized (dbCoords) {
       ensureCoordsInit();
@@ -266,7 +279,7 @@ public class DBStorage {
     return result;
   }
 
-  private static boolean isExternal(JSONArray arr) {
+  public static boolean isExternal(JSONArray arr) {
     if (arr == null) {
       return false;
     }

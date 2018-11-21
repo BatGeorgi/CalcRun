@@ -57,7 +57,7 @@ public class RunCalcApplication {
     gpxBase.mkdirs();
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     if (args == null || args.length < 1) {
       throw new IllegalArgumentException("Not enough arguments");
     }
@@ -65,7 +65,7 @@ public class RunCalcApplication {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcApplication(null, base, null).rescan();
+    new RunCalcApplication(null, base, null).calcBest();
   }
   
   void resetHandlerCache() {
@@ -88,6 +88,12 @@ public class RunCalcApplication {
   
   public void removeCookie(Cookie cookie) {
   	cookieHandler.removeCookie(cookie);
+  }
+
+  private void calcBest() throws InterruptedException {
+    Thread t = new Thread(new BestSplitsCalc(storage));
+    t.start();
+    t.join();
   }
   
   public void rescan() {
