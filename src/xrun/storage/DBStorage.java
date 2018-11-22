@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
@@ -22,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import xrun.utils.TimeUtils;
+import xrun.app.BestSplitAch;
 import xrun.common.Constants;
 import xrun.utils.CalendarUtils;
 import xrun.utils.JsonSanitizer;
@@ -36,6 +38,7 @@ public class DBStorage {
   private static final String   COORDS_TABLE_NAME                 = "coords";
   private static final String   FEATURES_TABLE_NAME               = "features";
   private static final String   SECURED_TABLE_NAME                = "secured";
+  private static final String   BEST_TABLE_NAME                = "best";
 
   private static final String[] KEYS                              = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -76,6 +79,8 @@ public class DBStorage {
       "(id text NOT NULL, descr text not null, links text NOT NULL)";
   private static final String   CREATE_STATEMENT_SECURED_TABLE    = "CREATE TABLE IF NOT EXISTS " + SECURED_TABLE_NAME +
       "(id text NOT NULL)";
+  private static final String   CREATE_STATEMENT_BEST_TABLE    = "CREATE TABLE IF NOT EXISTS " + BEST_TABLE_NAME +
+      "(dist PRIMARY KEY NOT NULL, genby text NOT NULL, time integer NOT NULL, startpoint real NOT NULL)";
 
   private File                  dbActivities;
   private File                  dbCoords;
@@ -412,6 +417,7 @@ public class DBStorage {
     executeCreate(CREATE_STATEMENT_PRESETS_TABLE);
     executeCreate(CREATE_STATEMENT_FEATURES_TABLE);
     executeCreate(CREATE_STATEMENT_SECURED_TABLE);
+    executeCreate(CREATE_STATEMENT_BEST_TABLE);
   }
 
   synchronized private void fillInFeatures(JSONObject activity) {
@@ -1101,6 +1107,31 @@ public class DBStorage {
     executePreparedQuery(
         "UPDATE " + PRESETS_TABLE_NAME + " SET dashboard='" + Constants.MAIN_DASHBOARD + "' WHERE dashboard=?",
         name);
+  }
+
+  public synchronized Map<Integer, BestSplitAch> retrieveBestSplits() throws SQLException {
+    Map<Integer, BestSplitAch> result = new HashMap<Integer, BestSplitAch>();
+    ResultSet rs = executePreparedQuery("SELECT * FROM " + BEST_TABLE_NAME);
+    while (rs.next()) {
+      BestSplitAch ach = new BestSplitAch(rs.getString("genby"), rs.getDouble("startpoint"), rs.getLong("time"));
+      result.put(Integer.valueOf(rs.getString("dist")), ach);
+    }
+    return result;
+  }
+
+  public synchronized void updateBestSplits(Map<Integer, BestSplitAch> best) throws SQLException {
+    ResultSet rs = null;
+    for (Entry<Integer, BestSplitAch> entry : best.entrySet()) {
+      BestSplitAch ach = entry.getValue();
+      rs = executePreparedQuery("SELECT dist FROM " + BEST_TABLE_NAME + " WHERE dist=?", entry.getKey());
+      if (rs == null || !rs.next()) {
+        executePreparedQuery("INSERT INTO " + BEST_TABLE_NAME + " VALUES(?, ?, ?, ?)", entry.getKey(),
+            ach.getId(), ach.getTime(), ach.getStartPoint());
+      } else {
+        executePreparedQuery("UPDATE " + BEST_TABLE_NAME + " SET genby=?, time=?, startpoint=? WHERE dist=?",
+            ach.getId(), ach.getTime(), ach.getStartPoint(), entry.getKey());
+      }
+    }
   }
 
   public synchronized JSONObject getDashboards() {
