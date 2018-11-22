@@ -451,7 +451,7 @@ function initAggregationDialogs() {
 				$(this).dialog("close");
 			}
 		},
-		width: Math.min($(window).width() * 0.85, 850),
+		width: Math.min($(window).width() * 0.9, 950),
 		height: Math.min($(window).height() * 0.85, 800),
 		create: function (event) {
 			$(event.target).parent().css({

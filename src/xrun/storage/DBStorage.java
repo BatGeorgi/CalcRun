@@ -838,6 +838,7 @@ public class DBStorage {
       conn = DriverManager.getConnection("jdbc:sqlite:" + dbActivities.getAbsolutePath().replace('\\', '/'));
     }
     conn.createStatement().executeUpdate("DROP TABLE IF EXISTS " + RUNS_TABLE_NAME);
+    conn.createStatement().executeUpdate("DROP TABLE IF EXISTS " + BEST_TABLE_NAME);
     conn = null;
   }
 
@@ -1120,6 +1121,7 @@ public class DBStorage {
   }
 
   public synchronized void updateBestSplits(Map<Integer, BestSplitAch> best) throws SQLException {
+    System.out.println("UPDATE SPLITS");
     ResultSet rs = null;
     for (Entry<Integer, BestSplitAch> entry : best.entrySet()) {
       BestSplitAch ach = entry.getValue();
@@ -1128,6 +1130,7 @@ public class DBStorage {
         executePreparedQuery("INSERT INTO " + BEST_TABLE_NAME + " VALUES(?, ?, ?, ?)", entry.getKey(),
             ach.getId(), ach.getTime(), ach.getStartPoint());
       } else {
+        System.out.println("UPDATE AT " + entry.getKey());
         executePreparedQuery("UPDATE " + BEST_TABLE_NAME + " SET genby=?, time=?, startpoint=? WHERE dist=?",
             ach.getId(), ach.getTime(), ach.getStartPoint(), entry.getKey());
       }

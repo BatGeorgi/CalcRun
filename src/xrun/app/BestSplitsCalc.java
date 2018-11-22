@@ -41,8 +41,18 @@ public class BestSplitsCalc {
   public Map<Integer, BestSplitAch> getBest() {
     return new HashMap<Integer, BestSplitAch>(achievements);
   }
+  
+  public boolean removeInfo(String genby) {
+    for (BestSplitAch ach : achievements.values()) {
+      if (ach.id.equals(genby)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   public void scan() {
+    achievements.clear();
     Map<String, JSONObject> coords = null;
     boolean modified = false;
     try {
@@ -55,7 +65,9 @@ public class BestSplitsCalc {
         if (Constants.OTHER.equals(data.getString("type"))) {
           continue;
         }
+        System.out.println("RECALC " + entry.getKey());
         modified |= calcAchievements(entry.getKey(), entry.getValue());
+        System.out.println("MOD " + modified);
       }
       if (modified) {
         storage.updateBestSplits(achievements);
@@ -81,7 +93,8 @@ public class BestSplitsCalc {
     for (int i = 0; i < len; ++i) {
       double current = accDist.get(i);
       long startTime = times.getLong(i);
-      for (int dist = 1; dist <= (int) (totalDistance - current + SAFE_DEV); ++dist) {
+      double allDev = i == 0 ? SAFE_DEV : 0;
+      for (int dist = 1; dist <= (int) (totalDistance - current + allDev); ++dist) {
         double target = current + (double) dist;
         BestSplitAch best = achievements.get(dist);
         BestSplitAch candidate = new BestSplitAch(id, current);

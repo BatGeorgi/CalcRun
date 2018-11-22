@@ -980,10 +980,10 @@ function initSplitsBest() {
 				splits = '';
 				$.each(totals, function (i, item) {
 					splits += '<tr><td><strong>' + item['point'] + '</strong></td><td>' + item['ach'] + '</td><td class="runitem">' + decodeURIComponent(item['name']) + '</td><td>' + item['date'] + '</td>' +
-						'<td>' + item['pace'] + '</td><td>' + item['speed'] + '</td></tr>';
+						'<td>' + item['startAt'] + '</td><td>' + item['pace'] + '</td><td>' + item['speed'] + '</td></tr>';
 				});
 				$('#bestSplits').html('<span class="highlight"><table id="bestSplitsTable"><thead><tr><th>Distance</th><th>Best time</th><th>Name</th><th>Date</th>' +
-					'<th>Pace</th><th>Speed</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
+					'<th>Start Point</th><th>Pace</th><th>Speed</th></tr></thead><tbody>' + splits + '</tbody></table></span>');
 				$.each(totals, function (i, item) {
 					$('#bestSplitsTable tr:eq(' + (i + 1) + ')').click(function () {
 						window.open(item['genby'], '_blank');
