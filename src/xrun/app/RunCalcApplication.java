@@ -12,7 +12,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 import javax.servlet.http.Cookie;
 
@@ -25,10 +24,10 @@ import xrun.parser.TrackParser;
 import xrun.storage.CookieHandler;
 import xrun.storage.DBStorage;
 import xrun.storage.GoogleDriveStorage;
-import xrun.utils.TimeUtils;
 import xrun.utils.ChartUtils;
 import xrun.utils.CommonUtils;
 import xrun.utils.JsonSanitizer;
+import xrun.utils.TimeUtils;
 
 public class RunCalcApplication {
   
@@ -38,6 +37,7 @@ public class RunCalcApplication {
   private CookieHandler            cookieHandler;
   private ReliveCCGarbageCollector reliveGC;
   private XRuntimeCache            cache;
+  private BestSplitsCalc           bestSplitsCalc;
   
   public RunCalcApplication(XRuntimeCache cache, File base, File clientSecret) {
     this.cache = cache;
@@ -46,11 +46,13 @@ public class RunCalcApplication {
     gpxBase.mkdirs();
     cookieHandler = new CookieHandler(storage);
     reliveGC = new ReliveCCGarbageCollector(this, storage);
+    bestSplitsCalc = new BestSplitsCalc(storage);
+    bestSplitsCalc.scanIfNeeded();
     if (clientSecret != null) {
       drive = new GoogleDriveStorage(clientSecret);
     }
   }
-  
+
   public RunCalcApplication(File base) { // minimalistic constructor
     storage = new DBStorage(base);
     gpxBase = new File(base, "gpx");
@@ -65,7 +67,7 @@ public class RunCalcApplication {
     if (!base.isDirectory()) {
       throw new IllegalArgumentException(base + " is not a valid folder path");
     }
-    new RunCalcApplication(null, base, null).calcBest();
+    new RunCalcApplication(null, base, null).rescan();
   }
   
   void resetHandlerCache() {
@@ -88,12 +90,6 @@ public class RunCalcApplication {
   
   public void removeCookie(Cookie cookie) {
   	cookieHandler.removeCookie(cookie);
-  }
-
-  private void calcBest() throws InterruptedException {
-    Thread t = new Thread(new BestSplitsCalc(storage));
-    t.start();
-    t.join();
   }
   
   public void rescan() {
@@ -508,39 +504,28 @@ public class RunCalcApplication {
     result.put("42K", getBest(42, 43.5, 42.195));
     return result;
   }
-  
+
   public JSONObject getBestSplits() {
-    JSONArray arr = storage.getActivitySplits();
-    Map<Integer, Long> best = new TreeMap<Integer, Long>();
-    Map<Integer, String[]> bestAttrs = new TreeMap<Integer, String[]>();
-    for (int i = 0; i < arr.length(); ++i) {
-      JSONObject crnt = arr.getJSONObject(i);
-      JSONArray splits = crnt.getJSONArray("splits");
-      for (int j = 0; j < splits.length(); ++j) {
-        JSONObject sp = splits.getJSONObject(j);
-        double point = sp.getDouble("totalRaw");
-        if (Math.abs(point - Math.round(point)) > 0.010001) {
-          continue;
-        }
-        int rounded = (int) Math.round(point);
-        long totalTimeRaw = sp.getLong("timeTotalRaw");
-        Long currentBest = best.get(rounded);
-        if (currentBest == null || totalTimeRaw < currentBest.longValue()) {
-          best.put(rounded, totalTimeRaw);
-          bestAttrs.put(rounded, new String[] {crnt.getString("name"), crnt.getString("date"), crnt.getString("genby")});
-        }
-      }
-    }
     JSONObject result = new JSONObject();
-    arr = new JSONArray();
-    for (Entry<Integer, Long> entry : best.entrySet()) {
-      String[] ba = bestAttrs.get(entry.getKey());
+    JSONArray arr = new JSONArray();
+    Map<Integer, BestSplitAch> best = bestSplitsCalc.getBest();
+    for (Entry<Integer, BestSplitAch> entry : best.entrySet()) {
+      BestSplitAch ba = entry.getValue();
+      JSONObject data = storage.getActivity(ba.id);
+      if (data == null) {
+        continue; // must not happen
+      }
       JSONObject ach = new JSONObject();
       ach.put("point", entry.getKey());
-      ach.put("name", ba[0]);
-      ach.put("date", ba[1]);
-      ach.put("genby", ba[2].endsWith(".gpx") ? ba[2].substring(0, ba[2].length() - 4) : ba[2]);
-      long seconds = entry.getValue();
+      ach.put("name", data.get("name"));
+      ach.put("date", data.get("date"));
+      if (ba.startPoint < 1.0) {
+        ach.put("startAt", (int) (ba.startPoint * 1000) + "m");
+      } else {
+        ach.put("startAt", String.format("%.2f", ba.startPoint) + "km");
+      }
+      ach.put("genby", ba.id.endsWith(".gpx") ? ba.id.substring(0, ba.id.length() - 4) : ba.id);
+      long seconds = (long) (ba.getTime() / 1000.0);
       ach.put("ach", TimeUtils.formatTime(seconds, true));
       ach.put("speed", String.format("%.3f", entry.getKey() / (seconds / 3600.0)));
       ach.put("pace", TimeUtils.formatPace((seconds / 60.0) / entry.getKey()));
@@ -549,7 +534,7 @@ public class RunCalcApplication {
     result.put("totals", arr);
     return result;
   }
-  
+
   public String editActivity(String fileName, String newName, String newType,
 			String newGarmin, String newCC, String newPhotos, boolean secure,
 			JSONObject mods) {

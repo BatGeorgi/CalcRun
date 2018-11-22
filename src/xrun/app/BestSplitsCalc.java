@@ -3,6 +3,7 @@ package xrun.app;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,7 +17,7 @@ import xrun.storage.DBStorage;
 import xrun.utils.JsonSanitizer;
 import xrun.utils.TimeUtils;
 
-public class BestSplitsCalc implements Runnable {
+public class BestSplitsCalc {
 
   private static final double        SAFE_DEV     = 0.02;                                // 20 metres
   private DBStorage                  storage;
@@ -24,14 +25,27 @@ public class BestSplitsCalc implements Runnable {
 
   BestSplitsCalc(DBStorage storage) {
     this.storage = storage;
+    try {
+      achievements = storage.retrieveBestSplits();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
-  @Override
-  public void run() {
+  public void scanIfNeeded() {
+    if (achievements.isEmpty()) {
+      scan();
+    }
+  }
+
+  public Map<Integer, BestSplitAch> getBest() {
+    return new HashMap<Integer, BestSplitAch>(achievements);
+  }
+
+  public void scan() {
     Map<String, JSONObject> coords = null;
     boolean modified = false;
     try {
-      achievements = storage.retrieveBestSplits();
       coords = storage.getAllCoords();
       for (Entry<String, JSONObject> entry : coords.entrySet()) {
         JSONObject data = storage.getActivity(entry.getKey());
@@ -42,13 +56,6 @@ public class BestSplitsCalc implements Runnable {
           continue;
         }
         modified |= calcAchievements(entry.getKey(), entry.getValue());
-      }
-      for (Entry<Integer, BestSplitAch> entry : achievements.entrySet()) {
-        BestSplitAch ach = entry.getValue();
-        System.out.println(entry.getKey() + "km " + ach.id + " " + ach.startPoint + " "
-            + TimeUtils.formatTime((long) (ach.time / 1000.0), true));
-        JSONObject data = storage.getActivity(ach.id);
-        System.out.println(data.get("date"));
       }
       if (modified) {
         storage.updateBestSplits(achievements);
@@ -75,25 +82,29 @@ public class BestSplitsCalc implements Runnable {
       double current = accDist.get(i);
       long startTime = times.getLong(i);
       for (int dist = 1; dist <= (int) (totalDistance - current + SAFE_DEV); ++dist) {
+        double target = current + (double) dist;
         BestSplitAch best = achievements.get(dist);
         BestSplitAch candidate = new BestSplitAch(id, current);
-        int pos = Collections.binarySearch(accDist, current + (double) dist);
+        int pos = Collections.binarySearch(accDist, target);
         if (pos >= 0) {
           candidate.time = times.getLong(pos) - startTime;
         } else {
           pos = -pos - 1;
           if (pos >= len) {
             pos = len - 1; // safe deviation
+            candidate.time = times.getLong(pos) - startTime;
           }
           if (pos == 0) {
             continue; // must not be possible
           }
-          double distLow = accDist.get(pos - 1) - current;
-          double distHigh = accDist.get(pos) - current;
-          double coef = (dist - distLow) / (distHigh - distLow);
-          double timeLow = times.getLong(pos - 1);
-          double timeHigh = times.getLong(pos);
-          candidate.time = (long) (timeLow + coef * (timeHigh - timeLow)) - startTime;
+          if (candidate.time == 0) {
+            double distLow = accDist.get(pos - 1);
+            double distHigh = accDist.get(pos);
+            double coef = (target - distLow) / (distHigh - distLow);
+            double timeLow = times.getLong(pos - 1);
+            double timeHigh = times.getLong(pos);
+            candidate.time = (long) (timeLow + coef * (timeHigh - timeLow)) - startTime;
+          }
         }
         if (best == null || candidate.time < best.time) {
           achievements.put(dist, candidate);
