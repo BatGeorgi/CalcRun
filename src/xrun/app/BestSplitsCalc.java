@@ -30,31 +30,40 @@ public class BestSplitsCalc {
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
-
-  public void scanIfNeeded() {
     if (achievements.isEmpty()) {
-      scan();
+      scanAll();
     }
   }
 
   public Map<Integer, BestSplitAch> getBest() {
     return new HashMap<Integer, BestSplitAch>(achievements);
   }
-  
-  public boolean removeInfo(String genby) {
-    for (BestSplitAch ach : achievements.values()) {
-      if (ach.id.equals(genby)) {
-        return true;
+
+  public void addInfo(String id, JSONObject coords) {
+    if (calcAchievements(id, coords)) {
+      try {
+        storage.updateBestSplits(achievements, false);
+      } catch (SQLException e) {
+        e.printStackTrace();
       }
     }
-    return false;
   }
 
-  public void scan() {
-    achievements.clear();
+  public void removeInfo(String genby) {
+    boolean found = false;
+    for (BestSplitAch ach : achievements.values()) {
+      if (ach.id.equals(genby)) {
+        found = true;
+      }
+    }
+    if (found) {
+      achievements.clear();
+      scanAll();
+    }
+  }
+
+  private void scanAll() {
     Map<String, JSONObject> coords = null;
-    boolean modified = false;
     try {
       coords = storage.getAllCoords();
       for (Entry<String, JSONObject> entry : coords.entrySet()) {
@@ -65,19 +74,18 @@ public class BestSplitsCalc {
         if (Constants.OTHER.equals(data.getString("type"))) {
           continue;
         }
-        System.out.println("RECALC " + entry.getKey());
-        modified |= calcAchievements(entry.getKey(), entry.getValue());
-        System.out.println("MOD " + modified);
+        calcAchievements(entry.getKey(), entry.getValue());
       }
-      if (modified) {
-        storage.updateBestSplits(achievements);
-      }
+      storage.updateBestSplits(achievements, true);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
   private boolean calcAchievements(String id, JSONObject coords) {
+    if (coords == null || !coords.has("lats")) {
+      return false; // must not happen
+    }
     boolean modified = false;
     JSONArray lats = coords.getJSONArray("lats");
     JSONArray lons = coords.getJSONArray("lons");
@@ -126,16 +134,6 @@ public class BestSplitsCalc {
       }
     }
     return modified;
-  }
-
-  public void checkNewActivity(String id, JSONObject coords) {
-    if (calcAchievements(id, coords)) {
-      try {
-        storage.updateBestSplits(achievements);
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-    }
   }
 
 }

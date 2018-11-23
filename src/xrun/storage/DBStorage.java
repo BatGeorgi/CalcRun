@@ -1120,9 +1120,11 @@ public class DBStorage {
     return result;
   }
 
-  public synchronized void updateBestSplits(Map<Integer, BestSplitAch> best) throws SQLException {
-    System.out.println("UPDATE SPLITS");
+  public synchronized void updateBestSplits(Map<Integer, BestSplitAch> best, boolean reset) throws SQLException {
     ResultSet rs = null;
+    if (reset) {
+      executeQuery("DELETE FROM " + BEST_TABLE_NAME, false);
+    }
     for (Entry<Integer, BestSplitAch> entry : best.entrySet()) {
       BestSplitAch ach = entry.getValue();
       rs = executePreparedQuery("SELECT dist FROM " + BEST_TABLE_NAME + " WHERE dist=?", entry.getKey());
@@ -1130,7 +1132,6 @@ public class DBStorage {
         executePreparedQuery("INSERT INTO " + BEST_TABLE_NAME + " VALUES(?, ?, ?, ?)", entry.getKey(),
             ach.getId(), ach.getTime(), ach.getStartPoint());
       } else {
-        System.out.println("UPDATE AT " + entry.getKey());
         executePreparedQuery("UPDATE " + BEST_TABLE_NAME + " SET genby=?, time=?, startpoint=? WHERE dist=?",
             ach.getId(), ach.getTime(), ach.getStartPoint(), entry.getKey());
       }

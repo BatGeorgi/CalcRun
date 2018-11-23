@@ -47,7 +47,6 @@ public class RunCalcApplication {
     cookieHandler = new CookieHandler(storage);
     reliveGC = new ReliveCCGarbageCollector(this, storage);
     bestSplitsCalc = new BestSplitsCalc(storage);
-    bestSplitsCalc.scanIfNeeded();
     if (clientSecret != null) {
       drive = new GoogleDriveStorage(clientSecret);
     }
@@ -114,7 +113,7 @@ public class RunCalcApplication {
         current.put("ccLink", "none");
         current.put("photosLink", "none");
         storage.addActivity(current);
-        bestSplitsCalc.checkNewActivity(current.getString("genby"), storage.getCoordsData(current.getString("genby")));
+        bestSplitsCalc.addInfo(current.getString("genby"), storage.getCoordsData(current.getString("genby")));
         if (drive != null) {
           drive.backupTrack(targ);
         }
@@ -206,7 +205,7 @@ public class RunCalcApplication {
   
   public void importActivity(JSONObject json) throws SQLException {
     storage.addActivity(json);
-    bestSplitsCalc.checkNewActivity(json.getString("genby"), storage.getCoordsData(json.getString("genby")));
+    bestSplitsCalc.addInfo(json.getString("genby"), storage.getCoordsData(json.getString("genby")));
   }
   
   public String addActivity(String name, InputStream is, String activityName, String activityType, String reliveCC, String photos,
@@ -241,7 +240,7 @@ public class RunCalcApplication {
       }
       current.put("dashboards", arr);
       storage.addActivity(current);
-      bestSplitsCalc.checkNewActivity(current.getString("genby"), storage.getCoordsData(current.getString("genby")));
+      bestSplitsCalc.addInfo(current.getString("genby"), storage.getCoordsData(current.getString("genby")));
       if (secure) {
       	storage.setSecureFlag(current.getString("genby"), true);
       }
@@ -596,9 +595,7 @@ public class RunCalcApplication {
       file.deleteOnExit();
     }
     storage.deleteActivity(fileName, true);
-    if (bestSplitsCalc.removeInfo(fileName)) {
-      bestSplitsCalc.scan();
-    }
+    bestSplitsCalc.removeInfo(fileName);
     if (drive != null) {
       drive.backupDB(storage.getActivitiesDBFile(), "activities");
       drive.backupDB(storage.getCoordsDBFile(), "coords");
