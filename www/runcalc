@@ -19,7 +19,7 @@
     <script src="js/jquery.metadata.js"></script>
 	<script src="js/jquery.tablesorter.pager.js"></script>
 	<script src="js/pager-custom-controls.js"></script>
-	<script type="text/javascript" src="xrun_221118.js"></script>
+	<script type="text/javascript" src="xrun_091218.js"></script>
 	<script type="text/javascript" src="initDialogs_221118.js"></script>
 	<script type="text/javascript" src="fusion/fusioncharts.js"></script>
 	<script type="text/javascript" src="fusion/fusioncharts-jquery-plugin.min.js"></script>
@@ -324,11 +324,24 @@
 				size: 20
 			}).bind('pagerChange pagerComplete pagerInitialized pageMoved', function(e, c){
 				i = 1;
-				$table.find("tr:gt(0)").each(function(){
-					$(this).find("td:eq(0)").text(i);
-					i++;
+                off1 = 0;
+                off2 = 0;
+				$table.find("tr:gt(0)").each(function() {
+                    if ($(this).hasClass('segmentRow')) {
+                        $(this).find("td:eq(0)").text('S');
+                        if (i < c.startRow) {
+                            ++off1;
+                        }
+                        if (i >= c.startRow && i <= c.endRow) {
+                            ++off2;
+                        }
+                    } else {
+                        $(this).find("td:eq(0)").text(i);
+                        i++;
+                    }
 				});
-				$('#pagerOut').html('Range ' + c.startRow + ' - ' + c.endRow);
+                off2 += off1;
+				$('#pagerOut').html('Range ' + (c.startRow - off1) + ' - ' + (c.endRow -off2));
 			});
 			initDashboards(false, false);
 			$.ajax({
@@ -361,7 +374,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 4.21</strong></H1>
+        <H1><strong>Running Calc Tools 4.22</strong></H1>
 		<hr>
     </div>
 	

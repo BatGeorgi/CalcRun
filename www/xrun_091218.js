@@ -475,6 +475,7 @@ function initContent(data, skipCache) {
 	} else {
 		$('table tr:eq(0) th:eq(7)').html("Speed&nbsp;&nbsp;");
 	}
+	rowCntr = 0;
 	$.each(all, function (i, item) {
 		var isMod = item['isModified'] == 'y';
 		var isSeg = item['parent'].length > 0;
@@ -483,7 +484,10 @@ function initContent(data, skipCache) {
 			dateStr = item['day'] + '.' + (item['month'] + 1) + '.' + (item['year'] - 2000);
 		}
 		segClass = (isSeg ? ' class="segmentRow"': '');
-		runsHtml += '<tr' + segClass + '><td>' + (i + 1) + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div title="View details" class="runitem' + (isSeg ? ' segment' : '') + '" id="item' + i + '">' +
+		if (item['parent'].length == 0) {
+			++rowCntr;
+		}
+		runsHtml += '<tr' + segClass + '><td>' + rowCntr + '</td><td><div id="date' + i + '">' + dateStr + '</div></td><td><div title="View details" class="runitem' + (isSeg ? ' segment' : '') + '" id="item' + i + '">' +
 			(isMod ? '<i>' : '') + decodeURIComponent(item['name']) + (isMod ? '</i>' : '') +
 			'</div></td><td><div id="type' + i + '">' + item['type'] + '</div></td><td>' +
 			item['dist'] + '</td><td>' + item['timeTotal'] + '</td><td>' + item['avgPace'] + '</td><td>' + (isAllTrail ? item['distRunning'] : item['avgSpeed']) + '</td>' +
@@ -666,11 +670,6 @@ function initContent(data, skipCache) {
 			[1, 'dates']
 		]
 	]);
-	var table = document.getElementById('runs');
-	var rowLength = table.rows.length;
-	for (var i = 1; i < rowLength; i++) {
-		table.rows[i].cells[0].innerHTML = (i).toString();
-	}
 	$.each(all, function (i, item) {
 		optsAll += '<option genby="' + item['genby'] + '" value="#' + (i + 1) + ' ' + $('#item' + i).text() + '">' + $('#item' + i).text() + ' ' + $('#date' + i).text() + '</option>';
 	});
