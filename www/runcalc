@@ -219,7 +219,7 @@
 				});
 			});
 			$('#aboutButton').click(function () {
-				$('#aboutDialog').html('Running on <b><i>Raspberry PI 3</i></b><p>Tracking by <b><i>Garmin Forerunner 210 &amp; Strava Android App</i></b><p>Using <b><i>Java, Jetty Server, SQLite DB, JQuery UI, Odometer, FusionCharts<p></i></b>'
+				$('#aboutDialog').html('Running on <b><i>Raspberry PI 3</i></b><p>Tracking by <b><i>Garmin fēnix 5, Garmin Forerunner 210 &amp; Strava Android App</i></b><p>Using <b><i>Java, Jetty Server, SQLite DB, JQuery UI, Odometer, FusionCharts<p></i></b>'
 					+ '<ul><li><a href="https://connect.garmin.com/modern/profile/BatGeorgi" target="_blank">Garmin Connect</a></li>'
 					+ '<li><a href="https://www.strava.com/athletes/22679541" target="_blank">Strava</a></li>'
 					+ '<li><a href="https://drive.google.com/drive/folders/0B22GzCU9umn-SFJlOUd4REJGQUU" target="_blank">Google Drive</a></li></ul>'
@@ -374,7 +374,7 @@
 
 <body>
     <div id="heading">
-        <H1><strong>Running Calc Tools 4.22</strong></H1>
+        <H1><strong>Running Calc Tools 4.23</strong></H1>
 		<hr>
     </div>
 	
