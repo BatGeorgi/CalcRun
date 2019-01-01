@@ -547,6 +547,7 @@ public class RunCalcApplication {
 		try {
 			if (mods != null) {
 				if (modifyActivity(activity, mods)) {
+					bestSplitsCalc.removeInfo(activity.getString("genby"));
 					activity.put("name", newName);
 					activity.put("type", newType);
 					activity.put("garminLink", newGarmin.length() > 0 ? newGarmin
@@ -563,6 +564,7 @@ public class RunCalcApplication {
 			} else if (revertActivityChanges(activity)) {
 				storage.deleteActivity(fileName, false);
 				storage.addActivity(activity);
+				bestSplitsCalc.addInfo(activity.getString("genby"), storage.getCoordsData(activity.getString("genby")));
 			}
 		} catch (Exception e) {
 			return "Error editing activity " + fileName + ": " + e.getMessage();
