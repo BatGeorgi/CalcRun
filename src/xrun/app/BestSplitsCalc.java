@@ -68,6 +68,9 @@ public class BestSplitsCalc {
       coords = storage.getAllCoords();
       for (Entry<String, JSONObject> entry : coords.entrySet()) {
         JSONObject data = storage.getActivity(entry.getKey());
+        if ("y".equals(data.optString("isModified"))) {
+        	continue;
+        }
         if (DBStorage.isExternal(new JSONArray(JsonSanitizer.sanitize(data.getString("dashboards"))))) {
           continue;
         }
