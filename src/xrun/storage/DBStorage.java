@@ -931,6 +931,9 @@ public class DBStorage {
         bestTime = rs.getDouble("timeTotalRaw");
         break;
       }
+      if (bestTime != Double.MAX_VALUE) {
+        return best;
+      }
       rs = executeQuery("SELECT genby, date, splits, isExt, parent FROM " + RUNS_TABLE_NAME +
           " WHERE (distRaw >= " + distActual + " AND type!='" + Constants.OTHER + "')", true);
       int distFloor = (int) distActual;
