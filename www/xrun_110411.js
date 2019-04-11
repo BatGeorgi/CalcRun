@@ -1159,7 +1159,7 @@ function initWeeklyTotals(data) {
 			to = wtotals[currentYearInd]['data'].length;
 			for (j = 4; j > 0 && to >= 0; --j) {
 				fr = to - 13;
-				if (fr < 5) {
+				if (fr < 0) {
 					fr = 0;
 				}
 				optType = $('input[name=selectTypeW]:checked').val();
@@ -1172,6 +1172,9 @@ function initWeeklyTotals(data) {
 					$('#' + gcn(optType, j)).insertFusionCharts(getChart(optText, "Year weekly report", "Week", yax, meas, wd, 'wid' + optType + j));
 				}
 				to -= 13;
+				if (fr == 0) {
+					break;
+				}
 			}
 		};
 		$('input[name=selectTypeW],[name=selectYearW]').change(f);
