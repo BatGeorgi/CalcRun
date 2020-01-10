@@ -38,7 +38,8 @@ public class DBStorage {
   private static final String   COORDS_TABLE_NAME                 = "coords";
   private static final String   FEATURES_TABLE_NAME               = "features";
   private static final String   SECURED_TABLE_NAME                = "secured";
-  private static final String   BEST_TABLE_NAME                = "best";
+  private static final String   BEST_TABLE_NAME                   = "best";
+  private static final String   RUN_EMOJI                         = "%F0%9F%8F%83";
 
   private static final String[] KEYS                              = new String[] {
       "genby", "name", "type", "date", "year", "month", "day", "dist", "distRaw",
@@ -679,6 +680,12 @@ public class DBStorage {
     }
     if (isSecured(activity.getString("genby"))) {
       activity.put("secured", true);
+    }
+    if (Constants.RUNNING.equals(activity.getString("type"))) {
+      String name = activity.getString("name");
+      if (!name.contains(RUN_EMOJI)) {
+        activity.put("name", name + "%20" + RUN_EMOJI);
+      }
     }
     if (includeSplitsAndDistr) {
       JSONArray splits = activity.getJSONArray("splits");
